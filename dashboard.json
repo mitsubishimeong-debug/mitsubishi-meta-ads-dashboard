@@ -1,0 +1,158 @@
+{
+  "reportDate": "2026-07-29",
+  "accountHealth": 94,
+  "activeRange": "today",
+
+  "ranges": {
+
+    "today": {
+      "label": "Today",
+      "spend": 2742, "spendChangeYesterday": 5.2, "spendChange7d": 12.4,
+      "messages": 31, "messagesChangeYesterday": 10.7, "messagesChange7d": 24.0,
+      "ctr": 3.68, "ctrChangeYesterday": 2.2, "ctrChange7d": 8.1,
+      "cpc": 9.83, "cpcChangeYesterday": -3.1, "cpcChange7d": -5.6,
+      "cpm": 357.91, "cpmChangeYesterday": 1.4, "cpmChange7d": 3.0,
+      "costPerMessage": 88.45, "costPerMessageChangeYesterday": -6.5, "costPerMessageChange7d": -9.2,
+
+      "budget": { "daily": 3500, "spent": 2742 },
+
+      "funnel": {
+        "impressions": 152400,
+        "reach": 98200,
+        "frequency": 1.55,
+        "clicks": 5610,
+        "messages": 31,
+        "conversions": 9
+      },
+
+      "bestCampaign": "JULY ADS 2026",
+      "bestCampaignRecommendation": "SCALE",
+      "bestAd": "Mirage G4",
+      "bestAdCtr": 5.69,
+      "bestCreative": "Mirage G4 Zero Down",
+      "bestAudience": "Metro South",
+      "bestAudienceAgeRange": "18-65",
+
+      "trends": {
+        "spend": [2210, 2390, 2510, 2680, 2470, 2600, 2742],
+        "ctr": [3.1, 3.3, 3.4, 3.2, 3.5, 3.6, 3.68],
+        "messages": [21, 24, 26, 22, 28, 30, 31],
+        "labels": ["Jul 23", "Jul 24", "Jul 25", "Jul 26", "Jul 27", "Jul 28", "Jul 29"]
+      },
+
+      "campaigns": [
+        { "name": "JULY ADS 2026", "status": "Active", "spend": 2742, "messages": 31, "ctr": 3.68, "cpc": 9.83, "costPerMessage": 88.45 },
+        { "name": "Mirage Launch", "status": "Active", "spend": 1890, "messages": 22, "ctr": 3.12, "cpc": 10.4, "costPerMessage": 85.9 },
+        { "name": "L300 Fleet Sale", "status": "Active", "spend": 1420, "messages": 14, "ctr": 2.44, "cpc": 11.7, "costPerMessage": 101.4 },
+        { "name": "Multi Models Promo", "status": "Learning", "spend": 980, "messages": 6, "ctr": 1.31, "cpc": 15.2, "costPerMessage": 163.3 },
+        { "name": "Sales Campaign", "status": "Paused", "spend": 0, "messages": 0, "ctr": 0, "cpc": 0, "costPerMessage": 0 }
+      ]
+    },
+
+    "7d": {
+      "label": "Last 7 Days",
+      "spend": 17590, "spendChangeYesterday": null, "spendChange7d": 9.8,
+      "messages": 182, "messagesChangeYesterday": null, "messagesChange7d": 15.3,
+      "ctr": 3.35, "ctrChangeYesterday": null, "ctrChange7d": 6.4,
+      "cpc": 10.15, "cpcChangeYesterday": null, "cpcChange7d": -2.8,
+      "cpm": 348.2, "cpmChangeYesterday": null, "cpmChange7d": 1.9,
+      "costPerMessage": 96.65, "costPerMessageChangeYesterday": null, "costPerMessageChange7d": -4.7,
+
+      "budget": { "daily": 3500, "spent": 17590 },
+
+      "funnel": {
+        "impressions": 985600,
+        "reach": 512300,
+        "frequency": 1.92,
+        "clicks": 33020,
+        "messages": 182,
+        "conversions": 54
+      },
+
+      "bestCampaign": "JULY ADS 2026",
+      "bestCampaignRecommendation": "SCALE",
+      "bestAd": "Mirage G4",
+      "bestAdCtr": 5.12,
+      "bestCreative": "Mirage G4 Zero Down",
+      "bestAudience": "Metro South",
+      "bestAudienceAgeRange": "18-65",
+
+      "trends": {
+        "spend": [2210, 2390, 2510, 2680, 2470, 2600, 2742],
+        "ctr": [3.1, 3.3, 3.4, 3.2, 3.5, 3.6, 3.68],
+        "messages": [21, 24, 26, 22, 28, 30, 31],
+        "labels": ["Jul 23", "Jul 24", "Jul 25", "Jul 26", "Jul 27", "Jul 28", "Jul 29"]
+      },
+
+      "campaigns": [
+        { "name": "JULY ADS 2026", "status": "Active", "spend": 17590, "messages": 182, "ctr": 3.35, "cpc": 10.15, "costPerMessage": 96.65 },
+        { "name": "Mirage Launch", "status": "Active", "spend": 12100, "messages": 138, "ctr": 3.02, "cpc": 10.9, "costPerMessage": 87.7 },
+        { "name": "L300 Fleet Sale", "status": "Active", "spend": 9350, "messages": 91, "ctr": 2.31, "cpc": 12.1, "costPerMessage": 102.7 },
+        { "name": "Multi Models Promo", "status": "Learning", "spend": 6200, "messages": 34, "ctr": 1.28, "cpc": 15.9, "costPerMessage": 182.4 },
+        { "name": "Sales Campaign", "status": "Paused", "spend": 1100, "messages": 4, "ctr": 0.9, "cpc": 18.3, "costPerMessage": 275.0 }
+      ]
+    },
+
+    "30d": {
+      "label": "Last 30 Days",
+      "spend": 76840, "spendChangeYesterday": null, "spendChange7d": null,
+      "messages": 745, "messagesChangeYesterday": null, "messagesChange7d": null,
+      "ctr": 3.02, "ctrChangeYesterday": null, "ctrChange7d": null,
+      "cpc": 11.4, "cpcChangeYesterday": null, "cpcChange7d": null,
+      "cpm": 331.6, "cpmChangeYesterday": null, "cpmChange7d": null,
+      "costPerMessage": 103.14, "costPerMessageChangeYesterday": null, "costPerMessageChange7d": null,
+
+      "budget": { "daily": 3500, "spent": 76840 },
+
+      "funnel": {
+        "impressions": 4120500,
+        "reach": 1980200,
+        "frequency": 2.08,
+        "clicks": 124450,
+        "messages": 745,
+        "conversions": 211
+      },
+
+      "bestCampaign": "Mirage Launch",
+      "bestCampaignRecommendation": "SCALE",
+      "bestAd": "Mirage G4",
+      "bestAdCtr": 4.8,
+      "bestCreative": "Mirage G4 Zero Down",
+      "bestAudience": "Metro South",
+      "bestAudienceAgeRange": "18-65",
+
+      "trends": {
+        "spend": [15200, 16800, 17950, 18100, 17590, 18450, 17750],
+        "ctr": [2.8, 2.9, 3.0, 2.95, 3.1, 3.05, 3.02],
+        "messages": [138, 152, 160, 149, 168, 172, 165],
+        "labels": ["Wk 1", "Wk 1", "Wk 2", "Wk 2", "Wk 3", "Wk 3", "Wk 4"]
+      },
+
+      "campaigns": [
+        { "name": "Mirage Launch", "status": "Active", "spend": 28900, "messages": 298, "ctr": 3.4, "cpc": 10.6, "costPerMessage": 97.0 },
+        { "name": "JULY ADS 2026", "status": "Active", "spend": 24700, "messages": 241, "ctr": 3.02, "cpc": 11.2, "costPerMessage": 102.5 },
+        { "name": "L300 Fleet Sale", "status": "Active", "spend": 15300, "messages": 138, "ctr": 2.2, "cpc": 12.8, "costPerMessage": 110.9 },
+        { "name": "Multi Models Promo", "status": "Learning", "spend": 6440, "messages": 52, "ctr": 1.19, "cpc": 16.4, "costPerMessage": 123.8 },
+        { "name": "Sales Campaign", "status": "Paused", "spend": 1500, "messages": 16, "ctr": 1.0, "cpc": 17.9, "costPerMessage": 93.8 }
+      ]
+    }
+  },
+
+  "recommendations": [
+    { "text": "Scale JULY ADS", "reason": "CTR 42% above account average with stable CPM", "priority": "High" },
+    { "text": "Duplicate Mirage G4 Zero Down", "reason": "Top creative, still no fatigue signal after 9 days", "priority": "High" },
+    { "text": "Pause Multi Models Promo", "reason": "Cost/Message 84% higher than account average", "priority": "Medium" },
+    { "text": "Refresh L300 Fleet Sale creative", "reason": "CTR down 18% over the last 5 days", "priority": "Medium" }
+  ],
+
+  "alerts": [
+    { "text": "Creative Fatigue", "reason": "Mirage G4 frequency at 4.2x with declining CTR", "priority": "High" },
+    { "text": "Budget Leak", "reason": "Multi Models Promo spending above target CPA", "priority": "Medium" },
+    { "text": "Paused Campaign", "reason": "Sales Campaign has been paused for 6 days", "priority": "Low" }
+  ],
+
+  "predictionTomorrow": {
+    "ctr": 3.9,
+    "expectedMessages": 34
+  }
+}

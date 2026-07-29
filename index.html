@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mitsubishi Meta Ads AI Dashboard</title>
+<link rel="stylesheet" href="style.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="scan-line"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">
+      <svg viewBox="0 0 100 100" class="tri-logo">
+        <polygon points="50,4 96,80 4,80" class="tri tri-1"/>
+        <polygon points="50,4 96,80 4,80" class="tri tri-2"/>
+        <polygon points="50,4 96,80 4,80" class="tri tri-3"/>
+      </svg>
+    </div>
+    <div class="brand-text">
+      <h1>MITSUBISHI <span>META ADS</span></h1>
+      <p class="subtitle">AI Executive Dashboard <span class="version-tag">v1</span></p>
+    </div>
+  </div>
+  <div class="topbar-right no-print">
+    <div class="range-switch" id="rangeSwitch">
+      <button class="range-btn active" data-range="today">Today</button>
+      <button class="range-btn" data-range="7d">7 Days</button>
+      <button class="range-btn" data-range="30d">30 Days</button>
+    </div>
+    <div class="report-date">
+      <span class="label">REPORT DATE</span>
+      <span id="reportDate" class="value">—</span>
+    </div>
+    <div class="status-pill" id="liveStatus">
+      <span class="dot"></span> LIVE
+    </div>
+    <button class="export-btn" id="exportBtn" title="Export / Print report">EXPORT</button>
+  </div>
+</header>
+
+<main class="dashboard">
+
+  <!-- ACCOUNT HEALTH -->
+  <section class="health-block">
+    <div class="health-gauge">
+      <svg viewBox="0 0 200 120" class="gauge-svg">
+        <path d="M 20 100 A 80 80 0 0 1 180 100" class="gauge-track"/>
+        <path d="M 20 100 A 80 80 0 0 1 180 100" class="gauge-fill" id="gaugeFill"/>
+      </svg>
+      <div class="gauge-readout">
+        <span id="healthScore" class="gauge-number">0</span>
+        <span class="gauge-max">/100</span>
+      </div>
+      <span class="gauge-label">ACCOUNT HEALTH</span>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <span class="kpi-label">Spend</span>
+        <span class="kpi-value" id="kpiSpend">—</span>
+        <div class="kpi-foot"><span class="kpi-unit">PHP</span><span class="delta" id="deltaSpend"></span></div>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Messages</span>
+        <span class="kpi-value" id="kpiMessages">—</span>
+        <div class="kpi-foot"><span class="kpi-unit">conversations</span><span class="delta" id="deltaMessages"></span></div>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">CTR</span>
+        <span class="kpi-value" id="kpiCtr">—</span>
+        <div class="kpi-foot"><span class="kpi-unit">click-through</span><span class="delta" id="deltaCtr"></span></div>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">CPC</span>
+        <span class="kpi-value" id="kpiCpc">—</span>
+        <div class="kpi-foot"><span class="kpi-unit">per click</span><span class="delta" id="deltaCpc"></span></div>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">CPM</span>
+        <span class="kpi-value" id="kpiCpm">—</span>
+        <div class="kpi-foot"><span class="kpi-unit">per 1000 impr.</span><span class="delta" id="deltaCpm"></span></div>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Cost / Message</span>
+        <span class="kpi-value" id="kpiCostMsg">—</span>
+        <div class="kpi-foot"><span class="kpi-unit">per lead</span><span class="delta" id="deltaCostMsg"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BUDGET PACING -->
+  <section class="card budget-card">
+    <span class="card-eyebrow">BUDGET PACING</span>
+    <div class="budget-row">
+      <div class="budget-bar-track">
+        <div class="budget-bar-fill" id="budgetFill"></div>
+      </div>
+      <span class="budget-readout" id="budgetReadout">— / —</span>
+    </div>
+  </section>
+
+  <!-- FUNNEL -->
+  <section class="card funnel-card">
+    <span class="card-eyebrow">PERFORMANCE FUNNEL</span>
+    <div class="funnel-row" id="funnelRow"></div>
+  </section>
+
+  <!-- TOP PERFORMERS ROW -->
+  <section class="top-row">
+    <div class="card top-card">
+      <span class="card-eyebrow">TOP CAMPAIGN</span>
+      <h2 id="topCampaignName">—</h2>
+      <span class="rec-badge" id="topCampaignRec">SCALE</span>
+    </div>
+    <div class="card top-card">
+      <span class="card-eyebrow">TOP AD</span>
+      <h2 id="topAdName">—</h2>
+      <div class="top-metric"><span id="topAdCtr">—</span><small>CTR</small></div>
+    </div>
+    <div class="card top-card">
+      <span class="card-eyebrow">TOP CREATIVE</span>
+      <h2 id="topCreativeName">—</h2>
+    </div>
+    <div class="card top-card">
+      <span class="card-eyebrow">TOP AUDIENCE</span>
+      <h2 id="topAudienceName">—</h2>
+      <span class="audience-range" id="topAudienceRange">—</span>
+    </div>
+  </section>
+
+  <!-- AI RECOMMENDATIONS + ALERTS + PREDICTION -->
+  <section class="triple-row">
+    <div class="card">
+      <span class="card-eyebrow">AI RECOMMENDATION</span>
+      <ul class="rec-list" id="recList"></ul>
+    </div>
+
+    <div class="card">
+      <span class="card-eyebrow">ALERTS</span>
+      <ul class="alert-list" id="alertList"></ul>
+    </div>
+
+    <div class="card prediction-card">
+      <span class="card-eyebrow">PREDICTION TOMORROW</span>
+      <div class="prediction-body">
+        <div class="prediction-metric">
+          <span class="prediction-value" id="predCtr">—</span>
+          <span class="prediction-label">CTR</span>
+        </div>
+        <div class="prediction-divider"></div>
+        <div class="prediction-metric">
+          <span class="prediction-value" id="predMessages">—</span>
+          <span class="prediction-label">Expected Messages</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHARTS -->
+  <section class="charts-row">
+    <div class="card chart-card">
+      <span class="card-eyebrow">SPEND TREND</span>
+      <canvas id="spendChart"></canvas>
+    </div>
+    <div class="card chart-card">
+      <span class="card-eyebrow">CTR TREND</span>
+      <canvas id="ctrChart"></canvas>
+    </div>
+  </section>
+
+  <section class="charts-row">
+    <div class="card chart-card">
+      <span class="card-eyebrow">MESSAGES TREND</span>
+      <canvas id="messagesChart"></canvas>
+    </div>
+    <div class="card chart-card">
+      <span class="card-eyebrow">CAMPAIGN RANKING</span>
+      <canvas id="rankingChart"></canvas>
+    </div>
+  </section>
+
+  <!-- CAMPAIGNS TABLE -->
+  <section class="card table-card">
+    <span class="card-eyebrow">ALL CAMPAIGNS</span>
+    <div class="table-wrap">
+      <table class="campaigns-table" id="campaignsTable">
+        <thead>
+          <tr>
+            <th data-key="name">Campaign</th>
+            <th data-key="status">Status</th>
+            <th data-key="spend">Spend</th>
+            <th data-key="messages">Messages</th>
+            <th data-key="ctr">CTR</th>
+            <th data-key="cpc">CPC</th>
+            <th data-key="costPerMessage">Cost/Msg</th>
+          </tr>
+        </thead>
+        <tbody id="campaignsTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <span>Powered by n8n &middot; Gemini AI &middot; dashboard.json</span>
+  <span id="lastUpdated">Last updated —</span>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
