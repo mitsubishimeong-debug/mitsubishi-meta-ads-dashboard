@@ -1,11 +1,11 @@
 // ============================================================
-// Mitsubishi Meta Ads AI Dashboard — script.js (v2)
-// Reads everything from data/dashboard.json.
-// n8n only ever needs to overwrite that file — no HTML/CSS/JS
+// Mitsubishi Meta Ads AI Dashboard — script.js (v3)
+// Reads everything from dashboard.json (auto-detects whether it
+// lives beside index.html or inside a /data folder).
+// n8n only ever needs to overwrite that file — no HTML/CSS
 // changes required to reflect new numbers or new date ranges.
 // ============================================================
 
-const DATA_URL = "data/dashboard.json";
 const REFRESH_INTERVAL_MS = 60000; // poll every 60s for n8n updates
 
 const CHART_COLORS = {
@@ -16,28 +16,61 @@ const CHART_COLORS = {
   text: "#AAAAAA",
 };
 
-Chart.defaults.font.family = "'JetBrains Mono', monospace";
-Chart.defaults.color = CHART_COLORS.text;
+if (typeof Chart !== "undefined") {
+  Chart.defaults.font.family = "'JetBrains Mono', monospace";
+  Chart.defaults.color = CHART_COLORS.text;
+}
 
 let charts = {};
 let currentData = null;
 let currentRange = "today";
 let sortState = { key: "spend", dir: "desc" };
+let resolvedDataUrl = null; // cached once we know where dashboard.json lives
+
+// ---------------- PATH DETECTION ----------------
+
+// Tries "data/dashboard.json" first (since that's how this project
+// is normally organized); if that 404s, falls back to
+// "dashboard.json" beside index.html. Works on GitHub Pages because
+// both are relative paths resolved against the page's own folder.
+async function resolveDataUrl() {
+  if (resolvedDataUrl) return resolvedDataUrl;
+
+  const candidates = ["data/dashboard.json", "dashboard.json"];
+
+  for (const candidate of candidates) {
+    try {
+      const res = await fetch(`${candidate}?t=${Date.now()}`, { cache: "no-store" });
+      if (res.ok) {
+        resolvedDataUrl = candidate;
+        return candidate;
+      }
+    } catch (err) {
+      // try next candidate
+    }
+  }
+
+  // Nothing resolved — default to root-level path and let the
+  // caller's own error handling report the failure.
+  resolvedDataUrl = "dashboard.json";
+  return resolvedDataUrl;
+}
 
 // ---------------- LOAD ----------------
 
 async function loadDashboard() {
   try {
-    const res = await fetch(`${DATA_URL}?t=${Date.now()}`, { cache: "no-store" });
+    const url = await resolveDataUrl();
+    const res = await fetch(`${url}?t=${Date.now()}`, { cache: "no-store" });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    currentData = data;
-    currentRange = data.activeRange || "today";
+    currentData = data || {};
+    currentRange = currentData.activeRange || currentRange || "today";
     syncRangeButtons();
     render();
     setStatus(true);
   } catch (err) {
-    console.error("Failed to load dashboard.json:", err);
+    console.warn("Dashboard data unavailable:", err.message);
     setStatus(false);
   }
 }
@@ -56,13 +89,13 @@ function setStatus(isLive) {
 
 function render() {
   if (!currentData) return;
-  const rangeData = currentData.ranges?.[currentRange];
-  if (!rangeData) return;
+  const ranges = currentData.ranges || {};
+  const rangeData = ranges[currentRange] || {};
 
   setText("reportDate", currentData.reportDate ?? "—");
   setText("lastUpdated", `Last updated ${new Date().toLocaleTimeString()}`);
 
-  animateGauge(currentData.accountHealth ?? 0);
+  animateGauge(currentData.accountHealth);
 
   // KPI cards + deltas
   setText("kpiSpend", formatCurrency(rangeData.spend));
@@ -87,7 +120,7 @@ function render() {
 
   // Top performers
   setText("topCampaignName", rangeData.bestCampaign ?? "—");
-  setText("topCampaignRec", rangeData.bestCampaignRecommendation ?? "SCALE");
+  setText("topCampaignRec", rangeData.bestCampaignRecommendation ?? "—");
   setText("topAdName", rangeData.bestAd ?? "—");
   setText("topAdCtr", formatPercent(rangeData.bestAdCtr));
   setText("topCreativeName", rangeData.bestCreative ?? "—");
@@ -112,7 +145,7 @@ function render() {
 
 function setText(id, value) {
   const el = document.getElementById(id);
-  if (el) el.textContent = value;
+  if (el) el.textContent = value ?? "—";
 }
 
 // ---------------- DELTAS ----------------
@@ -120,13 +153,14 @@ function setText(id, value) {
 function renderDelta(id, value, invert = false) {
   const el = document.getElementById(id);
   if (!el) return;
-  if (value === undefined || value === null) {
-    el.textContent = "";
+  if (value === undefined || value === null || isNaN(Number(value))) {
+    el.textContent = "—";
     el.className = "delta";
     return;
   }
-  const isUp = value > 0;
-  const isFlat = value === 0;
+  const num = Number(value);
+  const isUp = num > 0;
+  const isFlat = num === 0;
   // for cost metrics (CPC/CPM/Cost per message), a drop is good -> invert coloring
   let cls = "flat";
   if (!isFlat) {
@@ -134,25 +168,41 @@ function renderDelta(id, value, invert = false) {
     cls = good ? "up" : "down";
   }
   const arrow = isFlat ? "→" : isUp ? "▲" : "▼";
-  el.textContent = `${arrow} ${Math.abs(value).toFixed(1)}%`;
+  el.textContent = `${arrow} ${Math.abs(num).toFixed(1)}%`;
   el.className = `delta ${cls}`;
 }
 
 // ---------------- BUDGET PACING ----------------
 
 function renderBudget(budget) {
-  if (!budget) return;
-  const pct = Math.min(100, (budget.spent / budget.daily) * 100);
   const fill = document.getElementById("budgetFill");
+  if (!budget || typeof budget !== "object") {
+    if (fill) fill.style.width = "0%";
+    setText("budgetReadout", "—");
+    return;
+  }
+  const spent = Number(budget.spent) || 0;
+  const daily = Number(budget.daily) || 0;
+  const pct = daily > 0 ? Math.min(100, (spent / daily) * 100) : 0;
   if (fill) fill.style.width = `${pct}%`;
-  setText("budgetReadout", `${formatCurrency(budget.spent)} / ${formatCurrency(budget.daily)} (${pct.toFixed(0)}%)`);
+  setText(
+    "budgetReadout",
+    daily > 0
+      ? `${formatCurrency(spent)} / ${formatCurrency(daily)} (${pct.toFixed(0)}%)`
+      : "—"
+  );
 }
 
 // ---------------- FUNNEL ----------------
 
 function renderFunnel(funnel) {
   const el = document.getElementById("funnelRow");
-  if (!el || !funnel) return;
+  if (!el) return;
+
+  if (!funnel || typeof funnel !== "object") {
+    el.innerHTML = "";
+    return;
+  }
 
   const stages = [
     { label: "Impressions", value: funnel.impressions },
@@ -164,9 +214,12 @@ function renderFunnel(funnel) {
 
   el.innerHTML = "";
   stages.forEach((stage, i) => {
-    const pctOfPrev = i > 0 && stages[i - 1].value
-      ? ((stage.value / stages[i - 1].value) * 100).toFixed(1) + "%"
-      : "";
+    const prevVal = i > 0 ? Number(stages[i - 1].value) : null;
+    const curVal = Number(stage.value);
+    const pctOfPrev =
+      i > 0 && prevVal && !isNaN(curVal)
+        ? ((curVal / prevVal) * 100).toFixed(1) + "%"
+        : "";
 
     const div = document.createElement("div");
     div.className = "funnel-stage";
@@ -193,7 +246,7 @@ function renderReasonedList(containerId, items, type) {
   if (!el) return;
   el.innerHTML = "";
 
-  if (!items || items.length === 0) {
+  if (!Array.isArray(items) || items.length === 0) {
     const li = document.createElement("li");
     li.textContent = type === "alert" ? "No alerts" : "No recommendations";
     li.style.opacity = "0.5";
@@ -202,50 +255,62 @@ function renderReasonedList(containerId, items, type) {
   }
 
   items.forEach((item) => {
-    const text = typeof item === "string" ? item : item.text;
+    if (item === null || item === undefined) return;
+    const text = typeof item === "string" ? item : item.text ?? "—";
     const reason = typeof item === "string" ? null : item.reason;
     const priority = typeof item === "string" ? null : item.priority;
 
     const li = document.createElement("li");
     li.innerHTML = `
       <div class="item-head">
-        <span class="item-title">${text}</span>
-        ${priority ? `<span class="priority-badge priority-${priority}">${priority}</span>` : ""}
+        <span class="item-title">${escapeHtml(text)}</span>
+        ${priority ? `<span class="priority-badge priority-${escapeHtml(String(priority))}">${escapeHtml(String(priority))}</span>` : ""}
       </div>
-      ${reason ? `<span class="item-reason">${reason}</span>` : ""}
+      ${reason ? `<span class="item-reason">${escapeHtml(reason)}</span>` : ""}
     `;
     el.appendChild(li);
   });
 }
 
+function escapeHtml(str) {
+  if (str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 // ---------------- GAUGE ----------------
 
-function animateGauge(score) {
+function animateGauge(rawScore) {
   const CIRCUMFERENCE = 251;
-  const pct = Math.max(0, Math.min(100, score)) / 100;
+  const score = Number(rawScore);
+  const safeScore = isNaN(score) ? 0 : score;
+  const pct = Math.max(0, Math.min(100, safeScore)) / 100;
   const offset = CIRCUMFERENCE - CIRCUMFERENCE * pct;
 
   const fill = document.getElementById("gaugeFill");
   if (fill) fill.style.strokeDashoffset = offset;
 
   let color = CHART_COLORS.green;
-  if (score < 50) color = "#E60012";
-  else if (score < 80) color = "#F5A623";
+  if (safeScore < 50) color = "#E60012";
+  else if (safeScore < 80) color = "#F5A623";
   if (fill) fill.style.stroke = color;
 
-  animateNumber("healthScore", score);
+  animateNumber("healthScore", safeScore);
 }
 
 function animateNumber(id, target) {
   const el = document.getElementById(id);
   if (!el) return;
+  const safeTarget = isNaN(Number(target)) ? 0 : Number(target);
   const duration = 900;
   const start = performance.now();
 
   function tick(now) {
     const progress = Math.min(1, (now - start) / duration);
     const eased = 1 - Math.pow(1 - progress, 3);
-    el.textContent = Math.round(target * eased);
+    el.textContent = Math.round(safeTarget * eased);
     if (progress < 1) requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
@@ -254,15 +319,15 @@ function animateNumber(id, target) {
 // ---------------- FORMATTERS ----------------
 
 function formatCurrency(n) {
-  if (n === undefined || n === null) return "—";
+  if (n === undefined || n === null || n === "" || isNaN(Number(n))) return "—";
   return `₱${Number(n).toLocaleString("en-PH", { maximumFractionDigits: 2 })}`;
 }
 function formatNumber(n) {
-  if (n === undefined || n === null) return "—";
+  if (n === undefined || n === null || n === "" || isNaN(Number(n))) return "—";
   return Number(n).toLocaleString("en-PH");
 }
 function formatPercent(n) {
-  if (n === undefined || n === null) return "—";
+  if (n === undefined || n === null || n === "" || isNaN(Number(n))) return "—";
   return `${Number(n).toFixed(2)}%`;
 }
 
@@ -281,13 +346,13 @@ function baseLineOptions() {
 }
 
 function renderTrendCharts(trends) {
-  if (!trends) return;
-  const labels = trends.labels ?? [];
+  const safeTrends = trends && typeof trends === "object" ? trends : {};
+  const labels = Array.isArray(safeTrends.labels) ? safeTrends.labels : [];
 
   upsertChart("spendChart", "line", {
     labels,
     datasets: [{
-      data: trends.spend ?? [],
+      data: Array.isArray(safeTrends.spend) ? safeTrends.spend : [],
       borderColor: CHART_COLORS.primary,
       backgroundColor: "rgba(230,0,18,0.12)",
       fill: true,
@@ -300,7 +365,7 @@ function renderTrendCharts(trends) {
   upsertChart("ctrChart", "line", {
     labels,
     datasets: [{
-      data: trends.ctr ?? [],
+      data: Array.isArray(safeTrends.ctr) ? safeTrends.ctr : [],
       borderColor: CHART_COLORS.green,
       backgroundColor: "rgba(46,204,113,0.12)",
       fill: true,
@@ -313,7 +378,7 @@ function renderTrendCharts(trends) {
   upsertChart("messagesChart", "bar", {
     labels,
     datasets: [{
-      data: trends.messages ?? [],
+      data: Array.isArray(safeTrends.messages) ? safeTrends.messages : [],
       backgroundColor: CHART_COLORS.amber,
       borderRadius: 3,
       maxBarThickness: 28,
@@ -322,10 +387,12 @@ function renderTrendCharts(trends) {
 }
 
 function renderRankingChart(campaigns) {
-  if (!campaigns) return;
-  const sorted = [...campaigns].sort((a, b) => b.messages - a.messages);
-  const labels = sorted.map((c) => c.name);
-  const messages = sorted.map((c) => c.messages);
+  const safeCampaigns = Array.isArray(campaigns) ? campaigns : [];
+  const sorted = [...safeCampaigns].sort(
+    (a, b) => (Number(b?.messages) || 0) - (Number(a?.messages) || 0)
+  );
+  const labels = sorted.map((c) => c?.name ?? "—");
+  const messages = sorted.map((c) => Number(c?.messages) || 0);
 
   upsertChart("rankingChart", "bar", {
     labels,
@@ -347,14 +414,18 @@ function renderRankingChart(campaigns) {
   });
 }
 
+// Always destroys any previous chart on this canvas before creating
+// a new one, so ranges/updates never leave duplicate/stacked charts.
 function upsertChart(canvasId, type, data, options) {
+  if (typeof Chart === "undefined") return;
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
+
   if (charts[canvasId]) {
-    charts[canvasId].data = data;
-    charts[canvasId].update();
-    return;
+    charts[canvasId].destroy();
+    delete charts[canvasId];
   }
+
   charts[canvasId] = new Chart(canvas.getContext("2d"), { type, data, options });
 }
 
@@ -362,23 +433,38 @@ function upsertChart(canvasId, type, data, options) {
 
 function renderCampaignsTable(campaigns) {
   const tbody = document.getElementById("campaignsTableBody");
-  if (!tbody || !campaigns) return;
+  if (!tbody) return;
 
-  const sorted = [...campaigns].sort((a, b) => {
-    const av = a[sortState.key];
-    const bv = b[sortState.key];
-    if (typeof av === "string") {
-      return sortState.dir === "asc" ? av.localeCompare(bv) : bv.localeCompare(av);
+  const safeCampaigns = Array.isArray(campaigns) ? campaigns : [];
+
+  if (safeCampaigns.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;opacity:0.5;">No campaign data</td></tr>`;
+    updateSortHeaders();
+    return;
+  }
+
+  const sorted = [...safeCampaigns].sort((a, b) => {
+    const av = a ? a[sortState.key] : undefined;
+    const bv = b ? b[sortState.key] : undefined;
+
+    if (av === undefined || av === null) return 1;
+    if (bv === undefined || bv === null) return -1;
+
+    if (typeof av === "string" || typeof bv === "string") {
+      const aStr = String(av);
+      const bStr = String(bv);
+      return sortState.dir === "asc" ? aStr.localeCompare(bStr) : bStr.localeCompare(aStr);
     }
     return sortState.dir === "asc" ? av - bv : bv - av;
   });
 
   tbody.innerHTML = "";
   sorted.forEach((c) => {
+    if (!c) return;
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${c.name}</td>
-      <td><span class="status-chip status-${c.status}">${c.status}</span></td>
+      <td>${escapeHtml(c.name ?? "—")}</td>
+      <td><span class="status-chip status-${escapeHtml(c.status ?? "")}">${escapeHtml(c.status ?? "—")}</span></td>
       <td>${formatCurrency(c.spend)}</td>
       <td>${formatNumber(c.messages)}</td>
       <td>${formatPercent(c.ctr)}</td>
@@ -408,7 +494,8 @@ function initTableSorting() {
         sortState = { key, dir: "desc" };
       }
       if (currentData) {
-        renderCampaignsTable(currentData.ranges[currentRange].campaigns);
+        const rangeData = currentData.ranges?.[currentRange];
+        renderCampaignsTable(rangeData?.campaigns);
       }
     });
   });
@@ -425,7 +512,9 @@ function syncRangeButtons() {
 function initRangeSwitch() {
   document.querySelectorAll(".range-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      currentRange = btn.dataset.range;
+      const range = btn.dataset.range;
+      if (!range) return;
+      currentRange = range;
       syncRangeButtons();
       render();
     });
