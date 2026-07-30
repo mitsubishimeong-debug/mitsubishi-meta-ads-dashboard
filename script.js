@@ -822,13 +822,24 @@ function detectModel(campaignName) {
 // ---------------- PATH DETECTION + LOAD (mirrors fetchDashboardData) ----------------
 
 async function fetchHistoryData() {
-  // dashboard-history.json also lives in the repo root — same
-  // direct-fetch pattern as fetchDashboardData() above, no probing.
-  const res = await fetch(`./dashboard-history.json?t=${Date.now()}`, { cache: "no-store" });
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status} at ./dashboard-history.json`);
+  // dashboard-history.json lives in the repo root, beside index.html —
+  // single direct fetch, no data/ folder, no fallback probing.
+  //
+  // One short retry is included because this file is large (40KB+)
+  // and gets overwritten by n8n periodically — an occasional poll
+  // can land mid-write (partial/invalid JSON) or hit GitHub Pages'
+  // edge cache mid-propagation right after a commit. A single retry
+  // after a brief pause almost always lands on the settled file.
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const res = await fetch(`./dashboard-history.json?t=${Date.now()}`, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status} at ./dashboard-history.json`);
+      return await res.json();
+    } catch (err) {
+      if (attempt === 2) throw err;
+      await new Promise((resolve) => setTimeout(resolve, 800));
+    }
   }
-  return res.json();
 }
 
 async function loadHistoricalData() {
@@ -840,10 +851,17 @@ async function loadHistoricalData() {
     renderAllHistoricalTabs();
   } catch (err) {
     console.warn("Historical data unavailable:", err.message);
-    historyData = null;
-    processedCampaigns = [];
-    dailyPerformance = [];
-    setHistoryAvailability(false);
+    // Only show the "unavailable" empty state if we've never
+    // successfully loaded historical data. If a previous poll
+    // already succeeded, keep showing that last-known-good data
+    // instead of flashing the empty state over working numbers on
+    // a single transient failure — the next 60s poll will refresh
+    // it automatically once the source file settles.
+    if (!historyData) {
+      processedCampaigns = [];
+      dailyPerformance = [];
+      setHistoryAvailability(false);
+    }
   }
 }
 
