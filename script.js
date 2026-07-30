@@ -173,6 +173,12 @@ function applyRangeAvailability() {
 
 function render() {
   if (!currentData) return;
+
+  console.log("========== OVERVIEW ==========");
+  console.log("currentData.topAd =", currentData.topAd);
+  console.log("currentData =", currentData);
+  console.log("==============================");
+
   const ranges = currentData.ranges || {};
   const rangeData = ranges[currentRange] || {};
 
