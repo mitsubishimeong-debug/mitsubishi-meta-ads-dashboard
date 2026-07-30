@@ -59,7 +59,6 @@ let charts = {};
 let currentData = null;
 let currentRange = "today";
 let sortState = { key: "spend", dir: "desc" };
-let resolvedDataUrl = null; // cached once we know where dashboard.json lives
 let prevKpiValues = {}; // last rendered numeric value per KPI id, for count-up animation
 let rafHandles = {}; // in-flight animation frames per element id, so re-renders don't stack
 
@@ -86,40 +85,19 @@ const domCache = {};
 
 // ---------------- PATH DETECTION + LOAD ----------------
 
-// Tries "data/dashboard.json" first (since that's how this project
-// is normally organized); if that 404s, falls back to
-// "dashboard.json" beside index.html. Works on GitHub Pages because
-// both are relative paths resolved against the page's own folder.
-//
-// Each candidate is fetched exactly once and that same response is
-// used as the actual data — no throwaway probe request, so there's
-// no window for GitHub Pages' edge cache to disagree with itself
-// between a "check" request and a "real" request.
+// dashboard.json lives in the repo root, beside index.html — this
+// is a single direct fetch, resolved as a relative path against the
+// page's own folder (works the same on GitHub Pages as locally).
 async function fetchDashboardData() {
-  const candidates = resolvedDataUrl
-    ? [resolvedDataUrl, "data/dashboard.json", "dashboard.json"]
-    : ["data/dashboard.json", "dashboard.json"];
-
-  let lastError = null;
-
-  for (const candidate of candidates) {
-    try {
-      const res = await fetch(`${candidate}?t=${Date.now()}`, { cache: "no-store" });
-      if (res.ok) {
-        const data = await res.json();
-        resolvedDataUrl = candidate;
-        return data;
-      }
-      lastError = new Error(`HTTP ${res.status} at ${candidate}`);
-    } catch (err) {
-      lastError = err;
-    }
+  // dashboard.json lives in the repo root next to index.html — no
+  // data/ folder, so this is a single direct fetch with no fallback
+  // probing. Cache-busting query param + no-store are kept so n8n's
+  // overwrites are picked up on the very next 60s poll.
+  const res = await fetch(`./dashboard.json?t=${Date.now()}`, { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} at ./dashboard.json`);
   }
-
-  // Nothing resolved this round — forget any cached path so the
-  // next poll re-probes from scratch instead of getting stuck.
-  resolvedDataUrl = null;
-  throw lastError || new Error("dashboard.json not found");
+  return res.json();
 }
 
 async function loadDashboard() {
@@ -812,7 +790,6 @@ setInterval(loadDashboard, REFRESH_INTERVAL_MS); // v6 note: setInterval only �
 let historyData = null;          // raw dashboard-history.json
 let processedCampaigns = [];      // historyData.campaigns + model + performanceScore
 let dailyPerformance = [];        // historyData.dailyPerformance, unmodified (daily granularity preserved)
-let historyResolvedUrl = null;    // cached path, same pattern as resolvedDataUrl
 let historyAvailable = false;
 
 let currentYearFilter = "all";
@@ -845,26 +822,13 @@ function detectModel(campaignName) {
 // ---------------- PATH DETECTION + LOAD (mirrors fetchDashboardData) ----------------
 
 async function fetchHistoryData() {
-  const candidates = historyResolvedUrl
-    ? [historyResolvedUrl, "data/dashboard-history.json", "dashboard-history.json"]
-    : ["data/dashboard-history.json", "dashboard-history.json"];
-
-  let lastError = null;
-  for (const candidate of candidates) {
-    try {
-      const res = await fetch(`${candidate}?t=${Date.now()}`, { cache: "no-store" });
-      if (res.ok) {
-        const data = await res.json();
-        historyResolvedUrl = candidate;
-        return data;
-      }
-      lastError = new Error(`HTTP ${res.status} at ${candidate}`);
-    } catch (err) {
-      lastError = err;
-    }
+  // dashboard-history.json also lives in the repo root — same
+  // direct-fetch pattern as fetchDashboardData() above, no probing.
+  const res = await fetch(`./dashboard-history.json?t=${Date.now()}`, { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} at ./dashboard-history.json`);
   }
-  historyResolvedUrl = null;
-  throw lastError || new Error("dashboard-history.json not found");
+  return res.json();
 }
 
 async function loadHistoricalData() {
