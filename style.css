@@ -962,3 +962,10 @@ body {
   .tab-nav { display: none !important; }
   .tab-panel { display: block !important; }
 }
+
+/* ---- AI Analysis (reports/ai-analysis.json) additions ---- */
+.exec-summary-card p {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--text);
+}
