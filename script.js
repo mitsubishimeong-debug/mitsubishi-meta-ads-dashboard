@@ -709,17 +709,67 @@ async function loadHistoricalData() {
 function loadDashboardData() {
   loadDashboard();
   loadHistoricalData();
+  loadAIAnalysis(); // MODIFY: V6 — added third independent source
+}
+
+// ---------------- AI ANALYSIS LOAD (reports/ai-analysis.json) ----------------
+// ADD: entirely new, independent pipeline — its own state, its own
+// fetch, its own availability flag. Never touches dashboard.json or
+// dashboard-history.json, and a failure here never affects Overview
+// or the Historical/Model/Objectives/Timeline tabs.
+
+let aiData = {};
+let aiAvailable = false;
+
+async function fetchAIAnalysis() {
+  const res = await fetch(`./reports/ai-analysis.json?t=${Date.now()}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status} at ./reports/ai-analysis.json`);
+  return res.json();
+}
+
+async function loadAIAnalysis() {
+  try {
+    const data = await fetchAIAnalysis();
+    aiData = data || {};
+    setAIAvailability(true);
+    renderAIAnalysis();
+  } catch (err) {
+    console.warn("AI analysis unavailable:", err.message);
+    aiData = {};
+    setAIAvailability(false);
+  }
+}
+
+// Shows "AI analysis unavailable" in the Recommendations tab and
+// hides its content sections when reports/ai-analysis.json can't be
+// loaded. Independent of setHistoryAvailability() — Overview and the
+// Historical/Model/Objectives/Timeline tabs are unaffected either way.
+function setAIAvailability(isAvailable) {
+  aiAvailable = isAvailable;
+
+  const emptyEl = document.getElementById("recommendationsEmptyState");
+  if (emptyEl) emptyEl.hidden = isAvailable;
+
+  document
+    .querySelectorAll('[data-tab-panel="recommendations"] > section')
+    .forEach((sec) => { sec.hidden = !isAvailable; });
 }
 
 // ---------------- AVAILABILITY / FALLBACK ----------------
 
-// Shows "Historical data unavailable" in every V5 tab and hides
-// their content sections when dashboard-history.json can't be
-// loaded — Overview keeps working normally regardless.
+// Shows "Historical data unavailable" in the Historical/Model/
+// Objectives/Timeline tabs and hides their content sections when
+// dashboard-history.json can't be loaded — Overview keeps working
+// normally regardless.
+// MODIFY: "recommendationsEmptyState" and the Recommendations
+// panel's <section>s are no longer governed by this function —
+// that tab now depends on reports/ai-analysis.json instead of
+// dashboard-history.json, so its availability is controlled by
+// setAIAvailability() below.
 function setHistoryAvailability(isAvailable) {
   historyAvailable = isAvailable;
 
-  ["historicalEmptyState", "modelEmptyState", "objectivesEmptyState", "recommendationsEmptyState", "timelineEmptyState"]
+  ["historicalEmptyState", "modelEmptyState", "objectivesEmptyState", "timelineEmptyState"]
     .forEach((id) => {
       const el = document.getElementById(id);
       if (el) el.hidden = isAvailable;
@@ -731,7 +781,7 @@ function setHistoryAvailability(isAvailable) {
   });
 
   document
-    .querySelectorAll('[data-tab-panel="model"] > section, [data-tab-panel="objectives"] > section, [data-tab-panel="recommendations"] > section')
+    .querySelectorAll('[data-tab-panel="model"] > section, [data-tab-panel="objectives"] > section')
     .forEach((sec) => { sec.hidden = !isAvailable; });
 }
 
@@ -855,59 +905,66 @@ function calculateObjectiveComparison(yearFilter) {
     .sort((a, b) => b.avgPerformanceScore - a.avgPerformanceScore);
 }
 
-// ---------------- MODULE 5: RECOMMENDATION CENTER ----------------
+// ---------------- MODULE 5: AI ANALYSIS (reports/ai-analysis.json) ----------------
+// MODIFY: This module previously computed recommendations from
+// historyData's campaign aggregates. It no longer calculates
+// anything — it only renders whatever Gemini/n8n already wrote to
+// aiData. historyData and dashboard.json are never read here.
 
-// Prefers real recommendation text written by n8n (historyData.recommendations).
-// Falls back to simple, transparent rule-based insights computed from
-// the aggregates above — never labeled as AI-generated when it isn't.
+// MODIFY: generateRecommendations() renders aiData.recommendations
+// directly. No computation, no fallback rules — if aiData has no
+// recommendations, the list simply shows its built-in empty state.
 function generateRecommendations() {
-  const list = getFilteredCampaigns(currentYearFilter);
-  let items = [];
-
-  if (Array.isArray(historyData?.recommendations) && historyData.recommendations.length > 0) {
-    items = historyData.recommendations;
-  } else if (list.length > 0) {
-    const models = calculateModelPerformance(currentYearFilter).filter((m) => m.count >= 3 && m.costPerMessage !== null);
-    const objectives = calculateObjectiveComparison(currentYearFilter);
-    const agg = aggregateCampaigns(list);
-
-    if (models.length > 0) {
-      const cheapest = [...models].sort((a, b) => a.costPerMessage - b.costPerMessage)[0];
-      items.push({
-        text: `Increase budget allocation on ${cheapest.model} campaigns`,
-        reason: `${cheapest.model} shows the lowest cost-per-message (${formatCurrency(cheapest.costPerMessage)}) among models with 3+ campaigns in this period.`,
-        priority: "High",
-      });
-
-      const priciest = [...models].sort((a, b) => b.costPerMessage - a.costPerMessage)[0];
-      if (priciest.model !== cheapest.model && agg.costPerMessage && priciest.costPerMessage > agg.costPerMessage * 1.3) {
-        items.push({
-          text: `Review ${priciest.model} campaign spend`,
-          reason: `Cost-per-message (${formatCurrency(priciest.costPerMessage)}) is well above the period average (${formatCurrency(agg.costPerMessage)}).`,
-          priority: "Medium",
-        });
-      }
-    }
-
-    if (objectives.length > 0) {
-      const topObjective = objectives[0];
-      items.push({
-        text: `Prioritize ${topObjective.objective} campaigns`,
-        reason: `${topObjective.objective} has the strongest average performance score across this period's campaigns.`,
-        priority: "Medium",
-      });
-    }
-
-    if (items.length === 0) {
-      items.push({
-        text: "Not enough data yet",
-        reason: "More campaign history is needed to generate reliable recommendations.",
-        priority: "Low",
-      });
-    }
-  }
-
+  const items = Array.isArray(aiData?.recommendations) ? aiData.recommendations : [];
   renderReasonedList("histRecList", items, "rec");
+}
+
+// ADD
+function renderExecutiveSummary() {
+  const el = document.getElementById("execSummary");
+  if (!el) return;
+  const summary = aiData?.executive_summary;
+  el.textContent = summary ? String(summary) : "—";
+}
+
+// ADD
+// Schema assumption (adjust field names once the real n8n output is
+// confirmed): aiData.winning_ads is an array of objects such as
+// { ad_name, reason, ctr, messages }. Falls back gracefully if any
+// field is missing rather than crashing.
+function renderWinningAds() {
+  const ads = Array.isArray(aiData?.winning_ads) ? aiData.winning_ads : [];
+  const items = ads.map((ad) => ({
+    text: ad.ad_name ?? ad.name ?? "—",
+    reason: ad.reason ?? [
+      ad.ctr !== undefined ? `${formatPercent(ad.ctr)} CTR` : null,
+      ad.messages !== undefined ? `${formatNumber(ad.messages)} messages` : null,
+    ].filter(Boolean).join(" · "),
+    priority: ad.priority ?? null,
+  }));
+  renderReasonedList("winningAdsList", items, "rec");
+}
+
+// ADD
+function renderCreativeInsights() {
+  const items = Array.isArray(aiData?.creative_insights) ? aiData.creative_insights : [];
+  renderReasonedList("creativeInsightsList", items, "rec");
+}
+
+// ADD
+function renderHistoricalAIInsights() {
+  const items = Array.isArray(aiData?.historical_insights) ? aiData.historical_insights : [];
+  renderReasonedList("historicalInsightsList", items, "rec");
+}
+
+// ADD — orchestrator for the whole Recommendations tab
+function renderAIAnalysis() {
+  if (!aiAvailable) return;
+  renderExecutiveSummary();
+  generateRecommendations();
+  renderWinningAds();
+  renderCreativeInsights();
+  renderHistoricalAIInsights();
 }
 
 // ---------------- MODULE 1: HISTORICAL OVERVIEW (lifetime KPIs + highlights) ----------------
@@ -1189,12 +1246,15 @@ function renderCharts() {
 // ---------------- MASTER RENDER ----------------
 
 function renderAllHistoricalTabs() {
+  // MODIFY: generateRecommendations()/AI panels removed from here —
+  // Recommendations now belongs to the independent AI pipeline
+  // (renderAIAnalysis(), triggered by loadAIAnalysis()), not to
+  // dashboard-history.json's load cycle.
   if (!historyAvailable) return;
   renderHistoricalOverview();
   renderTables();
   renderModelPerformance();
   renderObjectiveComparison();
-  generateRecommendations();
   renderTimeline();
 }
 
@@ -1212,11 +1272,13 @@ function initTabNav() {
       // Re-render on activation so any Chart.js canvas that was
       // hidden (and therefore zero-size) at creation time gets
       // rebuilt at its correct dimensions.
+      // MODIFY: "recommendations" now checks aiAvailable and calls
+      // renderAIAnalysis() — it no longer depends on historyAvailable.
+      if (target === "recommendations") { if (aiAvailable) renderAIAnalysis(); return; }
       if (!historyAvailable) return;
       if (target === "historical") { renderHistoricalOverview(); renderTables(); }
       if (target === "model") renderModelPerformance();
       if (target === "objectives") renderObjectiveComparison();
-      if (target === "recommendations") generateRecommendations();
       if (target === "timeline") renderTimeline();
     });
   });
@@ -1265,4 +1327,6 @@ initYearFilter();
 initRankingSort();
 initTimelineControls();
 loadHistoricalData();
+loadAIAnalysis(); // ADD
+setInterval(loadAIAnalysis, REFRESH_INTERVAL_MS); // ADD
 setInterval(loadHistoricalData, REFRESH_INTERVAL_MS);
