@@ -341,12 +341,28 @@
 <main class="dashboard tab-panel" data-tab-panel="recommendations">
   <div class="history-empty-state" id="recommendationsEmptyState" hidden>
     <span class="empty-icon">⚠</span>
-    <p>Historical data unavailable</p>
-    <span class="empty-sub">dashboard-history.json could not be loaded. Overview keeps working normally.</span>
+    <p>AI analysis unavailable</p>
+    <span class="empty-sub">reports/ai-analysis.json could not be loaded. Overview keeps working normally.</span>
   </div>
+  <section class="card exec-summary-card">
+    <span class="card-eyebrow">EXECUTIVE SUMMARY</span>
+    <p id="execSummary">—</p>
+  </section>
   <section class="card">
     <span class="card-eyebrow">AI RECOMMENDATION CENTER</span>
     <ul class="rec-list" id="histRecList"></ul>
+  </section>
+  <section class="card">
+    <span class="card-eyebrow">WINNING ADS</span>
+    <ul class="rec-list" id="winningAdsList"></ul>
+  </section>
+  <section class="card">
+    <span class="card-eyebrow">CREATIVE INSIGHTS</span>
+    <ul class="rec-list" id="creativeInsightsList"></ul>
+  </section>
+  <section class="card">
+    <span class="card-eyebrow">HISTORICAL INSIGHTS</span>
+    <ul class="rec-list" id="historicalInsightsList"></ul>
   </section>
 </main>
 
