@@ -205,17 +205,29 @@ function render() {
   renderFunnel(rangeData.funnel);
 
   // Top performers
-  setText("topCampaignName", rangeData.bestCampaign ?? "—");
+  // MODIFY: Top Campaign now always reads from ranges.today.bestCampaign
+  // (not the currently selected range) per backend contract.
+  // Top Ad now reads from the top-level currentData.topAd object
+  // ({ ad_name, campaign_name, ctr }) instead of per-range bestAd/bestAdCtr.
+  // Top Creative / Top Audience are static "Coming Soon" placeholders
+  // until the backend provides real data for them.
+  const topAd = (currentData && currentData.topAd) || {};
+  setText("topCampaignName", currentData?.ranges?.today?.bestCampaign ?? "—");
   setText("topCampaignRec", rangeData.bestCampaignRecommendation ?? "—");
-  setText("topAdName", rangeData.bestAd ?? "—");
-  setText("topAdCtr", formatPercent(rangeData.bestAdCtr));
-  setText("topCreativeName", rangeData.bestCreative ?? "—");
-  setText("topAudienceName", rangeData.bestAudience ?? "—");
-  setText("topAudienceRange", rangeData.bestAudienceAgeRange ?? "—");
+  setText("topAdName", topAd.ad_name ?? "—");
+  setText("topAdCampaignName", topAd.campaign_name ?? "—"); // no-op if id not in HTML yet
+  setText("topAdCtr", formatPercent(topAd.ctr));
+  setText("topCreativeName", "Coming Soon");
+  setText("topAudienceName", "Coming Soon");
+  setText("topAudienceRange", "—");
 
   // AI recommendations & alerts (account-level, not per range)
-  renderReasonedList("recList", currentData.recommendations, "rec");
-  renderReasonedList("alertList", currentData.alerts, "alert");
+  // MODIFY: read explicitly from dashboard.recommendations / dashboard.alerts
+  // (currentData IS the parsed dashboard.json). renderReasonedList already
+  // falls back to "No recommendations" / "No alerts" when the array is
+  // empty or missing, so no change needed there.
+  renderReasonedList("recList", currentData?.recommendations, "rec");
+  renderReasonedList("alertList", currentData?.alerts, "alert");
 
   // Prediction
   setText("predCtr", formatPercent(currentData.predictionTomorrow?.ctr));
