@@ -815,6 +815,17 @@ body {
   border-radius: var(--card-radius);
   color: var(--secondary);
 }
+/* BUGFIX: the rule above sets its own `display`, which silently beats
+   the browser's built-in [hidden] { display: none } rule (author CSS
+   always outranks the UA stylesheet, regardless of source order). That
+   meant script.js setting el.hidden = true never actually hid this
+   banner once AI/history data loaded successfully — it stayed visible
+   at the same time as the real content underneath it. This rule wins
+   over the one above (same selector specificity, defined later) and
+   restores the intended hide-when-hidden behavior. */
+.history-empty-state[hidden] {
+  display: none;
+}
 .history-empty-state .empty-icon { font-size: 26px; color: var(--amber); }
 .history-empty-state p { font-size: 16px; color: var(--text); font-weight: 600; }
 .history-empty-state .empty-sub { font-family: 'JetBrains Mono', monospace; font-size: 11px; max-width: 420px; }
