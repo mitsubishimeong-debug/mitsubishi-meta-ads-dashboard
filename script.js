@@ -187,7 +187,7 @@ function render() {
   renderDelta("deltaCostMsg", rangeData.costPerMessageChangeYesterday, true);
 
   // Budget pacing
-  renderBudget(rangeData.budget);
+  renderBudget(rangeData.budgetPacing);
 
   // Funnel
   renderFunnel(rangeData.funnel);
@@ -292,22 +292,24 @@ function renderDelta(id, value, invert = false) {
 
 // ---------------- BUDGET PACING ----------------
 
-function renderBudget(budget) {
+ffunction renderBudget(budget) {
+
   const fill = getEl("budgetFill");
-  if (!budget || typeof budget !== "object") {
+
+  if (!budget) {
     if (fill) fill.style.width = "0%";
-    setText("budgetReadout", "—");
+    setText("budgetReadout", "No active campaigns");
     return;
   }
-  const spent = Number(budget.spent) || 0;
-  const daily = Number(budget.daily) || 0;
-  const pct = daily > 0 ? Math.min(100, (spent / daily) * 100) : 0;
-  if (fill) fill.style.width = `${pct}%`;
+
+  const active = Number(budget.active_campaigns) || 0;
+  const allocated = Number(budget.allocated_daily_budget) || 0;
+
+  if (fill) fill.style.width = active > 0 ? "100%" : "0%";
+
   setText(
     "budgetReadout",
-    daily > 0
-      ? `${formatCurrency(spent)} / ${formatCurrency(daily)} (${pct.toFixed(0)}%)`
-      : "—"
+    `${active} Active Campaign${active === 1 ? "" : "s"} • ${formatCurrency(allocated)} Daily Budget`
   );
 }
 
