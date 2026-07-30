@@ -729,3 +729,236 @@ body {
   .table-wrap { max-height: none; overflow: visible; }
   .campaigns-table thead th { position: static; background: #fff; }
 }
+
+/* ============================================================
+   V5 ADDITIONS — Historical Intelligence Platform
+   Fully additive: reuses existing tokens (--bg, --card, --border,
+   --primary, --text, --secondary, --green, --amber, --glass-*,
+   --ease) and existing component classes (.card, .kpi-card,
+   .top-card, .rec-list, .campaigns-table). Nothing above this
+   point is modified.
+   ============================================================ */
+
+/* ---- Tab navigation ---- */
+.tab-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 1360px;
+  margin: 20px auto 0;
+  padding: 0 40px;
+}
+.tab-nav-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  background: var(--glass-bg-soft);
+  color: var(--secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background .2s var(--ease), color .2s var(--ease), border-color .2s var(--ease);
+}
+.tab-nav-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.18); }
+.tab-nav-btn.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* ---- Tab panel visibility ---- */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ---- Shared historical toolbar (year switch / timeline switches) ---- */
+.history-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.year-switch, .timeline-switch {
+  display: flex;
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.02);
+}
+.year-btn, .timeline-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  background: transparent;
+  color: var(--secondary);
+  border: none;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: background .2s var(--ease), color .2s var(--ease);
+}
+.year-btn:hover, .timeline-btn:hover { color: var(--text); }
+.year-btn.active, .timeline-btn.active { background: var(--primary); color: #fff; }
+
+/* ---- Empty / unavailable state ---- */
+.history-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  padding: 60px 24px;
+  background: var(--glass-bg-soft);
+  border: 1px dashed var(--glass-border);
+  border-radius: var(--card-radius);
+  color: var(--secondary);
+}
+.history-empty-state .empty-icon { font-size: 26px; color: var(--amber); }
+.history-empty-state p { font-size: 16px; color: var(--text); font-weight: 600; }
+.history-empty-state .empty-sub { font-family: 'JetBrains Mono', monospace; font-size: 11px; max-width: 420px; }
+
+/* ---- Historical Intelligence: KPI + highlight rows ---- */
+.history-kpi-grid { grid-template-columns: repeat(6, 1fr); margin-bottom: 16px; }
+.history-highlight-row { margin-bottom: 16px; }
+.highlight-card { border-left: 3px solid var(--border); }
+.highlight-best { border-left-color: var(--green); }
+.highlight-cost { border-left-color: var(--amber); }
+.highlight-ctr { border-left-color: var(--primary); }
+
+/* ---- Model Performance grid ---- */
+.model-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+.model-card {
+  background: var(--glass-bg-soft);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color .2s var(--ease), transform .2s var(--ease);
+}
+.model-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+.model-card-name {
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.4px;
+}
+.model-card-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--secondary);
+}
+.model-card-metrics b { color: var(--text); font-size: 13px; display: block; }
+.model-card-empty { grid-column: 1 / -1; opacity: 0.5; padding: 24px; text-align: center; }
+
+/* ---- Objective comparison ---- */
+.objective-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.objective-card {
+  background: var(--glass-bg-soft);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 16px;
+  transition: border-color .2s var(--ease), transform .2s var(--ease);
+}
+.objective-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+.objective-card-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 1.2px;
+  color: var(--secondary);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: block;
+}
+.objective-card-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--secondary);
+}
+.objective-card-metrics b { color: var(--text); font-size: 15px; display: block; }
+.objective-chart-card { min-height: 280px; }
+.objective-chart-card canvas { max-height: 230px; }
+.objective-card-empty { grid-column: 1 / -1; opacity: 0.5; padding: 24px; text-align: center; }
+
+/* ---- Timeline ---- */
+.timeline-trend-card { min-height: 260px; margin-bottom: 16px; }
+.timeline-trend-card canvas { max-height: 210px; }
+.timeline-launches {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 520px;
+  overflow-y: auto;
+}
+.timeline-year-group {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: var(--primary);
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--glass-border);
+}
+.timeline-year-group:first-child { margin-top: 0; border-top: none; padding-top: 0; }
+.timeline-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--glass-bg-soft);
+  border: 1px solid var(--glass-border);
+  border-left: 3px solid var(--primary);
+  border-radius: 5px;
+  transition: transform .2s var(--ease);
+}
+.timeline-item:hover { transform: translateX(2px); }
+.timeline-item-main { display: flex; flex-direction: column; gap: 2px; }
+.timeline-item-name { font-weight: 600; font-size: 14px; }
+.timeline-item-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--secondary);
+}
+.timeline-item-stats {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--secondary);
+  text-align: right;
+  white-space: nowrap;
+}
+.timeline-item-stats b { color: var(--text); }
+.timeline-empty { opacity: 0.5; text-align: center; padding: 24px; }
+
+/* ---- Responsive ---- */
+@media (max-width: 980px) {
+  .history-kpi-grid { grid-template-columns: repeat(3, 1fr); }
+  .tab-nav { padding: 0 20px; }
+}
+@media (max-width: 560px) {
+  .history-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .timeline-item { flex-direction: column; align-items: flex-start; }
+  .timeline-item-stats { text-align: left; }
+}
+
+@media print {
+  .tab-nav { display: none !important; }
+  .tab-panel { display: block !important; }
+}
