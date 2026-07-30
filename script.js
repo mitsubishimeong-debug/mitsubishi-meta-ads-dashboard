@@ -31,6 +31,16 @@
 //     etc.), so nothing here can throw or break Overview/Historical
 //     if a given container hasn't been added to the page yet
 //
+// v7.1 CHANGE (this update, budget pacing only — everything else
+// in this file is byte-for-byte identical to the previous version):
+//   - dashboard.json's ranges.<range>.budget was replaced upstream
+//     by ranges.<range>.budgetPacing = { active_campaigns,
+//     allocated_daily_budget }. Backend/JSON structure is NOT
+//     touched here — only the two spots below that read it:
+//     1) the render() call site (Overview module)
+//     2) the renderBudget() function itself (Budget Pacing section)
+//   See the "CHANGED" comments at both spots for the exact diff.
+//
 // The file is still one flat script (no bundler/module system in
 // this project), so "modules" below are organized as clearly
 // commented sections — Utilities / Overview / Historical / AI /
@@ -186,8 +196,10 @@ function render() {
   renderDelta("deltaCpm", rangeData.cpmChangeYesterday, true);
   renderDelta("deltaCostMsg", rangeData.costPerMessageChangeYesterday, true);
 
-  // Budget pacing
-  renderBudget(rangeData.budget);
+  // CHANGED (v7.1): was `renderBudget(rangeData.budget)`.
+  // dashboard.json now provides ranges.<range>.budgetPacing instead
+  // of ranges.<range>.budget — same call site, new field name only.
+  renderBudget(rangeData.budgetPacing);
 
   // Funnel
   renderFunnel(rangeData.funnel);
@@ -291,23 +303,36 @@ function renderDelta(id, value, invert = false) {
 }
 
 // ---------------- BUDGET PACING ----------------
-
-function renderBudget(budget) {
+// CHANGED (v7.1): this function used to take `budget` shaped as
+// { spent, daily } and render a filled progress bar + "spent / daily"
+// readout. dashboard.json now provides `budgetPacing` shaped as
+// { active_campaigns, allocated_daily_budget } instead — there is no
+// "spent" figure anymore, so the fill bar has nothing to measure a
+// percentage against and is simply kept at 0% (element left in place,
+// layout untouched). The readout now shows:
+//   "<active_campaigns> Active Campaigns • <allocated_daily_budget> Daily Budget"
+// Field names (active_campaigns / allocated_daily_budget) are read
+// exactly as n8n writes them — not renamed on the frontend.
+function renderBudget(budgetPacing) {
   const fill = getEl("budgetFill");
-  if (!budget || typeof budget !== "object") {
+
+  if (!budgetPacing || typeof budgetPacing !== "object") {
     if (fill) fill.style.width = "0%";
     setText("budgetReadout", "—");
     return;
   }
-  const spent = Number(budget.spent) || 0;
-  const daily = Number(budget.daily) || 0;
-  const pct = daily > 0 ? Math.min(100, (spent / daily) * 100) : 0;
-  if (fill) fill.style.width = `${pct}%`;
+
+  const activeCampaigns = Number(budgetPacing.active_campaigns) || 0;
+  const allocatedDailyBudget = Number(budgetPacing.allocated_daily_budget) || 0;
+
+  // No "spent vs daily" ratio exists in this schema anymore, so the
+  // bar no longer represents a percentage — left at 0% rather than
+  // removed, so the surrounding layout/markup is untouched.
+  if (fill) fill.style.width = "0%";
+
   setText(
     "budgetReadout",
-    daily > 0
-      ? `${formatCurrency(spent)} / ${formatCurrency(daily)} (${pct.toFixed(0)}%)`
-      : "—"
+    `${formatNumber(activeCampaigns)} Active Campaign${activeCampaigns === 1 ? "" : "s"} • ${formatCurrency(allocatedDailyBudget)} Daily Budget`
   );
 }
 
