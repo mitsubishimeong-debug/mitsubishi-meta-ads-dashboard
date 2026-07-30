@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-30T04:47:33.881Z",
+  "generatedAt": "2026-07-30T16:31:50.276Z",
   "years": [
     "2023",
     "2024",
@@ -22,7 +22,7 @@
       "objective": "MESSAGES",
       "year": 2023,
       "start_date": "2023-08-07",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 1502.16,
       "impressions": 7291,
       "reach": 5974,
@@ -38,7 +38,7 @@
       "comments": 5,
       "shares": 2,
       "cost_per_message": 83.45,
-      "days_running": 1088
+      "days_running": 1089
     },
     {
       "campaign_id": "23857351829530624",
@@ -46,7 +46,7 @@
       "objective": "OUTCOME_LEADS",
       "year": 2023,
       "start_date": "2023-08-23",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 1669.49,
       "impressions": 20860,
       "reach": 18092,
@@ -62,7 +62,7 @@
       "comments": 5,
       "shares": 0,
       "cost_per_message": 32.11,
-      "days_running": 1072
+      "days_running": 1073
     },
     {
       "campaign_id": "23857426380240624",
@@ -70,7 +70,7 @@
       "objective": "OUTCOME_SALES",
       "year": 2023,
       "start_date": "2023-08-26",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 574.21,
       "impressions": 4835,
       "reach": 4674,
@@ -86,7 +86,7 @@
       "comments": 5,
       "shares": 0,
       "cost_per_message": 18.52,
-      "days_running": 1069
+      "days_running": 1070
     },
     {
       "campaign_id": "23857439009000624",
@@ -94,7 +94,7 @@
       "objective": "OUTCOME_SALES",
       "year": 2023,
       "start_date": "2023-08-26",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 230.51,
       "impressions": 4927,
       "reach": 4704,
@@ -110,7 +110,7 @@
       "comments": 1,
       "shares": 0,
       "cost_per_message": 0,
-      "days_running": 1069
+      "days_running": 1070
     },
     {
       "campaign_id": "23857563128750624",
@@ -118,7 +118,7 @@
       "objective": "OUTCOME_SALES",
       "year": 2023,
       "start_date": "2023-08-31",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 5406.91,
       "impressions": 30096,
       "reach": 19729,
@@ -134,7 +134,7 @@
       "comments": 11,
       "shares": 0,
       "cost_per_message": 40.96,
-      "days_running": 1064
+      "days_running": 1065
     },
     {
       "campaign_id": "23857753509950624",
@@ -142,7 +142,7 @@
       "objective": "OUTCOME_SALES",
       "year": 2023,
       "start_date": "2023-09-04",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 616.12,
       "impressions": 6054,
       "reach": 4150,
@@ -158,7 +158,7 @@
       "comments": 1,
       "shares": 0,
       "cost_per_message": 88.02,
-      "days_running": 1060
+      "days_running": 1061
     },
     {
       "campaign_id": "23858032499560624",
@@ -166,7 +166,7 @@
       "objective": "OUTCOME_ENGAGEMENT",
       "year": 2023,
       "start_date": "2023-09-08",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 337.82,
       "impressions": 1572,
       "reach": 1318,
@@ -182,7 +182,7 @@
       "comments": 0,
       "shares": 0,
       "cost_per_message": 168.91,
-      "days_running": 1056
+      "days_running": 1057
     },
     {
       "campaign_id": "23858103757290624",
@@ -190,7 +190,7 @@
       "objective": "LINK_CLICKS",
       "year": 2023,
       "start_date": "2023-09-10",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 5.44,
       "impressions": 136,
       "reach": 136,
@@ -206,7 +206,7 @@
       "comments": 0,
       "shares": 0,
       "cost_per_message": 0,
-      "days_running": 1054
+      "days_running": 1055
     },
     {
       "campaign_id": "23858109868470624",
@@ -214,7 +214,7 @@
       "objective": "LINK_CLICKS",
       "year": 2023,
       "start_date": "2023-09-10",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 185.98,
       "impressions": 6355,
       "reach": 4357,
@@ -230,7 +230,7 @@
       "comments": 0,
       "shares": 0,
       "cost_per_message": 0,
-      "days_running": 1054
+      "days_running": 1055
     },
     {
       "campaign_id": "23861211277090624",
@@ -238,7 +238,7 @@
       "objective": "OUTCOME_ENGAGEMENT",
       "year": 2023,
       "start_date": "2023-10-06",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 2826.66,
       "impressions": 26142,
       "reach": 20454,
@@ -254,7 +254,7 @@
       "comments": 1,
       "shares": 0,
       "cost_per_message": 41.57,
-      "days_running": 1028
+      "days_running": 1029
     },
     {
       "campaign_id": "23862246993770624",
@@ -262,7 +262,7 @@
       "objective": "OUTCOME_ENGAGEMENT",
       "year": 2023,
       "start_date": "2023-10-24",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 9909.58,
       "impressions": 74416,
       "reach": 57913,
@@ -278,7 +278,7 @@
       "comments": 32,
       "shares": 6,
       "cost_per_message": 31.56,
-      "days_running": 1010
+      "days_running": 1011
     },
     {
       "campaign_id": "23862248470450624",
@@ -286,7 +286,7 @@
       "objective": "OUTCOME_SALES",
       "year": 2023,
       "start_date": "2023-10-24",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 349.31,
       "impressions": 1888,
       "reach": 1673,
@@ -302,7 +302,7 @@
       "comments": 0,
       "shares": 0,
       "cost_per_message": 69.86,
-      "days_running": 1010
+      "days_running": 1011
     },
     {
       "campaign_id": "120203259975280625",
@@ -310,7 +310,7 @@
       "objective": "OUTCOME_ENGAGEMENT",
       "year": 2024,
       "start_date": "2024-01-02",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 826.89,
       "impressions": 4177,
       "reach": 3085,
@@ -326,7 +326,7 @@
       "comments": 4,
       "shares": 0,
       "cost_per_message": 51.68,
-      "days_running": 940
+      "days_running": 941
     },
     {
       "campaign_id": "120203261263080625",
@@ -334,7 +334,7 @@
       "objective": "OUTCOME_ENGAGEMENT",
       "year": 2024,
       "start_date": "2024-01-02",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 810.08,
       "impressions": 4305,
       "reach": 3299,
@@ -350,7 +350,7 @@
       "comments": 0,
       "shares": 0,
       "cost_per_message": 50.63,
-      "days_running": 940
+      "days_running": 941
     },
     {
       "campaign_id": "120203261348770625",
@@ -358,7 +358,7 @@
       "objective": "OUTCOME_ENGAGEMENT",
       "year": 2024,
       "start_date": "2024-01-02",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 824.12,
       "impressions": 6545,
       "reach": 4588,
@@ -374,7 +374,7 @@
       "comments": 1,
       "shares": 2,
       "cost_per_message": 39.24,
-      "days_running": 940
+      "days_running": 941
     },
     {
       "campaign_id": "120203475385800625",
@@ -382,7 +382,7 @@
       "objective": "OUTCOME_ENGAGEMENT",
       "year": 2024,
       "start_date": "2024-01-10",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 2171.68,
       "impressions": 7333,
       "reach": 5876,
@@ -398,7 +398,7 @@
       "comments": 1,
       "shares": 2,
       "cost_per_message": 77.56,
-      "days_running": 932
+      "days_running": 933
     },
     {
       "campaign_id": "120204852206380625",
@@ -406,7 +406,7 @@
       "objective": "OUTCOME_ENGAGEMENT",
       "year": 2024,
       "start_date": "2024-02-12",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 8600.58,
       "impressions": 47183,
       "reach": 34772,
@@ -422,7 +422,7 @@
       "comments": 31,
       "shares": 1,
       "cost_per_message": 32.33,
-      "days_running": 899
+      "days_running": 900
     },
     {
       "campaign_id": "120207060504890625",
@@ -430,7 +430,7 @@
       "objective": "OUTCOME_ENGAGEMENT",
       "year": 2024,
       "start_date": "2024-04-12",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 570.43,
       "impressions": 2014,
       "reach": 1857,
@@ -446,7 +446,7 @@
       "comments": 2,
       "shares": 0,
       "cost_per_message": 95.07,
-      "days_running": 839
+      "days_running": 840
     },
     {
       "campaign_id": "120207083920400625",
@@ -454,7 +454,7 @@
       "objective": "OUTCOME_ENGAGEMENT",
       "year": 2024,
       "start_date": "2024-04-13",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 43.09,
       "impressions": 289,
       "reach": 288,
@@ -470,7 +470,7 @@
       "comments": 0,
       "shares": 0,
       "cost_per_message": 0,
-      "days_running": 838
+      "days_running": 839
     },
     {
       "campaign_id": "120207133008070625",
@@ -478,7 +478,7 @@
       "objective": "OUTCOME_ENGAGEMENT",
       "year": 2024,
       "start_date": "2024-04-15",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 206.97,
       "impressions": 1217,
       "reach": 1095,
@@ -494,7 +494,7 @@
       "comments": 2,
       "shares": 0,
       "cost_per_message": 103.48,
-      "days_running": 836
+      "days_running": 837
     },
     {
       "campaign_id": "120207250462180625",
@@ -502,7 +502,7 @@
       "objective": "OUTCOME_ENGAGEMENT",
       "year": 2024,
       "start_date": "2024-04-18",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 2080.79,
       "impressions": 10433,
       "reach": 6909,
@@ -518,7 +518,7 @@
       "comments": 3,
       "shares": 2,
       "cost_per_message": 138.72,
-      "days_running": 833
+      "days_running": 834
     },
     {
       "campaign_id": "120207681121440625",
@@ -526,7 +526,7 @@
       "objective": "OUTCOME_ENGAGEMENT",
       "year": 2024,
       "start_date": "2024-05-03",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 2083.94,
       "impressions": 7321,
       "reach": 5237,
@@ -542,7 +542,7 @@
       "comments": 1,
       "shares": 1,
       "cost_per_message": 83.36,
-      "days_running": 818
+      "days_running": 819
     },
     {
       "campaign_id": "120207850114780625",
@@ -550,7 +550,7 @@
       "objective": "OUTCOME_ENGAGEMENT",
       "year": 2024,
       "start_date": "2024-05-09",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 503.12,
       "impressions": 1816,
       "reach": 1345,
@@ -566,7 +566,7 @@
       "comments": 0,
       "shares": 0,
       "cost_per_message": 167.71,
-      "days_running": 812
+      "days_running": 813
     },
     {
       "campaign_id": "120208096917160625",
@@ -574,7 +574,7 @@
       "objective": "OUTCOME_ENGAGEMENT",
       "year": 2024,
       "start_date": "2024-05-15",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 6419.01,
       "impressions": 29770,
       "reach": 19311,
@@ -590,7 +590,7 @@
       "comments": 46,
       "shares": 4,
       "cost_per_message": 46.51,
-      "days_running": 806
+      "days_running": 807
     },
     {
       "campaign_id": "120235091606570625",
@@ -598,7 +598,7 @@
       "objective": "OUTCOME_ENGAGEMENT",
       "year": 2025,
       "start_date": "2025-12-02",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 2881.37,
       "impressions": 8348,
       "reach": 5822,
@@ -614,7 +614,7 @@
       "comments": 3,
       "shares": 5,
       "cost_per_message": 99.36,
-      "days_running": 240
+      "days_running": 241
     },
     {
       "campaign_id": "120235750840330625",
@@ -622,7 +622,7 @@
       "objective": "OUTCOME_ENGAGEMENT",
       "year": 2025,
       "start_date": "2025-12-12",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 690.15,
       "impressions": 2346,
       "reach": 1751,
@@ -638,7 +638,7 @@
       "comments": 0,
       "shares": 0,
       "cost_per_message": 69.02,
-      "days_running": 230
+      "days_running": 231
     },
     {
       "campaign_id": "120236757397740625",
@@ -646,7 +646,7 @@
       "objective": "OUTCOME_ENGAGEMENT",
       "year": 2026,
       "start_date": "2026-01-05",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 5240.2,
       "impressions": 77230,
       "reach": 61456,
@@ -662,7 +662,7 @@
       "comments": 22,
       "shares": 9,
       "cost_per_message": 38.53,
-      "days_running": 206
+      "days_running": 207
     },
     {
       "campaign_id": "120238537164710625",
@@ -670,7 +670,7 @@
       "objective": "OUTCOME_ENGAGEMENT",
       "year": 2026,
       "start_date": "2026-02-16",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 2706.35,
       "impressions": 30299,
       "reach": 21185,
@@ -686,7 +686,7 @@
       "comments": 1,
       "shares": 3,
       "cost_per_message": 29.1,
-      "days_running": 164
+      "days_running": 165
     },
     {
       "campaign_id": "120239386551120625",
@@ -694,7 +694,7 @@
       "objective": "OUTCOME_ENGAGEMENT",
       "year": 2026,
       "start_date": "2026-03-05",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 1390.35,
       "impressions": 11245,
       "reach": 7846,
@@ -710,7 +710,7 @@
       "comments": 0,
       "shares": 1,
       "cost_per_message": 106.95,
-      "days_running": 147
+      "days_running": 148
     },
     {
       "campaign_id": "120239624983550625",
@@ -718,7 +718,7 @@
       "objective": "OUTCOME_ENGAGEMENT",
       "year": 2026,
       "start_date": "2026-03-10",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 879.41,
       "impressions": 5986,
       "reach": 5324,
@@ -734,7 +734,7 @@
       "comments": 0,
       "shares": 2,
       "cost_per_message": 219.85,
-      "days_running": 142
+      "days_running": 143
     },
     {
       "campaign_id": "120239764500170625",
@@ -742,7 +742,7 @@
       "objective": "OUTCOME_ENGAGEMENT",
       "year": 2026,
       "start_date": "2026-03-13",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 381.14,
       "impressions": 1916,
       "reach": 1796,
@@ -758,7 +758,7 @@
       "comments": 0,
       "shares": 0,
       "cost_per_message": 381.14,
-      "days_running": 139
+      "days_running": 140
     },
     {
       "campaign_id": "120239782974510625",
@@ -766,7 +766,7 @@
       "objective": "MESSAGES",
       "year": 2026,
       "start_date": "2026-03-13",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 1095.14,
       "impressions": 7865,
       "reach": 7207,
@@ -782,7 +782,7 @@
       "comments": 1,
       "shares": 0,
       "cost_per_message": 182.52,
-      "days_running": 139
+      "days_running": 140
     },
     {
       "campaign_id": "120239962771950625",
@@ -790,7 +790,7 @@
       "objective": "MESSAGES",
       "year": 2026,
       "start_date": "2026-03-17",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 2082.04,
       "impressions": 10578,
       "reach": 8022,
@@ -806,7 +806,7 @@
       "comments": 1,
       "shares": 0,
       "cost_per_message": 99.14,
-      "days_running": 135
+      "days_running": 136
     },
     {
       "campaign_id": "120240279808240625",
@@ -814,7 +814,7 @@
       "objective": "OUTCOME_SALES",
       "year": 2026,
       "start_date": "2026-03-23",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 3993.38,
       "impressions": 104467,
       "reach": 68170,
@@ -830,7 +830,7 @@
       "comments": 57,
       "shares": 23,
       "cost_per_message": 17.14,
-      "days_running": 129
+      "days_running": 130
     },
     {
       "campaign_id": "120241513140840625",
@@ -838,7 +838,7 @@
       "objective": "OUTCOME_SALES",
       "year": 2026,
       "start_date": "2026-04-13",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 892.8,
       "impressions": 31497,
       "reach": 27994,
@@ -854,7 +854,7 @@
       "comments": 11,
       "shares": 11,
       "cost_per_message": 16.85,
-      "days_running": 108
+      "days_running": 109
     },
     {
       "campaign_id": "120241942397190625",
@@ -862,7 +862,7 @@
       "objective": "OUTCOME_LEADS",
       "year": 2026,
       "start_date": "2026-04-20",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 892.75,
       "impressions": 12146,
       "reach": 7887,
@@ -878,7 +878,7 @@
       "comments": 1,
       "shares": 0,
       "cost_per_message": 55.8,
-      "days_running": 101
+      "days_running": 102
     },
     {
       "campaign_id": "120242858463840625",
@@ -886,7 +886,7 @@
       "objective": "OUTCOME_SALES",
       "year": 2026,
       "start_date": "2026-05-04",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 121,
       "impressions": 1252,
       "reach": 1180,
@@ -902,7 +902,7 @@
       "comments": 0,
       "shares": 1,
       "cost_per_message": 60.5,
-      "days_running": 87
+      "days_running": 88
     },
     {
       "campaign_id": "120242887469020625",
@@ -910,7 +910,7 @@
       "objective": "OUTCOME_SALES",
       "year": 2026,
       "start_date": "2026-05-05",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 2645.76,
       "impressions": 28683,
       "reach": 21146,
@@ -926,7 +926,7 @@
       "comments": 6,
       "shares": 10,
       "cost_per_message": 32.27,
-      "days_running": 86
+      "days_running": 87
     },
     {
       "campaign_id": "120245682934990625",
@@ -934,7 +934,7 @@
       "objective": "OUTCOME_LEADS",
       "year": 2026,
       "start_date": "2026-06-08",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 2678.57,
       "impressions": 21732,
       "reach": 14937,
@@ -950,7 +950,7 @@
       "comments": 0,
       "shares": 3,
       "cost_per_message": 167.41,
-      "days_running": 52
+      "days_running": 53
     },
     {
       "campaign_id": "120247367057580625",
@@ -958,7 +958,7 @@
       "objective": "OUTCOME_SALES",
       "year": 2026,
       "start_date": "2026-07-02",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 1396.45,
       "impressions": 3925,
       "reach": 2730,
@@ -974,7 +974,7 @@
       "comments": 1,
       "shares": 4,
       "cost_per_message": 93.1,
-      "days_running": 28
+      "days_running": 29
     },
     {
       "campaign_id": "120247751573080625",
@@ -982,7 +982,7 @@
       "objective": "OUTCOME_SALES",
       "year": 2026,
       "start_date": "2026-07-15",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 423.65,
       "impressions": 1488,
       "reach": 1173,
@@ -998,7 +998,7 @@
       "comments": 0,
       "shares": 2,
       "cost_per_message": 141.22,
-      "days_running": 15
+      "days_running": 16
     },
     {
       "campaign_id": "120247833797450625",
@@ -1006,7 +1006,7 @@
       "objective": "OUTCOME_LEADS",
       "year": 2026,
       "start_date": "2026-07-17",
-      "end_date": "2026-07-29",
+      "end_date": "2026-07-30",
       "spend": 921.94,
       "impressions": 2128,
       "reach": 1684,
@@ -1022,7 +1022,7 @@
       "comments": 2,
       "shares": 1,
       "cost_per_message": 92.19,
-      "days_running": 13
+      "days_running": 14
     }
   ],
   "dailyPerformance": [
