@@ -1,18 +1,42 @@
 // ============================================================
-// Mitsubishi Meta Ads AI Dashboard — script.js (v4 Professional)
+// Mitsubishi Meta Ads AI Dashboard — script.js (v7 Enterprise)
 // Reads everything from dashboard.json (auto-detects whether it
 // lives beside index.html or inside a /data folder).
 // n8n only ever needs to overwrite that file — no HTML/CSS
 // changes required to reflect new numbers or new date ranges.
 //
-// v4 additions (script.js only — schema, IDs, and n8n workflow
-// are all unchanged):
-//   - single-request path resolution (no throwaway probe fetch)
-//   - auto-detects which ranges actually exist in ranges{} and
-//     disables/enables the Today/7 Days/30 Days buttons to match
-//   - animated KPI value transitions (not just the health gauge)
-//   - defensive against 100+ campaign rows (single DOM write,
-//     no per-row layout thrash)
+// v7 additions on top of v4/v5/v6 (script.js only — schema, IDs,
+// HTML structure, and CSS are all unchanged; every v4/v5/v6
+// function below is left in place and still does exactly what it
+// did before):
+//   - DOM element cache (getEl) to cut down repeated
+//     getElementById lookups on every 60s render pass
+//   - AI Health Score: a transparent, client-computed 0-100 score
+//     derived from CTR / CPM / Cost-per-Message / Messages / Clicks
+//     for the CURRENT overview range, with an Excellent / Good /
+//     Needs Attention / Critical label and its own animated gauge
+//   - Full rendering of reports/ai-analysis.json: adds metrics,
+//     best_campaigns and worst_campaigns on top of the v6
+//     executive_summary / winning_ads / creative_insights /
+//     historical_insights / recommendations rendering — nothing
+//     from that file is left un-rendered, nothing is hardcoded
+//   - Additional Chart.js visuals: Historical CTR trend, Historical
+//     Cost-per-Message trend, Monthly Performance trend, a Campaign
+//     Ranking bar chart, and a Model Performance bar chart — all
+//     built on the existing upsertChart() helper, so a canvas is
+//     always destroyed before it's rebuilt and nothing ever stacks
+//   - Every new render function is defensive: if the HTML doesn't
+//     have the target id yet, the function is a silent no-op
+//     (same pattern the v4 code already used for setText/animateKpi
+//     etc.), so nothing here can throw or break Overview/Historical
+//     if a given container hasn't been added to the page yet
+//
+// The file is still one flat script (no bundler/module system in
+// this project), so "modules" below are organized as clearly
+// commented sections — Utilities / Overview / Historical / AI /
+// Charts / Table / Timeline — rather than separate files. Function
+// names are unchanged from v4/v5/v6 so nothing that already
+// references them (event listeners, other functions) breaks.
 // ============================================================
 
 const REFRESH_INTERVAL_MS = 60000; // poll every 60s for n8n updates
@@ -38,6 +62,27 @@ let sortState = { key: "spend", dir: "desc" };
 let resolvedDataUrl = null; // cached once we know where dashboard.json lives
 let prevKpiValues = {}; // last rendered numeric value per KPI id, for count-up animation
 let rafHandles = {}; // in-flight animation frames per element id, so re-renders don't stack
+
+// ============================================================
+// ===================== UTILITIES MODULE ====================
+// Shared helpers used by every other module below: DOM element
+// caching, safe text/number setting, formatting, and escaping.
+// ============================================================
+
+// Simple memoized getElementById. The dashboard's HTML is static
+// (no ids are added/removed at runtime), so it's safe to look an
+// id up once and reuse the reference on every subsequent 60s
+// render pass instead of re-querying the DOM each time. A miss
+// (element not present in this build of the HTML) is cached too,
+// as `null`, so repeated lookups for an id that doesn't exist stay
+// O(1) instead of re-scanning the DOM tree every render.
+function getEl(id) {
+  if (!(id in domCache)) {
+    domCache[id] = document.getElementById(id);
+  }
+  return domCache[id];
+}
+const domCache = {};
 
 // ---------------- PATH DETECTION + LOAD ----------------
 
@@ -93,7 +138,7 @@ async function loadDashboard() {
 }
 
 function setStatus(isLive) {
-  const pill = document.getElementById("liveStatus");
+  const pill = getEl("liveStatus");
   if (!pill) return;
   if (isLive) {
     pill.innerHTML = `<span class="dot"></span> LIVE`;
@@ -130,7 +175,13 @@ function applyRangeAvailability() {
   syncRangeButtons();
 }
 
-// ---------------- RENDER ----------------
+// ============================================================
+// ===================== OVERVIEW MODULE ======================
+// Renders dashboard.json for the currently selected range: KPI
+// cards, deltas, budget pacing, funnel, top performers, the
+// account-level recommendations/alerts lists, prediction, and the
+// three trend charts + campaigns table that belong to Overview.
+// ============================================================
 
 function render() {
   if (!currentData) return;
@@ -186,10 +237,15 @@ function render() {
 
   // Campaigns table
   renderCampaignsTable(rangeData.campaigns);
+
+  // v7 ADD: client-computed AI Health Score for the active range.
+  // Purely additive — no-ops safely if the optional gauge markup
+  // isn't present in this build of the HTML (see function below).
+  renderAIHealthScore(rangeData);
 }
 
 function setText(id, value) {
-  const el = document.getElementById(id);
+  const el = getEl(id);
   if (el) el.textContent = value ?? "—";
 }
 
@@ -201,7 +257,7 @@ function setText(id, value) {
 // drifts from the non-animated formatting rules. Non-numeric or
 // missing values skip the animation and just show "—" immediately.
 function animateKpi(id, rawValue, formatter) {
-  const el = document.getElementById(id);
+  const el = getEl(id);
   if (!el) return;
 
   const target = Number(rawValue);
@@ -235,7 +291,7 @@ function animateKpi(id, rawValue, formatter) {
 // ---------------- DELTAS ----------------
 
 function renderDelta(id, value, invert = false) {
-  const el = document.getElementById(id);
+  const el = getEl(id);
   if (!el) return;
   if (value === undefined || value === null || isNaN(Number(value))) {
     el.textContent = "—";
@@ -259,7 +315,7 @@ function renderDelta(id, value, invert = false) {
 // ---------------- BUDGET PACING ----------------
 
 function renderBudget(budget) {
-  const fill = document.getElementById("budgetFill");
+  const fill = getEl("budgetFill");
   if (!budget || typeof budget !== "object") {
     if (fill) fill.style.width = "0%";
     setText("budgetReadout", "—");
@@ -280,7 +336,7 @@ function renderBudget(budget) {
 // ---------------- FUNNEL ----------------
 
 function renderFunnel(funnel) {
-  const el = document.getElementById("funnelRow");
+  const el = getEl("funnelRow");
   if (!el) return;
 
   if (!funnel || typeof funnel !== "object") {
@@ -323,7 +379,7 @@ function renderFunnel(funnel) {
 // ---------------- RECOMMENDATIONS / ALERTS ----------------
 
 function renderReasonedList(containerId, items, type) {
-  const el = document.getElementById(containerId);
+  const el = getEl(containerId);
   if (!el) return;
 
   if (!Array.isArray(items) || items.length === 0) {
@@ -360,7 +416,7 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;");
 }
 
-// ---------------- GAUGE ----------------
+// ---------------- GAUGE (account health, server-computed) ----------------
 
 function animateGauge(rawScore) {
   const CIRCUMFERENCE = 251;
@@ -369,7 +425,7 @@ function animateGauge(rawScore) {
   const pct = Math.max(0, Math.min(100, safeScore)) / 100;
   const offset = CIRCUMFERENCE - CIRCUMFERENCE * pct;
 
-  const fill = document.getElementById("gaugeFill");
+  const fill = getEl("gaugeFill");
   if (fill) fill.style.strokeDashoffset = offset;
 
   let color = CHART_COLORS.green;
@@ -381,7 +437,7 @@ function animateGauge(rawScore) {
 }
 
 function animateNumber(id, target) {
-  const el = document.getElementById(id);
+  const el = getEl(id);
   if (!el) return;
   const safeTarget = isNaN(Number(target)) ? 0 : Number(target);
   const duration = 900;
@@ -394,6 +450,111 @@ function animateNumber(id, target) {
     if (progress < 1) requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
+}
+
+// ---------------- AI HEALTH SCORE (v7 addition, client-computed) ----------------
+// This is a SEPARATE, transparent score from currentData.accountHealth
+// above (which comes pre-computed from n8n/dashboard.json). This one
+// is computed here in the browser from five inputs — CTR, CPM, Cost
+// per Message, Messages, Clicks — for the currently selected Overview
+// range, exactly as requested. It's a weighted heuristic, not a
+// model prediction, so the math is kept simple and documented inline.
+//
+// Optional markup (all guarded — if any id is missing nothing breaks):
+//   #aiHealthScoreValue   — numeric 0-100 readout (animated count-up)
+//   #aiHealthScoreLabel   — "Excellent" / "Good" / "Needs Attention" / "Critical"
+//   #aiHealthGaugeFill    — an SVG <circle> stroke, same ring pattern as #gaugeFill
+// If your HTML doesn't have these ids yet, add a small ring + two
+// spans with these ids anywhere on the Overview tab and this section
+// will start rendering into them on the very next 60s refresh — no
+// other code changes required.
+function calculateAIHealthScore(rangeData) {
+  if (!rangeData || typeof rangeData !== "object") return 0;
+
+  const ctr = Number(rangeData.ctr) || 0; // percent, e.g. 2.4
+  const cpm = Number(rangeData.cpm) || 0; // currency
+  const costPerMessage = Number(rangeData.costPerMessage) || 0; // currency
+  const messages = Number(rangeData.messages) || 0;
+  const clicks = Number(rangeData.clicks) || 0;
+
+  // Each sub-score is normalized to 0-100 against a reasonable
+  // benchmark for Meta lead-gen/messaging campaigns, then clamped.
+  // CTR: 3%+ CTR scores full marks; 0% scores 0.
+  const ctrScore = clamp01(ctr / 3) * 100;
+
+  // CPM: lower is better. ₱300 CPM or below scores full marks;
+  // ₱900+ scores 0. (No CPM data at all is treated as neutral (50)
+  // rather than penalizing, since some accounts don't report it.)
+  const cpmScore = cpm > 0 ? clamp01(1 - (cpm - 300) / 600) * 100 : 50;
+
+  // Cost per message: lower is better. ₱50 or below is full marks;
+  // ₱250+ is 0.
+  const costScore = costPerMessage > 0 ? clamp01(1 - (costPerMessage - 50) / 200) * 100 : 50;
+
+  // Volume signals (messages, clicks) are scored on a log curve so
+  // a campaign doesn't need thousands of messages to score well —
+  // diminishing returns kick in the same way real performance
+  // reviews treat volume.
+  const messagesScore = clamp01(Math.log10(messages + 1) / Math.log10(201)) * 100; // 200 msgs ≈ full marks
+  const clicksScore = clamp01(Math.log10(clicks + 1) / Math.log10(2001)) * 100; // 2000 clicks ≈ full marks
+
+  // Weighted blend — CTR and cost-per-message are the strongest
+  // day-to-day signals of ad quality, so they carry the most weight.
+  const weighted =
+    ctrScore * 0.3 +
+    costScore * 0.3 +
+    cpmScore * 0.15 +
+    messagesScore * 0.15 +
+    clicksScore * 0.1;
+
+  return Math.max(0, Math.min(100, Math.round(weighted)));
+}
+
+function clamp01(n) {
+  if (isNaN(n)) return 0;
+  return Math.max(0, Math.min(1, n));
+}
+
+function getHealthScoreLabel(score) {
+  if (score >= 80) return "Excellent";
+  if (score >= 60) return "Good";
+  if (score >= 40) return "Needs Attention";
+  return "Critical";
+}
+
+function getHealthScoreColor(score) {
+  if (score >= 80) return CHART_COLORS.green;
+  if (score >= 60) return "#8BC34A";
+  if (score >= 40) return CHART_COLORS.amber;
+  return CHART_COLORS.primary;
+}
+
+function renderAIHealthScore(rangeData) {
+  const valueEl = getEl("aiHealthScoreValue");
+  const labelEl = getEl("aiHealthScoreLabel");
+  const fillEl = getEl("aiHealthGaugeFill");
+
+  // Nothing to render into — no-op, same defensive pattern as
+  // every other render*() function in this file.
+  if (!valueEl && !labelEl && !fillEl) return;
+
+  const score = calculateAIHealthScore(rangeData);
+  const color = getHealthScoreColor(score);
+
+  if (labelEl) {
+    labelEl.textContent = getHealthScoreLabel(score);
+    labelEl.style.color = color;
+  }
+
+  if (fillEl) {
+    const CIRCUMFERENCE = 251; // same ring geometry as the main #gaugeFill
+    const pct = score / 100;
+    const offset = CIRCUMFERENCE - CIRCUMFERENCE * pct;
+    fillEl.style.strokeDashoffset = offset;
+    fillEl.style.stroke = color;
+  }
+
+  if (valueEl) animateNumber("aiHealthScoreValue", score);
 }
 
 // ---------------- FORMATTERS ----------------
@@ -411,7 +572,14 @@ function formatPercent(n) {
   return `${Number(n).toFixed(2)}%`;
 }
 
-// ---------------- CHARTS ----------------
+// ============================================================
+// ====================== CHARTS MODULE ========================
+// Every Chart.js visual in the dashboard is built through
+// upsertChart(), which always destroys any previous chart on a
+// given canvas before creating a new one — so no range switch,
+// tab switch, or 60s refresh can ever leave stacked/duplicate
+// charts behind, no matter how many times render() runs.
+// ============================================================
 
 function baseLineOptions() {
   return {
@@ -498,9 +666,12 @@ function renderRankingChart(campaigns) {
 
 // Always destroys any previous chart on this canvas before creating
 // a new one, so ranges/updates never leave duplicate/stacked charts.
+// v7: also no-ops cleanly (and cheaply, via getEl's cached miss) if
+// the canvas id isn't present in this build of the HTML, which is
+// what lets the new v7 chart functions below be purely additive.
 function upsertChart(canvasId, type, data, options) {
   if (typeof Chart === "undefined") return;
-  const canvas = document.getElementById(canvasId);
+  const canvas = getEl(canvasId);
   if (!canvas) return;
 
   if (charts[canvasId]) {
@@ -511,13 +682,16 @@ function upsertChart(canvasId, type, data, options) {
   charts[canvasId] = new Chart(canvas.getContext("2d"), { type, data, options });
 }
 
-// ---------------- CAMPAIGNS TABLE ----------------
-
+// ============================================================
+// ===================== TABLE MODULE ==========================
 // Builds the whole tbody as one HTML string and writes it once —
-// keeps this fast even at 100+ campaign rows, since the browser
-// only has to do a single reflow instead of one per row.
+// keeps rendering fast even at 100+ rows, since the browser only
+// has to do a single reflow instead of one per row, for both the
+// Overview campaigns table and the Historical ranking table below.
+// ============================================================
+
 function renderCampaignsTable(campaigns) {
-  const tbody = document.getElementById("campaignsTableBody");
+  const tbody = getEl("campaignsTableBody");
   if (!tbody) return;
 
   const safeCampaigns = Array.isArray(campaigns) ? campaigns : [];
@@ -611,18 +785,18 @@ function initRangeSwitch() {
 // ---------------- EXPORT ----------------
 
 function initExport() {
-  const btn = document.getElementById("exportBtn");
+  const btn = getEl("exportBtn");
   if (!btn) return;
   btn.addEventListener("click", () => window.print());
 }
 
-// ---------------- INIT ----------------
+// ---------------- INIT (v4 Overview) ----------------
 
 initRangeSwitch();
 initTableSorting();
 initExport();
 loadDashboard();
-setInterval(loadDashboard, REFRESH_INTERVAL_MS);
+setInterval(loadDashboard, REFRESH_INTERVAL_MS); // v6 note: setInterval only — the page itself is never reloaded
 
 // ============================================================
 // V5 ADDITIONS — Historical Intelligence Platform
@@ -659,6 +833,14 @@ function detectModel(campaignName) {
   const match = MODEL_LIST.find((model) => name.includes(model.toLowerCase()));
   return match || "Other";
 }
+
+// ============================================================
+// ==================== HISTORICAL MODULE ======================
+// Everything below (until the AI MODULE section) reads only from
+// dashboard-history.json: path detection/load, processing into
+// processedCampaigns/dailyPerformance, and the Historical / Model
+// Performance / Objective Comparison / Timeline tab renderers.
+// ============================================================
 
 // ---------------- PATH DETECTION + LOAD (mirrors fetchDashboardData) ----------------
 
@@ -712,7 +894,15 @@ function loadDashboardData() {
   loadAIAnalysis(); // MODIFY: V6 — added third independent source
 }
 
-// ---------------- AI ANALYSIS LOAD (reports/ai-analysis.json) ----------------
+// ============================================================
+// ======================== AI MODULE ===========================
+// Renders reports/ai-analysis.json end-to-end: executive_summary,
+// metrics, best_campaigns, worst_campaigns, winning_ads,
+// creative_insights, historical_insights, and recommendations.
+// Entirely independent of dashboard.json and dashboard-history.json
+// — a failure here never affects Overview or the Historical/Model/
+// Objectives/Timeline tabs, and vice versa.
+// ============================================================
 // ADD: entirely new, independent pipeline — its own state, its own
 // fetch, its own availability flag. Never touches dashboard.json or
 // dashboard-history.json, and a failure here never affects Overview
@@ -747,7 +937,7 @@ async function loadAIAnalysis() {
 function setAIAvailability(isAvailable) {
   aiAvailable = isAvailable;
 
-  const emptyEl = document.getElementById("recommendationsEmptyState");
+  const emptyEl = getEl("recommendationsEmptyState");
   if (emptyEl) emptyEl.hidden = isAvailable;
 
   document
@@ -771,12 +961,12 @@ function setHistoryAvailability(isAvailable) {
 
   ["historicalEmptyState", "modelEmptyState", "objectivesEmptyState", "timelineEmptyState"]
     .forEach((id) => {
-      const el = document.getElementById(id);
+      const el = getEl(id);
       if (el) el.hidden = isAvailable;
     });
 
   ["historicalContent", "timelineContent"].forEach((id) => {
-    const el = document.getElementById(id);
+    const el = getEl(id);
     if (el) el.hidden = !isAvailable;
   });
 
@@ -921,7 +1111,7 @@ function generateRecommendations() {
 
 // ADD
 function renderExecutiveSummary() {
-  const el = document.getElementById("execSummary");
+  const el = getEl("execSummary");
   if (!el) return;
   const summary = aiData?.executive_summary;
   el.textContent = summary ? String(summary) : "—";
@@ -957,10 +1147,108 @@ function renderHistoricalAIInsights() {
   renderReasonedList("historicalInsightsList", items, "rec");
 }
 
+// v7 ADD — renders aiData.metrics (an object of top-level KPI
+// key/value pairs written by n8n, e.g. { avg_ctr: 2.4, total_spend:
+// 84210, ... }). Nothing here is hardcoded: whatever keys exist in
+// the object are turned into cards, in the order n8n wrote them, so
+// adding/removing a metric on the n8n side needs no script.js change.
+// Numeric-looking values are formatted as numbers; everything else
+// (already-formatted strings from n8n, like "2.4%") is shown as-is.
+// Container: #aiMetricsGrid (guarded — no-op if not present).
+function renderAIMetrics() {
+  const grid = getEl("aiMetricsGrid");
+  if (!grid) return;
+
+  const metrics = aiData?.metrics;
+  if (!metrics || typeof metrics !== "object" || Array.isArray(metrics) || Object.keys(metrics).length === 0) {
+    grid.innerHTML = `<div class="model-card-empty">No AI metrics available</div>`;
+    return;
+  }
+
+  const html = Object.entries(metrics)
+    .map(([key, rawValue]) => {
+      const label = labelizeKey(key);
+      const numeric = Number(rawValue);
+      const display = rawValue !== null && rawValue !== "" && !isNaN(numeric) && typeof rawValue !== "string"
+        ? formatNumber(numeric)
+        : escapeHtml(String(rawValue ?? "—"));
+      return `
+        <div class="model-card">
+          <span class="model-card-name">${escapeHtml(label)}</span>
+          <div class="model-card-metrics">
+            <span><b>${display}</b></span>
+          </div>
+        </div>`;
+    })
+    .join("");
+
+  grid.innerHTML = html;
+}
+
+// Turns a snake_case / camelCase JSON key into a readable label,
+// e.g. "avg_cost_per_message" -> "Avg Cost Per Message".
+function labelizeKey(key) {
+  return String(key)
+    .replace(/_/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/\b\w/g, (ch) => ch.toUpperCase());
+}
+
+// v7 ADD — renders aiData.best_campaigns and aiData.worst_campaigns.
+// Schema assumption (adjust once the real n8n output is confirmed):
+// each entry is an object such as { campaign_name, reason, spend,
+// messages, ctr, cost_per_message }. Falls back gracefully field by
+// field rather than crashing on a missing key.
+// Containers: #bestCampaignsList / #worstCampaignsList (guarded).
+function renderCampaignInsightCards(containerId, items) {
+  const el = getEl(containerId);
+  if (!el) return;
+
+  const list = Array.isArray(items) ? items.filter((i) => i) : [];
+  if (list.length === 0) {
+    el.innerHTML = `<li style="opacity:0.5;">No data available</li>`;
+    return;
+  }
+
+  const html = list
+    .map((c) => {
+      const name = c.campaign_name ?? c.name ?? "—";
+      const reason = c.reason ?? null;
+      const statLine = [
+        c.spend !== undefined ? formatCurrency(c.spend) + " spend" : null,
+        c.messages !== undefined ? formatNumber(c.messages) + " messages" : null,
+        c.ctr !== undefined ? formatPercent(c.ctr) + " CTR" : null,
+        c.cost_per_message !== undefined ? formatCurrency(c.cost_per_message) + "/msg" : null,
+      ].filter(Boolean).join(" · ");
+
+      return `
+        <li>
+          <div class="item-head">
+            <span class="item-title">${escapeHtml(name)}</span>
+          </div>
+          ${statLine ? `<span class="item-reason">${escapeHtml(statLine)}</span>` : ""}
+          ${reason ? `<span class="item-reason">${escapeHtml(reason)}</span>` : ""}
+        </li>`;
+    })
+    .join("");
+
+  el.innerHTML = html;
+}
+
+function renderBestWorstCampaigns() {
+  renderCampaignInsightCards("bestCampaignsList", aiData?.best_campaigns);
+  renderCampaignInsightCards("worstCampaignsList", aiData?.worst_campaigns);
+}
+
 // ADD — orchestrator for the whole Recommendations tab
+// v7 MODIFY: now also renders metrics and best/worst campaigns so
+// every field in reports/ai-analysis.json is displayed somewhere —
+// nothing from that file is left un-rendered.
 function renderAIAnalysis() {
   if (!aiAvailable) return;
   renderExecutiveSummary();
+  renderAIMetrics();
+  renderBestWorstCampaigns();
   generateRecommendations();
   renderWinningAds();
   renderCreativeInsights();
@@ -992,6 +1280,14 @@ function renderHistoricalOverview() {
   setText("histTotalCampaigns", formatNumber(agg.count));
 
   renderHighlights(filtered);
+
+  // v7 ADD: historical trend charts. Each is independently guarded
+  // (see CHARTS MODULE additions below) so a missing canvas id just
+  // means that one chart is skipped — everything else above still
+  // renders exactly as it did in v6.
+  renderHistoricalCtrChart();
+  renderHistoricalCostChart();
+  renderMonthlyTrendChart();
 }
 
 function renderHighlights(list) {
@@ -1023,7 +1319,7 @@ function renderHighlights(list) {
 // ---------------- RANKING TABLE ----------------
 
 function renderRankingTable() {
-  const tbody = document.getElementById("rankingTableBody");
+  const tbody = getEl("rankingTableBody");
   if (!tbody) return;
 
   const ranked = calculateCampaignRanking(currentYearFilter);
@@ -1031,6 +1327,7 @@ function renderRankingTable() {
   if (ranked.length === 0) {
     tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;opacity:0.5;">No campaign data for this period</td></tr>`;
     updateRankingSortHeaders();
+    renderCampaignRankingChart([]);
     return;
   }
 
@@ -1063,6 +1360,9 @@ function renderRankingTable() {
     .join("");
 
   updateRankingSortHeaders();
+
+  // v7 ADD: bar chart mirror of this table (top 12 by rank), guarded.
+  renderCampaignRankingChart(ranked);
 }
 
 function updateRankingSortHeaders() {
@@ -1094,27 +1394,28 @@ function renderTables() {
 // ---------------- MODEL PERFORMANCE RENDER ----------------
 
 function renderModelPerformance() {
-  const grid = document.getElementById("modelGrid");
-  if (!grid) return;
-
+  const grid = getEl("modelGrid");
   const models = calculateModelPerformance(currentYearFilter);
-  if (models.length === 0) {
-    grid.innerHTML = `<div class="model-card-empty">No campaign data for this period</div>`;
-    return;
+
+  if (grid) {
+    grid.innerHTML = models.length === 0
+      ? `<div class="model-card-empty">No campaign data for this period</div>`
+      : models
+          .map((m) => `
+            <div class="model-card">
+              <span class="model-card-name">${escapeHtml(m.model)}</span>
+              <div class="model-card-metrics">
+                <span>Spend<b>${formatCurrency(m.spend)}</b></span>
+                <span>Messages<b>${formatNumber(m.messages)}</b></span>
+                <span>Cost/Msg<b>${formatCurrency(m.costPerMessage)}</b></span>
+                <span>CTR<b>${formatPercent(m.ctr)}</b></span>
+              </div>
+            </div>`)
+          .join("");
   }
 
-  grid.innerHTML = models
-    .map((m) => `
-      <div class="model-card">
-        <span class="model-card-name">${escapeHtml(m.model)}</span>
-        <div class="model-card-metrics">
-          <span>Spend<b>${formatCurrency(m.spend)}</b></span>
-          <span>Messages<b>${formatNumber(m.messages)}</b></span>
-          <span>Cost/Msg<b>${formatCurrency(m.costPerMessage)}</b></span>
-          <span>CTR<b>${formatPercent(m.ctr)}</b></span>
-        </div>
-      </div>`)
-    .join("");
+  // v7 ADD: bar chart mirror of the model cards, guarded.
+  renderModelPerformanceChart(models);
 }
 
 // ---------------- OBJECTIVE COMPARISON RENDER ----------------
@@ -1133,7 +1434,7 @@ function renderObjectiveChart(objectives) {
 
 function renderObjectiveComparison() {
   const objectives = calculateObjectiveComparison(currentYearFilter);
-  const grid = document.getElementById("objectiveGrid");
+  const grid = getEl("objectiveGrid");
 
   if (grid) {
     grid.innerHTML = objectives.length === 0
@@ -1153,6 +1454,204 @@ function renderObjectiveComparison() {
   }
 
   renderObjectiveChart(objectives);
+}
+
+// ============================================================
+// v7 ADD — ADDITIONAL HISTORICAL CHARTS
+// Historical CTR trend, Historical Cost-per-Message trend, Monthly
+// Performance trend, Campaign Ranking bar chart, and Model
+// Performance bar chart. All go through upsertChart() (destroy
+// before create) and all no-op safely if their canvas id isn't in
+// the current HTML — none of this can affect the charts that
+// already existed in v4/v5/v6 (spendChart, ctrChart, messagesChart,
+// rankingChart, objectiveChart), which are untouched above.
+//
+// Optional canvas ids used here (add to the Historical/Timeline
+// tab markup whenever convenient — nothing above depends on them
+// existing yet):
+//   #historicalCtrChart      — line: CTR over time, filtered by year
+//   #historicalCostChart     — line: cost-per-message over time
+//   #monthlyTrendChart       — bar: spend by month, filtered by year
+//   #campaignRankingChart    — bar: top 12 campaigns by performanceScore
+//   #modelPerformanceChart   — bar: spend by model
+// ============================================================
+
+// Historical CTR trend — reuses dailyPerformance rows (daily
+// granularity, same source as the existing Timeline "trend" view)
+// but plots CTR (clicks/impressions) instead of spend/messages.
+function renderHistoricalCtrChart() {
+  const canvas = getEl("historicalCtrChart");
+  if (!canvas) return;
+
+  const rows = getFilteredDailyRows(currentYearFilter);
+  const byDate = {};
+  rows.forEach((r) => {
+    const date = r.date_meta;
+    if (!date) return;
+    if (!byDate[date]) byDate[date] = { clicks: 0, impressions: 0 };
+    byDate[date].clicks += Number(r.clicks) || 0;
+    byDate[date].impressions += Number(r.impressions) || 0;
+  });
+
+  const sortedDates = Object.keys(byDate).sort();
+  const ctrValues = sortedDates.map((d) => {
+    const day = byDate[d];
+    return day.impressions > 0 ? (day.clicks / day.impressions) * 100 : 0;
+  });
+
+  upsertChart("historicalCtrChart", "line", {
+    labels: sortedDates,
+    datasets: [{
+      data: ctrValues,
+      borderColor: CHART_COLORS.green,
+      backgroundColor: "rgba(46,204,113,0.12)",
+      fill: true,
+      tension: 0.3,
+      pointRadius: 2,
+    }],
+  }, baseLineOptions());
+}
+
+// Historical Cost-per-Message trend — same daily rows, plots
+// spend/messages per day so cost efficiency over time is visible
+// at a glance next to the CTR trend above.
+function renderHistoricalCostChart() {
+  const canvas = getEl("historicalCostChart");
+  if (!canvas) return;
+
+  const rows = getFilteredDailyRows(currentYearFilter);
+  const byDate = {};
+  rows.forEach((r) => {
+    const date = r.date_meta;
+    if (!date) return;
+    if (!byDate[date]) byDate[date] = { spend: 0, messages: 0 };
+    byDate[date].spend += Number(r.spend) || 0;
+    byDate[date].messages += Number(r.messages) || 0;
+  });
+
+  const sortedDates = Object.keys(byDate).sort();
+  const costValues = sortedDates.map((d) => {
+    const day = byDate[d];
+    return day.messages > 0 ? day.spend / day.messages : 0;
+  });
+
+  upsertChart("historicalCostChart", "line", {
+    labels: sortedDates,
+    datasets: [{
+      data: costValues,
+      borderColor: CHART_COLORS.amber,
+      backgroundColor: "rgba(245,166,35,0.12)",
+      fill: true,
+      tension: 0.3,
+      pointRadius: 2,
+    }],
+  }, baseLineOptions());
+}
+
+// Monthly Performance trend — aggregates the same daily rows up to
+// month granularity (YYYY-MM) so long date ranges (multi-year) stay
+// readable instead of showing hundreds of daily points.
+function renderMonthlyTrendChart() {
+  const canvas = getEl("monthlyTrendChart");
+  if (!canvas) return;
+
+  const rows = getFilteredDailyRows(currentYearFilter);
+  const byMonth = {};
+  rows.forEach((r) => {
+    const date = r.date_meta;
+    if (!date) return;
+    const month = String(date).slice(0, 7); // YYYY-MM
+    if (!byMonth[month]) byMonth[month] = { spend: 0, messages: 0 };
+    byMonth[month].spend += Number(r.spend) || 0;
+    byMonth[month].messages += Number(r.messages) || 0;
+  });
+
+  const sortedMonths = Object.keys(byMonth).sort();
+  const spendValues = sortedMonths.map((m) => byMonth[m].spend);
+  const messagesValues = sortedMonths.map((m) => byMonth[m].messages);
+
+  upsertChart("monthlyTrendChart", "bar", {
+    labels: sortedMonths,
+    datasets: [
+      {
+        label: "Spend",
+        data: spendValues,
+        backgroundColor: CHART_COLORS.primary,
+        borderRadius: 3,
+        maxBarThickness: 24,
+        yAxisID: "y",
+      },
+      {
+        label: "Messages",
+        data: messagesValues,
+        backgroundColor: CHART_COLORS.green,
+        borderRadius: 3,
+        maxBarThickness: 24,
+        yAxisID: "y1",
+      },
+    ],
+  }, {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 650, easing: "easeOutCubic" },
+    plugins: { legend: { display: true, labels: { color: CHART_COLORS.text, font: { size: 10 } } } },
+    scales: {
+      x: { grid: { color: CHART_COLORS.grid }, ticks: { color: CHART_COLORS.text, font: { size: 10 } } },
+      y: { position: "left", grid: { color: CHART_COLORS.grid }, ticks: { color: CHART_COLORS.text, font: { size: 10 } } },
+      y1: { position: "right", grid: { display: false }, ticks: { color: CHART_COLORS.text, font: { size: 10 } } },
+    },
+  });
+}
+
+// Campaign Ranking chart — bar-chart mirror of the Historical
+// ranking table, capped at the top 12 by performanceScore so labels
+// stay legible even when there are 100+ campaigns in the period.
+function renderCampaignRankingChart(ranked) {
+  const canvas = getEl("campaignRankingChart");
+  if (!canvas) return;
+
+  const top = [...(Array.isArray(ranked) ? ranked : [])]
+    .sort((a, b) => (b.performanceScore || 0) - (a.performanceScore || 0))
+    .slice(0, 12);
+
+  upsertChart("campaignRankingChart", "bar", {
+    labels: top.map((c) => c.campaign_name ?? "—"),
+    datasets: [{
+      data: top.map((c) => Math.round(c.performanceScore) || 0),
+      backgroundColor: CHART_COLORS.primary,
+      borderRadius: 3,
+      maxBarThickness: 22,
+    }],
+  }, {
+    indexAxis: "y",
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 650, easing: "easeOutCubic" },
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: CHART_COLORS.grid }, ticks: { color: CHART_COLORS.text, font: { size: 10 } } },
+      y: { grid: { display: false }, ticks: { color: CHART_COLORS.text, font: { size: 10 } } },
+    },
+  });
+}
+
+// Model Performance chart — bar-chart mirror of the Model
+// Performance cards, plotting spend per model.
+function renderModelPerformanceChart(models) {
+  const canvas = getEl("modelPerformanceChart");
+  if (!canvas) return;
+
+  const safeModels = Array.isArray(models) ? models : [];
+
+  upsertChart("modelPerformanceChart", "bar", {
+    labels: safeModels.map((m) => m.model),
+    datasets: [{
+      data: safeModels.map((m) => m.spend),
+      backgroundColor: CHART_COLORS.green,
+      borderRadius: 4,
+      maxBarThickness: 34,
+    }],
+  }, baseLineOptions());
 }
 
 // ---------------- TIMELINE RENDER ----------------
@@ -1186,7 +1685,7 @@ function renderTimelineTrendChart() {
 }
 
 function renderTimelineLaunches() {
-  const el = document.getElementById("timelineLaunches");
+  const el = getEl("timelineLaunches");
   if (!el) return;
 
   const list = getFilteredCampaigns(currentYearFilter);
@@ -1220,8 +1719,8 @@ function renderTimelineLaunches() {
 
 function renderTimeline() {
   const isTrend = currentTimelineView === "trend";
-  const trendCard = document.getElementById("timelineTrendCard");
-  const launchesCard = document.getElementById("timelineLaunchesCard");
+  const trendCard = getEl("timelineTrendCard");
+  const launchesCard = getEl("timelineLaunchesCard");
   if (trendCard) trendCard.hidden = !isTrend;
   if (launchesCard) launchesCard.hidden = isTrend;
 
@@ -1238,9 +1737,17 @@ function renderTimeline() {
 // need at the right moment (only once their tab is visible), so
 // this is provided for completeness / manual re-render, not wired
 // into the automatic load flow.
+// v7 MODIFY: now also re-renders the additional v7 charts, so a
+// manual call to renderCharts() refreshes everything Historical
+// owns, not just the original two.
 function renderCharts() {
   renderObjectiveChart(calculateObjectiveComparison(currentYearFilter));
   renderTimelineTrendChart();
+  renderHistoricalCtrChart();
+  renderHistoricalCostChart();
+  renderMonthlyTrendChart();
+  renderCampaignRankingChart(calculateCampaignRanking(currentYearFilter));
+  renderModelPerformanceChart(calculateModelPerformance(currentYearFilter));
 }
 
 // ---------------- MASTER RENDER ----------------
@@ -1328,5 +1835,5 @@ initRankingSort();
 initTimelineControls();
 loadHistoricalData();
 loadAIAnalysis(); // ADD
-setInterval(loadAIAnalysis, REFRESH_INTERVAL_MS); // ADD
-setInterval(loadHistoricalData, REFRESH_INTERVAL_MS);
+setInterval(loadAIAnalysis, REFRESH_INTERVAL_MS); // ADD — never reloads the page, only re-fetches JSON
+setInterval(loadHistoricalData, REFRESH_INTERVAL_MS); // never reloads the page, only re-fetches JSON
