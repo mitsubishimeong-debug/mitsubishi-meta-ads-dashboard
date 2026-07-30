@@ -211,27 +211,21 @@ function render() {
   renderFunnel(rangeData.funnel);
 
   // Top performers
-  // MODIFY: Top Campaign now always reads from ranges.today.bestCampaign
-  // (not the currently selected range) per backend contract.
-  // Top Ad now reads from the top-level currentData.topAd object
-  // ({ ad_name, campaign_name, ctr }) instead of per-range bestAd/bestAdCtr.
-  // Top Creative / Top Audience are static "Coming Soon" placeholders
-  // until the backend provides real data for them.
-  const topAd = (currentData && currentData.topAd) || {};
-  setText("topCampaignName", currentData?.ranges?.today?.bestCampaign ?? "—");
-  setText("topCampaignRec", rangeData.bestCampaignRecommendation ?? "—");
-  setText("topAdName", topAd.ad_name ?? "—");
-  setText("topAdCampaignName", topAd.campaign_name ?? "—"); // no-op if id not in HTML yet
-  setText("topAdCtr", formatPercent(topAd.ctr));
-  setText("topCreativeName", "Coming Soon");
-  setText("topAudienceName", "Coming Soon");
-  setText("topAudienceRange", "—");
+  // MODIFY: Overview "top performer" cards now read from the new
+  // top-level dashboard.json objects (topCampaign / topAd /
+  // topCreative / topAudience) instead of per-range fields, so no
+  // further script.js edits are needed once the backend populates
+  // these — renderTopPerformers() below is schema-complete for all
+  // documented fields on each object.
+  renderTopPerformers();
+
+  // Prediction — MODIFY: now sourced via renderPrediction() below,
+  // reading the full currentData.predictionTomorrow object rather
+  // than two one-off setText() calls, so any additional prediction
+  // fields the backend adds later render automatically too.
+  renderPrediction();
 
   // AI recommendations & alerts (account-level, not per range)
-  // MODIFY: read explicitly from dashboard.recommendations / dashboard.alerts
-  // (currentData IS the parsed dashboard.json). renderReasonedList already
-  // falls back to "No recommendations" / "No alerts" when the array is
-  // empty or missing, so no change needed there.
   renderReasonedList("recList", currentData?.recommendations, "rec");
   renderReasonedList("alertList", currentData?.alerts, "alert");
 
@@ -255,6 +249,69 @@ function render() {
 function setText(id, value) {
   const el = getEl(id);
   if (el) el.textContent = value ?? "—";
+}
+
+// ---------------- TOP PERFORMERS (v7.2 — new top-level schema) ----------------
+// Reads currentData.topCampaign / topAd / topCreative / topAudience,
+// each written by n8n as its own top-level object (not per-range).
+// Every documented field on each object is rendered here so the
+// cards fill in automatically as the backend populates fields —
+// no further script.js changes needed. All setText() calls are
+// safe no-ops if a given id isn't in the current HTML build yet.
+function renderTopPerformers() {
+const topCampaign = (currentData && currentData.topCampaign) || {};
+const topAd = (currentData && currentData.topAd) || {};
+const topCreative = (currentData && currentData.topCreative) || {};
+const topAudience = (currentData && currentData.topAudience) || {};
+
+// Top Campaign
+setText("topCampaignName", topCampaign.name ?? "—");
+setText("topCampaignRec", topCampaign.recommendation ?? "—");
+
+// Top Ad
+setText("topAdName", topAd.ad_name ?? "—");
+setText("topAdCampaignName", topAd.campaign_name ?? "—");
+setText("topAdCtr", formatPercent(topAd.ctr));
+setText("topAdMessages", formatNumber(topAd.messages));
+setText("topAdSpend", formatCurrency(topAd.spend));
+setText("topAdCpc", formatCurrency(topAd.cpc));
+setText("topAdCpm", formatCurrency(topAd.cpm));
+setText("topAdCostPerMessage", formatCurrency(topAd.cost_per_message));
+
+// Top Creative
+setText("topCreativeName", topCreative.creative_name ?? "—");
+setText("topCreativeCtr", formatPercent(topCreative.ctr));
+setText("topCreativeMessages", formatNumber(topCreative.messages));
+setText("topCreativeSpend", formatCurrency(topCreative.spend));
+const creativeThumbEl = getEl("topCreativeThumbnail");
+if (creativeThumbEl) {
+if (topCreative.thumbnail) {
+creativeThumbEl.src = topCreative.thumbnail;
+creativeThumbEl.style.display = "";
+} else {
+creativeThumbEl.removeAttribute("src");
+creativeThumbEl.style.display = "none";
+}
+}
+
+// Top Audience
+setText("topAudienceName", topAudience.audience_name ?? "—");
+setText("topAudienceRange", topAudience.age_range ?? "—");
+setText("topAudienceGender", topAudience.gender ?? "—");
+setText("topAudienceLocation", topAudience.location ?? "—");
+setText("topAudienceCtr", formatPercent(topAudience.ctr));
+setText("topAudienceMessages", formatNumber(topAudience.messages));
+}
+
+// ---------------- PREDICTION (v7.2 — schema-complete) ----------------
+// Reads the full currentData.predictionTomorrow object. ctr /
+// expectedMessages are the fields already wired to existing HTML
+// ids; any other fields the backend adds later can get their own
+// setText() line here without touching render() again.
+function renderPrediction() {
+const prediction = (currentData && currentData.predictionTomorrow) || {};
+setText("predCtr", formatPercent(prediction.ctr));
+setText("predMessages", formatNumber(prediction.expectedMessages));
 }
 
 // ---------------- ANIMATED KPI VALUES ----------------
