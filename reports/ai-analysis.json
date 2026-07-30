@@ -1,5 +1,5 @@
 {
-  "executive_summary": "Current ad performance shows a healthy engagement rate with an average CTR of 3.87%, indicating strong creative resonance. However, the cost efficiency has declined compared to historical benchmarks. While the 'JULY ADS 2026' campaign is driving the most volume, its cost per message is highly volatile, ranging from 45.71 to 317.71. The 'Leads' objective currently outperforms the 'Sales' objective in terms of inquiry generation cost.",
+  "executive_summary": "Overall performance for the period shows a total spend of 2,742.04 with a healthy average CTR of 3.87%, indicating strong creative resonance. However, the cost efficiency is under pressure with a high CPM of 363.62 and an average cost per message of approximately 91.40. While engagement is high, the conversion into messages is volatile across different campaign objectives.",
   "metrics": {
     "spend": 2742.04,
     "impressions": 7541,
@@ -12,21 +12,17 @@
   "best_campaigns": [
     {
       "name": "📁 2026 | Leads | Multi Models | JULY",
-      "reason": "Achieved the lowest cost per message in the current period (41.29 on peak days) and maintains a stable CTR above 4.5%."
+      "reason": "Achieved the lowest cost per message in the current set (41.28 on peak days) and maintains a strong CTR above 4.5%."
     },
     {
       "name": "JULY ADS 2026",
-      "reason": "Highest total volume of messages (15) and peak CTR of 5.23%, showing strong top-of-funnel interest."
+      "reason": "Highest overall engagement and best CTR (5.23%), showing strong top-of-funnel interest despite volatile messaging costs."
     }
   ],
   "worst_campaigns": [
     {
       "name": "📁 2026 | Sales | Multi Models | July",
-      "reason": "High cost per message (average >100) and lower CTR compared to Lead-gen focused campaigns."
-    },
-    {
-      "name": "JULY ADS 2026 (July 6 Performance)",
-      "reason": "Incurred 317.71 spend for only 1 message, indicating a breakdown in conversion efficiency on that specific day."
+      "reason": "Highest cost per message (up to 123.54) and inconsistent message generation compared to the Leads objective."
     }
   ],
   "winning_ads": [
@@ -34,54 +30,53 @@
       "ad_name": "🚗 02 - Mirage G4 | ₱15K+/Month",
       "ctr": 5.68,
       "cost_per_message": 44.32,
-      "insight": "The low monthly payment hook (₱15K+) is driving significantly higher engagement than broad model promos."
+      "insight": "The specific monthly payment hook (₱15K+) is driving the highest click-through rate and most efficient lead cost."
     },
     {
-      "ad_name": "New Sales Ad (within JULY ADS 2026)",
-      "ctr": 5.23,
-      "insight": "Highest efficiency in the Sales objective category during the early July period."
+      "ad_name": "🚙 01 - Xpander GLX AT | Low DP",
+      "insight": "High volume of link clicks and page engagement, indicating strong aspirational interest in the Xpander model."
     }
   ],
   "creative_insights": [
     {
       "model": "Mirage G4",
-      "performance": "Top performer. Monthly payment messaging (₱15K+) is the strongest hook for the Metro South audience."
+      "performance": "Top performer. Monthly amortization hooks (₱15K+) outperform generic 'Low DP' messaging."
     },
     {
-      "model": "L300 FB",
-      "performance": "Historically the strongest driver of low-cost inquiries (16-17 pesos), but currently underperforming in the 'Sales' objective format."
+      "model": "L300",
+      "performance": "Historically the backbone of the account but currently underperforming in the July Sales campaign; requires updated 'Business Promo' visuals."
     },
     {
-      "format": "Video vs Image",
-      "performance": "Historical data shows 'Client Release Videos' and 'TRY VIDEO ADS' campaigns achieved higher engagement volumes, yet current active ads are predominantly static images."
+      "format": "Video",
+      "performance": "Client release videos show high engagement but were largely paused; these should be utilized for social proof to lower CPM."
     }
   ],
   "historical_insights": [
     {
       "trend": "Efficiency Decline",
-      "detail": "Historical Cost Per Message (CPMtg) for L300/Mirage was as low as 16.84 - 18.52 in early 2026. Current July costs are 3x to 5x higher (45.00 - 90.00+)."
+      "detail": "Current cost per message (90+) is significantly higher than Q1 2026 levels where L300 sales campaigns achieved 16.84 - 17.13 per message."
     },
     {
       "trend": "CPM Inflation",
-      "detail": "Current CPMs (363.62) are significantly higher than the historical 2023-2024 averages which often sat below 150.00, suggesting increased competition or audience fatigue in Metro South."
+      "detail": "CPM has ballooned from historical averages of 28.00 - 100.00 to the current 363.62, suggesting high audience saturation or increased competition in the target locations."
     }
   ],
   "recommendations": [
     {
-      "action": "Budget Shift",
-      "suggestion": "Reallocate 40% of budget from 'OUTCOME_SALES' campaigns to 'OUTCOME_LEADS' as lead forms/messenger leads are currently 50% cheaper."
+      "action": "Budget Reallocation",
+      "suggestion": "Shift budget from '📁 2026 | Sales | Multi Models | July' to the 'Leads' objective campaign which is delivering 55% cheaper inquiries."
     },
     {
-      "action": "Optimization",
-      "suggestion": "Pause the 'JULY ADS 2026' campaign during days where Cost Per Message exceeds 120.00. Use automated rules to cap daily spend if no messages are received by 12 PM."
+      "action": "Campaign Optimization",
+      "suggestion": "Pause the 'JULY ADS 2026' on days where cost per message exceeds 150.00. Implement automated rules to manage this volatility."
     },
     {
-      "action": "Creative Pivot",
-      "suggestion": "Develop new video content featuring 'Client Deliveries' (Release Videos). Historical data proves this format drove massive engagement for the L300 and Xpander models."
+      "action": "Audience Refresh",
+      "suggestion": "The high CPM (363.62) suggests audience fatigue. Test Lookalike Audiences (LLA) based on previous message senders, as historical LLA sets (from 2024 data) were highly effective."
     },
     {
-      "action": "Audience Refinement",
-      "suggestion": "The 18-65 Messenger set is outperforming the 25-55 set. Broaden the age targeting in Sales campaigns to match the successful Leads campaign structure."
+      "action": "Creative Strategy",
+      "suggestion": "Develop new 'Business/Utility' focused creatives for the L300. Use the winning 'Monthly Amortization' template from the Mirage G4 and apply it to the Xpander and L300 models."
     }
   ]
 }
