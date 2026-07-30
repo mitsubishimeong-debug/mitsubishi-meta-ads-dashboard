@@ -623,3 +623,646 @@ initTableSorting();
 initExport();
 loadDashboard();
 setInterval(loadDashboard, REFRESH_INTERVAL_MS);
+
+// ============================================================
+// V5 ADDITIONS — Historical Intelligence Platform
+// Reads ONLY from dashboard-history.json via its own fetch/state/
+// render pipeline. Never touches dashboard.json, currentData,
+// charts{}, or any V4 Overview function above this point — a
+// missing or broken history file can never break Today/7 Days/
+// 30 Days, and the two data sources are never merged.
+// ============================================================
+
+// ---------------- STATE ----------------
+
+let historyData = null;          // raw dashboard-history.json
+let processedCampaigns = [];      // historyData.campaigns + model + performanceScore
+let dailyPerformance = [];        // historyData.dailyPerformance, unmodified (daily granularity preserved)
+let historyResolvedUrl = null;    // cached path, same pattern as resolvedDataUrl
+let historyAvailable = false;
+
+let currentYearFilter = "all";
+let rankingSortState = { key: "performanceScore", dir: "desc" };
+let currentTimelineView = "launches";   // "launches" | "trend"
+let currentTimelineMetric = "spend";    // "spend" | "messages"
+
+const MODEL_LIST = [
+  "L300", "Mirage G4", "Xpander", "Montero", "XForce",
+  "Strada", "Destinator", "Triton", "Outlander", "Attrage", "Adventure",
+];
+
+// ---------------- MODEL DETECTION (client-side only) ----------------
+
+function detectModel(campaignName) {
+  if (!campaignName) return "Other";
+  const name = String(campaignName).toLowerCase();
+  const match = MODEL_LIST.find((model) => name.includes(model.toLowerCase()));
+  return match || "Other";
+}
+
+// ---------------- PATH DETECTION + LOAD (mirrors fetchDashboardData) ----------------
+
+async function fetchHistoryData() {
+  const candidates = historyResolvedUrl
+    ? [historyResolvedUrl, "data/dashboard-history.json", "dashboard-history.json"]
+    : ["data/dashboard-history.json", "dashboard-history.json"];
+
+  let lastError = null;
+  for (const candidate of candidates) {
+    try {
+      const res = await fetch(`${candidate}?t=${Date.now()}`, { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        historyResolvedUrl = candidate;
+        return data;
+      }
+      lastError = new Error(`HTTP ${res.status} at ${candidate}`);
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  historyResolvedUrl = null;
+  throw lastError || new Error("dashboard-history.json not found");
+}
+
+async function loadHistoricalData() {
+  try {
+    const data = await fetchHistoryData();
+    historyData = data || {};
+    processHistoricalData();
+    setHistoryAvailability(true);
+    renderAllHistoricalTabs();
+  } catch (err) {
+    console.warn("Historical data unavailable:", err.message);
+    historyData = null;
+    processedCampaigns = [];
+    dailyPerformance = [];
+    setHistoryAvailability(false);
+  }
+}
+
+// Orchestrator matching the requested V5 naming — loads BOTH the
+// Overview (Daily Summary) and Historical (Campaign Performance)
+// pipelines. Not required for either pipeline to function (each
+// already self-initiates and self-polls independently below), but
+// provided for callers that want to trigger a full refresh at once.
+function loadDashboardData() {
+  loadDashboard();
+  loadHistoricalData();
+}
+
+// ---------------- AVAILABILITY / FALLBACK ----------------
+
+// Shows "Historical data unavailable" in every V5 tab and hides
+// their content sections when dashboard-history.json can't be
+// loaded — Overview keeps working normally regardless.
+function setHistoryAvailability(isAvailable) {
+  historyAvailable = isAvailable;
+
+  ["historicalEmptyState", "modelEmptyState", "objectivesEmptyState", "recommendationsEmptyState", "timelineEmptyState"]
+    .forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.hidden = isAvailable;
+    });
+
+  ["historicalContent", "timelineContent"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.hidden = !isAvailable;
+  });
+
+  document
+    .querySelectorAll('[data-tab-panel="model"] > section, [data-tab-panel="objectives"] > section, [data-tab-panel="recommendations"] > section')
+    .forEach((sec) => { sec.hidden = !isAvailable; });
+}
+
+// ---------------- PROCESSING ----------------
+
+// Normalizes raw campaign rows, tags each with a client-detected
+// model, and computes a transparent (not "AI") performance score:
+// weighted CTR + message volume, penalized by cost-per-message.
+// Documented here so it's clear this is a simple heuristic, not a
+// model prediction.
+function processHistoricalData() {
+  const rawCampaigns = Array.isArray(historyData?.campaigns) ? historyData.campaigns : [];
+
+  processedCampaigns = rawCampaigns.map((c) => {
+    const spend = Number(c.spend) || 0;
+    const messages = Number(c.messages) || 0;
+    const clicks = Number(c.clicks) || 0;
+    const impressions = Number(c.impressions) || 0;
+    const ctr = impressions > 0 ? (clicks / impressions) * 100 : Number(c.ctr) || 0;
+    const costPerMessage = messages > 0 ? spend / messages : (Number(c.cost_per_message) || null);
+    const performanceScore = ctr * 10 + messages * 0.5 - (Number(costPerMessage) || 0) * 0.2;
+
+    return {
+      ...c,
+      model: detectModel(c.campaign_name),
+      ctr,
+      costPerMessage,
+      performanceScore,
+    };
+  });
+
+  dailyPerformance = Array.isArray(historyData?.dailyPerformance) ? historyData.dailyPerformance : [];
+}
+
+function getFilteredCampaigns(yearFilter) {
+  if (yearFilter === "all") return processedCampaigns;
+  return processedCampaigns.filter((c) => String(c.year) === String(yearFilter));
+}
+
+function getFilteredDailyRows(yearFilter) {
+  if (yearFilter === "all") return dailyPerformance;
+  return dailyPerformance.filter((r) => r.date_meta && String(r.date_meta).slice(0, 4) === String(yearFilter));
+}
+
+function aggregateCampaigns(list) {
+  let spend = 0, messages = 0, clicks = 0, impressions = 0;
+  list.forEach((c) => {
+    spend += Number(c.spend) || 0;
+    messages += Number(c.messages) || 0;
+    clicks += Number(c.clicks) || 0;
+    impressions += Number(c.impressions) || 0;
+  });
+  return {
+    spend, messages, clicks, impressions,
+    ctr: impressions > 0 ? (clicks / impressions) * 100 : 0,
+    costPerMessage: messages > 0 ? spend / messages : null,
+    count: list.length,
+  };
+}
+
+// ---------------- MODULE 2: WINNING CAMPAIGN RANKING ----------------
+
+function calculateCampaignRanking(yearFilter) {
+  const list = getFilteredCampaigns(yearFilter);
+  const ranked = [...list].sort((a, b) => (b.performanceScore || 0) - (a.performanceScore || 0));
+  ranked.forEach((c, i) => { c.rank = i + 1; });
+  return ranked;
+}
+
+// ---------------- MODULE 3: MODEL PERFORMANCE ----------------
+
+function calculateModelPerformance(yearFilter) {
+  const list = getFilteredCampaigns(yearFilter);
+  const groups = {};
+
+  list.forEach((c) => {
+    const key = c.model || "Other";
+    if (!groups[key]) groups[key] = { model: key, spend: 0, messages: 0, clicks: 0, impressions: 0, count: 0 };
+    const g = groups[key];
+    g.spend += Number(c.spend) || 0;
+    g.messages += Number(c.messages) || 0;
+    g.clicks += Number(c.clicks) || 0;
+    g.impressions += Number(c.impressions) || 0;
+    g.count += 1;
+  });
+
+  return Object.values(groups)
+    .map((g) => ({
+      ...g,
+      ctr: g.impressions > 0 ? (g.clicks / g.impressions) * 100 : 0,
+      costPerMessage: g.messages > 0 ? g.spend / g.messages : null,
+    }))
+    .sort((a, b) => b.spend - a.spend);
+}
+
+// ---------------- MODULE 4: OBJECTIVE COMPARISON ----------------
+
+function calculateObjectiveComparison(yearFilter) {
+  const list = getFilteredCampaigns(yearFilter);
+  const groups = {};
+
+  list.forEach((c) => {
+    const key = c.objective || "Other";
+    if (!groups[key]) groups[key] = { objective: key, spend: 0, messages: 0, clicks: 0, impressions: 0, scoreSum: 0, count: 0 };
+    const g = groups[key];
+    g.spend += Number(c.spend) || 0;
+    g.messages += Number(c.messages) || 0;
+    g.clicks += Number(c.clicks) || 0;
+    g.impressions += Number(c.impressions) || 0;
+    g.scoreSum += Number(c.performanceScore) || 0;
+    g.count += 1;
+  });
+
+  return Object.values(groups)
+    .map((g) => ({
+      ...g,
+      ctr: g.impressions > 0 ? (g.clicks / g.impressions) * 100 : 0,
+      costPerMessage: g.messages > 0 ? g.spend / g.messages : null,
+      avgPerformanceScore: g.count > 0 ? g.scoreSum / g.count : 0,
+    }))
+    .sort((a, b) => b.avgPerformanceScore - a.avgPerformanceScore);
+}
+
+// ---------------- MODULE 5: RECOMMENDATION CENTER ----------------
+
+// Prefers real recommendation text written by n8n (historyData.recommendations).
+// Falls back to simple, transparent rule-based insights computed from
+// the aggregates above — never labeled as AI-generated when it isn't.
+function generateRecommendations() {
+  const list = getFilteredCampaigns(currentYearFilter);
+  let items = [];
+
+  if (Array.isArray(historyData?.recommendations) && historyData.recommendations.length > 0) {
+    items = historyData.recommendations;
+  } else if (list.length > 0) {
+    const models = calculateModelPerformance(currentYearFilter).filter((m) => m.count >= 3 && m.costPerMessage !== null);
+    const objectives = calculateObjectiveComparison(currentYearFilter);
+    const agg = aggregateCampaigns(list);
+
+    if (models.length > 0) {
+      const cheapest = [...models].sort((a, b) => a.costPerMessage - b.costPerMessage)[0];
+      items.push({
+        text: `Increase budget allocation on ${cheapest.model} campaigns`,
+        reason: `${cheapest.model} shows the lowest cost-per-message (${formatCurrency(cheapest.costPerMessage)}) among models with 3+ campaigns in this period.`,
+        priority: "High",
+      });
+
+      const priciest = [...models].sort((a, b) => b.costPerMessage - a.costPerMessage)[0];
+      if (priciest.model !== cheapest.model && agg.costPerMessage && priciest.costPerMessage > agg.costPerMessage * 1.3) {
+        items.push({
+          text: `Review ${priciest.model} campaign spend`,
+          reason: `Cost-per-message (${formatCurrency(priciest.costPerMessage)}) is well above the period average (${formatCurrency(agg.costPerMessage)}).`,
+          priority: "Medium",
+        });
+      }
+    }
+
+    if (objectives.length > 0) {
+      const topObjective = objectives[0];
+      items.push({
+        text: `Prioritize ${topObjective.objective} campaigns`,
+        reason: `${topObjective.objective} has the strongest average performance score across this period's campaigns.`,
+        priority: "Medium",
+      });
+    }
+
+    if (items.length === 0) {
+      items.push({
+        text: "Not enough data yet",
+        reason: "More campaign history is needed to generate reliable recommendations.",
+        priority: "Low",
+      });
+    }
+  }
+
+  renderReasonedList("histRecList", items, "rec");
+}
+
+// ---------------- MODULE 1: HISTORICAL OVERVIEW (lifetime KPIs + highlights) ----------------
+
+function renderHistoricalOverview() {
+  const filtered = getFilteredCampaigns(currentYearFilter);
+  const useServerLifetime = currentYearFilter === "all" && historyData?.lifetime;
+
+  const agg = useServerLifetime
+    ? {
+        spend: Number(historyData.lifetime.spend) || 0,
+        messages: Number(historyData.lifetime.messages) || 0,
+        clicks: Number(historyData.lifetime.clicks) || 0,
+        ctr: Number(historyData.lifetime.avgCtr) || 0,
+        costPerMessage: Number(historyData.lifetime.avgCostPerMessage) || null,
+        count: Number(historyData.lifetime.totalCampaigns) || filtered.length,
+      }
+    : aggregateCampaigns(filtered);
+
+  setText("histSpend", formatCurrency(agg.spend));
+  setText("histMessages", formatNumber(agg.messages));
+  setText("histClicks", formatNumber(agg.clicks));
+  setText("histCtr", formatPercent(agg.ctr));
+  setText("histCostPerMessage", formatCurrency(agg.costPerMessage));
+  setText("histTotalCampaigns", formatNumber(agg.count));
+
+  renderHighlights(filtered);
+}
+
+function renderHighlights(list) {
+  if (!list || list.length === 0) {
+    ["highlightBestCampaign", "highlightLowestCost", "highlightHighestCtr"].forEach((id) => setText(id, "—"));
+    ["highlightBestCampaignMeta", "highlightLowestCostMeta", "highlightHighestCtrMeta"].forEach((id) => setText(id, "—"));
+    return;
+  }
+
+  const bestByScore = [...list].sort((a, b) => (b.performanceScore || 0) - (a.performanceScore || 0))[0];
+  setText("highlightBestCampaign", bestByScore.campaign_name ?? "—");
+  setText("highlightBestCampaignMeta", bestByScore.model ? `${bestByScore.model} · ${formatNumber(bestByScore.messages)} messages` : "—");
+
+  const withCost = list.filter((c) => c.costPerMessage !== null && c.costPerMessage !== undefined && !isNaN(c.costPerMessage));
+  if (withCost.length > 0) {
+    const lowestCost = [...withCost].sort((a, b) => a.costPerMessage - b.costPerMessage)[0];
+    setText("highlightLowestCost", lowestCost.campaign_name ?? "—");
+    setText("highlightLowestCostMeta", formatCurrency(lowestCost.costPerMessage));
+  } else {
+    setText("highlightLowestCost", "—");
+    setText("highlightLowestCostMeta", "—");
+  }
+
+  const highestCtr = [...list].sort((a, b) => (b.ctr || 0) - (a.ctr || 0))[0];
+  setText("highlightHighestCtr", highestCtr.campaign_name ?? "—");
+  setText("highlightHighestCtrMeta", formatPercent(highestCtr.ctr));
+}
+
+// ---------------- RANKING TABLE ----------------
+
+function renderRankingTable() {
+  const tbody = document.getElementById("rankingTableBody");
+  if (!tbody) return;
+
+  const ranked = calculateCampaignRanking(currentYearFilter);
+
+  if (ranked.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;opacity:0.5;">No campaign data for this period</td></tr>`;
+    updateRankingSortHeaders();
+    return;
+  }
+
+  const sorted = [...ranked].sort((a, b) => {
+    const key = rankingSortState.key;
+    const av = a[key];
+    const bv = b[key];
+    if (av === undefined || av === null) return 1;
+    if (bv === undefined || bv === null) return -1;
+    if (typeof av === "string" || typeof bv === "string") {
+      const aStr = String(av);
+      const bStr = String(bv);
+      return rankingSortState.dir === "asc" ? aStr.localeCompare(bStr) : bStr.localeCompare(aStr);
+    }
+    return rankingSortState.dir === "asc" ? av - bv : bv - av;
+  });
+
+  tbody.innerHTML = sorted
+    .map((c) => `
+      <tr>
+        <td>${formatNumber(c.rank)}</td>
+        <td>${escapeHtml(c.campaign_name ?? "—")}</td>
+        <td>${escapeHtml(c.objective ?? "—")}</td>
+        <td>${formatCurrency(c.spend)}</td>
+        <td>${formatNumber(c.messages)}</td>
+        <td>${formatCurrency(c.costPerMessage)}</td>
+        <td>${formatPercent(c.ctr)}</td>
+        <td>${formatNumber(Math.round(c.performanceScore))}</td>
+      </tr>`)
+    .join("");
+
+  updateRankingSortHeaders();
+}
+
+function updateRankingSortHeaders() {
+  document.querySelectorAll('#rankingTable th[data-key]').forEach((th) => {
+    th.classList.toggle("sorted", th.dataset.key === rankingSortState.key);
+    th.classList.toggle("asc", th.dataset.key === rankingSortState.key && rankingSortState.dir === "asc");
+  });
+}
+
+function initRankingSort() {
+  document.querySelectorAll('#rankingTable th[data-key]').forEach((th) => {
+    th.addEventListener("click", () => {
+      const key = th.dataset.key;
+      if (rankingSortState.key === key) {
+        rankingSortState.dir = rankingSortState.dir === "asc" ? "desc" : "asc";
+      } else {
+        rankingSortState = { key, dir: "desc" };
+      }
+      renderRankingTable();
+    });
+  });
+}
+
+// Orchestrator matching the requested V5 function name.
+function renderTables() {
+  renderRankingTable();
+}
+
+// ---------------- MODEL PERFORMANCE RENDER ----------------
+
+function renderModelPerformance() {
+  const grid = document.getElementById("modelGrid");
+  if (!grid) return;
+
+  const models = calculateModelPerformance(currentYearFilter);
+  if (models.length === 0) {
+    grid.innerHTML = `<div class="model-card-empty">No campaign data for this period</div>`;
+    return;
+  }
+
+  grid.innerHTML = models
+    .map((m) => `
+      <div class="model-card">
+        <span class="model-card-name">${escapeHtml(m.model)}</span>
+        <div class="model-card-metrics">
+          <span>Spend<b>${formatCurrency(m.spend)}</b></span>
+          <span>Messages<b>${formatNumber(m.messages)}</b></span>
+          <span>Cost/Msg<b>${formatCurrency(m.costPerMessage)}</b></span>
+          <span>CTR<b>${formatPercent(m.ctr)}</b></span>
+        </div>
+      </div>`)
+    .join("");
+}
+
+// ---------------- OBJECTIVE COMPARISON RENDER ----------------
+
+function renderObjectiveChart(objectives) {
+  upsertChart("objectiveChart", "bar", {
+    labels: objectives.map((o) => o.objective),
+    datasets: [{
+      data: objectives.map((o) => o.messages),
+      backgroundColor: CHART_COLORS.primary,
+      borderRadius: 4,
+      maxBarThickness: 40,
+    }],
+  }, baseLineOptions());
+}
+
+function renderObjectiveComparison() {
+  const objectives = calculateObjectiveComparison(currentYearFilter);
+  const grid = document.getElementById("objectiveGrid");
+
+  if (grid) {
+    grid.innerHTML = objectives.length === 0
+      ? `<div class="objective-card-empty">No campaign data for this period</div>`
+      : objectives
+          .map((o) => `
+            <div class="objective-card">
+              <span class="objective-card-name">${escapeHtml(o.objective)}</span>
+              <div class="objective-card-metrics">
+                <span>Spend<b>${formatCurrency(o.spend)}</b></span>
+                <span>Messages<b>${formatNumber(o.messages)}</b></span>
+                <span>Cost/Msg<b>${formatCurrency(o.costPerMessage)}</b></span>
+                <span>CTR<b>${formatPercent(o.ctr)}</b></span>
+              </div>
+            </div>`)
+          .join("");
+  }
+
+  renderObjectiveChart(objectives);
+}
+
+// ---------------- TIMELINE RENDER ----------------
+
+function renderTimelineTrendChart() {
+  const rows = getFilteredDailyRows(currentYearFilter);
+  const byDate = {};
+
+  rows.forEach((r) => {
+    const date = r.date_meta;
+    if (!date) return;
+    if (!byDate[date]) byDate[date] = { spend: 0, messages: 0 };
+    byDate[date].spend += Number(r.spend) || 0;
+    byDate[date].messages += Number(r.messages) || 0;
+  });
+
+  const sortedDates = Object.keys(byDate).sort();
+  const values = sortedDates.map((d) => byDate[d][currentTimelineMetric]);
+
+  upsertChart("timelineTrendChart", "line", {
+    labels: sortedDates,
+    datasets: [{
+      data: values,
+      borderColor: currentTimelineMetric === "spend" ? CHART_COLORS.primary : CHART_COLORS.green,
+      backgroundColor: currentTimelineMetric === "spend" ? "rgba(230,0,18,0.12)" : "rgba(46,204,113,0.12)",
+      fill: true,
+      tension: 0.3,
+      pointRadius: 2,
+    }],
+  }, baseLineOptions());
+}
+
+function renderTimelineLaunches() {
+  const el = document.getElementById("timelineLaunches");
+  if (!el) return;
+
+  const list = getFilteredCampaigns(currentYearFilter);
+  if (list.length === 0) {
+    el.innerHTML = `<div class="timeline-empty">No campaign launches for this period</div>`;
+    return;
+  }
+
+  const sorted = [...list].sort((a, b) => new Date(a.start_date || 0) - new Date(b.start_date || 0));
+
+  let lastYear = null;
+  let html = "";
+  sorted.forEach((c) => {
+    const year = c.year ?? (c.start_date ? String(c.start_date).slice(0, 4) : "—");
+    if (year !== lastYear) {
+      html += `<div class="timeline-year-group">${escapeHtml(String(year))}</div>`;
+      lastYear = year;
+    }
+    html += `
+      <div class="timeline-item">
+        <div class="timeline-item-main">
+          <span class="timeline-item-name">${escapeHtml(c.campaign_name ?? "—")}</span>
+          <span class="timeline-item-meta">${escapeHtml(c.start_date ?? "—")} → ${escapeHtml(c.end_date ?? "—")} · ${formatNumber(c.days_running)} days · ${escapeHtml(c.model ?? "Other")}</span>
+        </div>
+        <div class="timeline-item-stats"><b>${formatNumber(c.messages)}</b> msgs · ${formatPercent(c.ctr)} CTR</div>
+      </div>`;
+  });
+
+  el.innerHTML = html;
+}
+
+function renderTimeline() {
+  const isTrend = currentTimelineView === "trend";
+  const trendCard = document.getElementById("timelineTrendCard");
+  const launchesCard = document.getElementById("timelineLaunchesCard");
+  if (trendCard) trendCard.hidden = !isTrend;
+  if (launchesCard) launchesCard.hidden = isTrend;
+
+  if (isTrend) {
+    renderTimelineTrendChart();
+  } else {
+    renderTimelineLaunches();
+  }
+}
+
+// Orchestrator matching the requested V5 function name — renders
+// every Chart.js visual in the historical tabs. The individual
+// render*() functions above already call the specific chart they
+// need at the right moment (only once their tab is visible), so
+// this is provided for completeness / manual re-render, not wired
+// into the automatic load flow.
+function renderCharts() {
+  renderObjectiveChart(calculateObjectiveComparison(currentYearFilter));
+  renderTimelineTrendChart();
+}
+
+// ---------------- MASTER RENDER ----------------
+
+function renderAllHistoricalTabs() {
+  if (!historyAvailable) return;
+  renderHistoricalOverview();
+  renderTables();
+  renderModelPerformance();
+  renderObjectiveComparison();
+  generateRecommendations();
+  renderTimeline();
+}
+
+// ---------------- TAB NAVIGATION ----------------
+
+function initTabNav() {
+  document.querySelectorAll(".tab-nav-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const target = btn.dataset.tab;
+      document.querySelectorAll(".tab-nav-btn").forEach((b) => b.classList.toggle("active", b === btn));
+      document.querySelectorAll(".tab-panel").forEach((panel) => {
+        panel.classList.toggle("active", panel.dataset.tabPanel === target);
+      });
+
+      // Re-render on activation so any Chart.js canvas that was
+      // hidden (and therefore zero-size) at creation time gets
+      // rebuilt at its correct dimensions.
+      if (!historyAvailable) return;
+      if (target === "historical") { renderHistoricalOverview(); renderTables(); }
+      if (target === "model") renderModelPerformance();
+      if (target === "objectives") renderObjectiveComparison();
+      if (target === "recommendations") generateRecommendations();
+      if (target === "timeline") renderTimeline();
+    });
+  });
+}
+
+// ---------------- YEAR FILTER ----------------
+
+function initYearFilter() {
+  document.querySelectorAll("#yearSwitch .year-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      currentYearFilter = btn.dataset.year;
+      document.querySelectorAll("#yearSwitch .year-btn").forEach((b) => b.classList.toggle("active", b === btn));
+      if (!historyAvailable) return;
+      renderAllHistoricalTabs();
+    });
+  });
+}
+
+// ---------------- TIMELINE CONTROLS ----------------
+
+function initTimelineControls() {
+  document.querySelectorAll("#timelineViewSwitch .timeline-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      currentTimelineView = btn.dataset.view;
+      document.querySelectorAll("#timelineViewSwitch .timeline-btn").forEach((b) => b.classList.toggle("active", b === btn));
+      if (historyAvailable) renderTimeline();
+    });
+  });
+
+  document.querySelectorAll("#timelineMetricSwitch .timeline-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      currentTimelineMetric = btn.dataset.metric;
+      document.querySelectorAll("#timelineMetricSwitch .timeline-btn").forEach((b) => b.classList.toggle("active", b === btn));
+      if (historyAvailable && currentTimelineView === "trend") renderTimelineTrendChart();
+    });
+  });
+}
+
+// ---------------- V5 INIT ----------------
+// Independent of V4's init block above — runs alongside it, never
+// replacing it. If dashboard-history.json never loads, Overview
+// (already initialized above) is completely unaffected.
+
+initTabNav();
+initYearFilter();
+initRankingSort();
+initTimelineControls();
+loadHistoricalData();
+setInterval(loadHistoricalData, REFRESH_INTERVAL_MS);
