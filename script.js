@@ -894,9 +894,24 @@ let aiData = {};
 let aiAvailable = false;
 
 async function fetchAIAnalysis() {
-  const res = await fetch(`./reports/ai-analysis.json?t=${Date.now()}`, { cache: "no-store" });
-  if (!res.ok) throw new Error(`HTTP ${res.status} at ./reports/ai-analysis.json`);
-  return res.json();
+  // MODIFY (bugfix): this fetch previously had no retry, unlike
+  // fetchHistoryData() above. reports/ai-analysis.json is written by
+  // the same n8n run that overwrites dashboard-history.json, so it's
+  // exposed to the exact same failure window — a poll landing mid-
+  // write, or hitting GitHub Pages' CDN mid-propagation right after a
+  // commit. Mirrors fetchHistoryData()'s one-retry-after-a-pause
+  // pattern so a single transient miss doesn't flip the whole
+  // Recommendations tab to "unavailable" when the file is actually fine.
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const res = await fetch(`./reports/ai-analysis.json?t=${Date.now()}`, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status} at ./reports/ai-analysis.json`);
+      return await res.json();
+    } catch (err) {
+      if (attempt === 2) throw err;
+      await new Promise((resolve) => setTimeout(resolve, 800));
+    }
+  }
 }
 
 async function loadAIAnalysis() {
@@ -907,8 +922,15 @@ async function loadAIAnalysis() {
     renderAIAnalysis();
   } catch (err) {
     console.warn("AI analysis unavailable:", err.message);
-    aiData = {};
-    setAIAvailability(false);
+    // MODIFY (bugfix): only blank the tab out on the very first load
+    // failure. If a previous poll already succeeded, keep showing
+    // that last-known-good data instead of flashing "unavailable"
+    // over working numbers on a single transient miss — same pattern
+    // loadHistoricalData() already uses for dashboard-history.json.
+    if (!aiData || Object.keys(aiData).length === 0) {
+      aiData = {};
+      setAIAvailability(false);
+    }
   }
 }
 
