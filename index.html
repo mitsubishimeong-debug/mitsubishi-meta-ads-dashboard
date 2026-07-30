@@ -45,7 +45,17 @@
   </div>
 </header>
 
-<main class="dashboard">
+<!-- ============ V5: TAB NAVIGATION ============ -->
+<nav class="tab-nav no-print" id="tabNav">
+  <button class="tab-nav-btn active" data-tab="overview">OVERVIEW</button>
+  <button class="tab-nav-btn" data-tab="historical">HISTORICAL INTELLIGENCE</button>
+  <button class="tab-nav-btn" data-tab="model">MODEL PERFORMANCE</button>
+  <button class="tab-nav-btn" data-tab="objectives">OBJECTIVES</button>
+  <button class="tab-nav-btn" data-tab="recommendations">RECOMMENDATIONS</button>
+  <button class="tab-nav-btn" data-tab="timeline">TIMELINE</button>
+</nav>
+
+<main class="dashboard tab-panel active" data-tab-panel="overview">
 
   <!-- ACCOUNT HEALTH -->
   <section class="health-block">
@@ -207,6 +217,168 @@
     </div>
   </section>
 
+</main>
+
+<!-- ============ V5: HISTORICAL INTELLIGENCE ============ -->
+<main class="dashboard tab-panel" data-tab-panel="historical">
+
+  <div class="card history-toolbar">
+    <div class="year-switch" id="yearSwitch">
+      <button class="year-btn active" data-year="all">All Time</button>
+      <button class="year-btn" data-year="2023">2023</button>
+      <button class="year-btn" data-year="2024">2024</button>
+      <button class="year-btn" data-year="2025">2025</button>
+      <button class="year-btn" data-year="2026">2026</button>
+    </div>
+  </div>
+
+  <div class="history-empty-state" id="historicalEmptyState" hidden>
+    <span class="empty-icon">⚠</span>
+    <p>Historical data unavailable</p>
+    <span class="empty-sub">dashboard-history.json could not be loaded. Overview keeps working normally.</span>
+  </div>
+
+  <div class="history-content" id="historicalContent">
+    <section class="kpi-grid history-kpi-grid">
+      <div class="kpi-card">
+        <span class="kpi-label">Lifetime Spend</span>
+        <span class="kpi-value" id="histSpend">—</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Lifetime Messages</span>
+        <span class="kpi-value" id="histMessages">—</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Lifetime Clicks</span>
+        <span class="kpi-value" id="histClicks">—</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Average CTR</span>
+        <span class="kpi-value" id="histCtr">—</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Avg Cost / Message</span>
+        <span class="kpi-value" id="histCostPerMessage">—</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Total Campaigns</span>
+        <span class="kpi-value" id="histTotalCampaigns">—</span>
+      </div>
+    </section>
+
+    <section class="top-row history-highlight-row">
+      <div class="card top-card highlight-card highlight-best">
+        <span class="card-eyebrow">BEST CAMPAIGN</span>
+        <h2 id="highlightBestCampaign">—</h2>
+        <span class="audience-range" id="highlightBestCampaignMeta">—</span>
+      </div>
+      <div class="card top-card highlight-card highlight-cost">
+        <span class="card-eyebrow">LOWEST COST / MESSAGE</span>
+        <h2 id="highlightLowestCost">—</h2>
+        <span class="audience-range" id="highlightLowestCostMeta">—</span>
+      </div>
+      <div class="card top-card highlight-card highlight-ctr">
+        <span class="card-eyebrow">HIGHEST CTR</span>
+        <h2 id="highlightHighestCtr">—</h2>
+        <span class="audience-range" id="highlightHighestCtrMeta">—</span>
+      </div>
+    </section>
+
+    <section class="card table-card">
+      <span class="card-eyebrow">WINNING CAMPAIGN RANKING</span>
+      <div class="table-wrap">
+        <table class="campaigns-table" id="rankingTable">
+          <thead>
+            <tr>
+              <th data-key="rank">Rank</th>
+              <th data-key="campaign_name">Campaign</th>
+              <th data-key="objective">Objective</th>
+              <th data-key="spend">Total Spend</th>
+              <th data-key="messages">Messages</th>
+              <th data-key="cost_per_message">Cost/Msg</th>
+              <th data-key="ctr">CTR</th>
+              <th data-key="performanceScore">Performance Score</th>
+            </tr>
+          </thead>
+          <tbody id="rankingTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- ============ V5: MODEL PERFORMANCE ============ -->
+<main class="dashboard tab-panel" data-tab-panel="model">
+  <div class="history-empty-state" id="modelEmptyState" hidden>
+    <span class="empty-icon">⚠</span>
+    <p>Historical data unavailable</p>
+    <span class="empty-sub">dashboard-history.json could not be loaded. Overview keeps working normally.</span>
+  </div>
+  <section class="card">
+    <span class="card-eyebrow">MITSUBISHI MODEL PERFORMANCE</span>
+    <div class="model-grid" id="modelGrid"></div>
+  </section>
+</main>
+
+<!-- ============ V5: OBJECTIVES ============ -->
+<main class="dashboard tab-panel" data-tab-panel="objectives">
+  <div class="history-empty-state" id="objectivesEmptyState" hidden>
+    <span class="empty-icon">⚠</span>
+    <p>Historical data unavailable</p>
+    <span class="empty-sub">dashboard-history.json could not be loaded. Overview keeps working normally.</span>
+  </div>
+  <section class="card">
+    <span class="card-eyebrow">OBJECTIVE COMPARISON</span>
+    <div class="objective-grid" id="objectiveGrid"></div>
+  </section>
+  <section class="card chart-card objective-chart-card">
+    <span class="card-eyebrow">MESSAGES BY OBJECTIVE</span>
+    <canvas id="objectiveChart"></canvas>
+  </section>
+</main>
+
+<!-- ============ V5: RECOMMENDATIONS ============ -->
+<main class="dashboard tab-panel" data-tab-panel="recommendations">
+  <div class="history-empty-state" id="recommendationsEmptyState" hidden>
+    <span class="empty-icon">⚠</span>
+    <p>Historical data unavailable</p>
+    <span class="empty-sub">dashboard-history.json could not be loaded. Overview keeps working normally.</span>
+  </div>
+  <section class="card">
+    <span class="card-eyebrow">AI RECOMMENDATION CENTER</span>
+    <ul class="rec-list" id="histRecList"></ul>
+  </section>
+</main>
+
+<!-- ============ V5: TIMELINE ============ -->
+<main class="dashboard tab-panel" data-tab-panel="timeline">
+  <div class="history-empty-state" id="timelineEmptyState" hidden>
+    <span class="empty-icon">⚠</span>
+    <p>Historical data unavailable</p>
+    <span class="empty-sub">dashboard-history.json could not be loaded. Overview keeps working normally.</span>
+  </div>
+  <div class="history-content" id="timelineContent">
+    <div class="card history-toolbar">
+      <div class="timeline-switch" id="timelineViewSwitch">
+        <button class="timeline-btn active" data-view="launches">Campaign Launches</button>
+        <button class="timeline-btn" data-view="trend">Daily Trend</button>
+      </div>
+      <div class="timeline-switch" id="timelineMetricSwitch">
+        <button class="timeline-btn active" data-metric="spend">Spend</button>
+        <button class="timeline-btn" data-metric="messages">Messages</button>
+      </div>
+    </div>
+
+    <section class="card chart-card timeline-trend-card" id="timelineTrendCard" hidden>
+      <span class="card-eyebrow">DAILY PERFORMANCE TREND</span>
+      <canvas id="timelineTrendChart"></canvas>
+    </section>
+
+    <section class="card timeline-launches-card" id="timelineLaunchesCard">
+      <span class="card-eyebrow">CAMPAIGN LAUNCH TIMELINE</span>
+      <div class="timeline-launches" id="timelineLaunches"></div>
+    </section>
+  </div>
 </main>
 
 <footer class="footer">
