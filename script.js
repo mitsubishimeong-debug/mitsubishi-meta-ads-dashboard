@@ -1393,6 +1393,7 @@ function renderHistoricalOverview() {
   renderHistoricalCostChart();
   renderMonthlyTrendChart();
   renderWeeklyPerformance();
+  renderMonthlyReport();
 }
 
 // v8 ADD: rolling 7-day Reach / Impressions / Messages, sourced from
@@ -1417,6 +1418,48 @@ function renderWeeklyPerformance() {
     ? `${week.startDate} → ${week.endDate}`
     : "—";
   setText("weekRange", range);
+}
+
+// v8 ADD: previous calendar month broken down week by week (reach,
+// impressions, messages, spend, ctr per week) — this is what gets
+// copied into the recurring monthly report.
+function renderMonthlyReport() {
+  const report = historyData?.monthlyReport;
+  const body = document.getElementById("monthlyReportTableBody");
+  if (!body) return;
+
+  body.innerHTML = "";
+
+  if (!report || !report.weeks || !report.weeks.length) {
+    setText("monthlyReportTitle", "MONTHLY REPORT");
+    setText("monthlyReportTotalReach", "—");
+    setText("monthlyReportTotalImpressions", "—");
+    setText("monthlyReportTotalMessages", "—");
+    setText("monthlyReportTotalSpend", "—");
+    body.innerHTML = `<tr><td colspan="7">No data yet for last month.</td></tr>`;
+    return;
+  }
+
+  setText("monthlyReportTitle", `MONTHLY REPORT — ${report.month.toUpperCase()} (${report.totalWeeks} WEEKS)`);
+
+  report.weeks.forEach(w => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>Week ${w.weekNumber}</td>
+      <td>${w.startDate} → ${w.endDate}</td>
+      <td>${formatNumber(w.reach)}</td>
+      <td>${formatNumber(w.impressions)}</td>
+      <td>${formatNumber(w.messages)}</td>
+      <td>${formatCurrency(w.spend)}</td>
+      <td>${formatPercent(w.ctr)}</td>
+    `;
+    body.appendChild(tr);
+  });
+
+  setText("monthlyReportTotalReach", formatNumber(report.totals?.reach));
+  setText("monthlyReportTotalImpressions", formatNumber(report.totals?.impressions));
+  setText("monthlyReportTotalMessages", formatNumber(report.totals?.messages));
+  setText("monthlyReportTotalSpend", formatCurrency(report.totals?.spend));
 }
 
 function renderHighlights(list) {
