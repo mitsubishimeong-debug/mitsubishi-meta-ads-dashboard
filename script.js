@@ -203,6 +203,9 @@ function render() {
   renderDelta("deltaCpm", rangeData.cpmChangeYesterday, true);
   renderDelta("deltaCostMsg", rangeData.costPerMessageChangeYesterday, true);
 
+  // v8 ADD (Phase 1): sparklines under Spend / Messages / CTR cards
+  renderKpiSparklines(rangeData.trends);
+
   // CHANGED (v7.1): was `renderBudget(rangeData.budget)`.
   // dashboard.json now provides ranges.<range>.budgetPacing instead
   // of ranges.<range>.budget — same call site, new field name only.
@@ -389,6 +392,51 @@ function renderDelta(id, value, invert = false) {
 //   "<active_campaigns> Active Campaigns • <allocated_daily_budget> Daily Budget"
 // Field names (active_campaigns / allocated_daily_budget) are read
 // exactly as n8n writes them — not renamed on the frontend.
+// ---------------- KPI SPARKLINES (v8 ADD — Phase 1) ----------------
+// Tiny inline-SVG trend lines under each KPI card, built from the
+// same rangeData.trends arrays the big trend charts already use
+// (spend / messages / ctr). No Chart.js instance per card — plain
+// SVG keeps 6 of these cheap to redraw on every 60s poll. Purely
+// additive: if a #sparkX container isn't in this build of the HTML,
+// or a trend series has fewer than 2 points (e.g. "Today"), the
+// function no-ops for that card instead of throwing.
+function buildSparklinePath(values) {
+  const nums = (values || []).map((v) => (typeof v === "number" ? v : 0));
+  if (nums.length < 2) return "";
+  const w = 100, h = 22, pad = 2;
+  const min = Math.min(...nums);
+  const max = Math.max(...nums);
+  const range = max - min || 1;
+  const step = (w - pad * 2) / (nums.length - 1);
+  const points = nums.map((v, i) => {
+    const x = pad + i * step;
+    const y = h - pad - ((v - min) / range) * (h - pad * 2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+  const trendUp = nums[nums.length - 1] >= nums[0];
+  const color = trendUp ? CHART_COLORS.green : CHART_COLORS.primary;
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline points="${points.join(
+    " "
+  )}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+function renderSparkline(id, values) {
+  const el = getEl(id);
+  if (!el) return;
+  el.innerHTML = buildSparklinePath(values);
+}
+
+function renderKpiSparklines(trends) {
+  if (!trends) return;
+  renderSparkline("sparkSpend", trends.spend);
+  renderSparkline("sparkMessages", trends.messages);
+  renderSparkline("sparkCtr", trends.ctr);
+  // cpc / cpm / cost-per-message have no daily series in
+  // dashboard.json today (only aggregate range totals) — the
+  // sparkline containers stay empty (and hidden via CSS :empty)
+  // rather than fabricating a fake trend line.
+}
+
 function renderBudget(budgetPacing) {
   const fill = getEl("budgetFill");
 
@@ -439,12 +487,19 @@ function renderFunnel(funnel) {
         i > 0 && prevVal && !isNaN(curVal)
           ? ((curVal / prevVal) * 100).toFixed(1) + "%"
           : "";
+      // v8 ADD (Phase 2): drop-off %, the inverse of pctOfPrev — how
+      // much of the previous stage was LOST before reaching this one.
+      const dropOff =
+        i > 0 && prevVal && !isNaN(curVal)
+          ? Math.max(0, 100 - (curVal / prevVal) * 100).toFixed(1) + "% drop"
+          : "";
 
       const stageHtml = `
         <div class="funnel-stage">
           <span class="funnel-stage-value">${formatNumber(stage.value)}</span>
           <span class="funnel-stage-label">${stage.label}</span>
           ${pctOfPrev ? `<span class="funnel-stage-pct">${pctOfPrev}</span>` : ""}
+          ${dropOff ? `<span class="funnel-stage-drop">${dropOff}</span>` : ""}
         </div>`;
 
       const arrowHtml = i < stages.length - 1 ? `<span class="funnel-arrow">›</span>` : "";
@@ -453,6 +508,22 @@ function renderFunnel(funnel) {
     .join("");
 
   el.innerHTML = html;
+
+  // v8 ADD (Phase 2): overall conversion rate, first stage with a
+  // value through to the last stage with a value (usually
+  // Impressions -> Messages, since Conversions is often absent).
+  const withValues = stages.filter((s) => !isNaN(Number(s.value)) && s.value != null);
+  const overallEl = getEl("funnelOverall");
+  if (overallEl) {
+    if (withValues.length >= 2) {
+      const first = Number(withValues[0].value);
+      const last = Number(withValues[withValues.length - 1].value);
+      const overallPct = first ? ((last / first) * 100).toFixed(2) + "%" : "—";
+      overallEl.textContent = `${withValues[0].label} → ${withValues[withValues.length - 1].label}: ${overallPct}`;
+    } else {
+      overallEl.textContent = "";
+    }
+  }
 }
 
 // ---------------- RECOMMENDATIONS / ALERTS ----------------
