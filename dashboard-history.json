@@ -1,5 +1,179 @@
 {
-  "generatedAt": "2026-07-30T16:31:50.276Z",
+  "generatedAt": "2026-08-01T05:48:04.116Z",
+  "weeklyPerformance": {
+    "label": "7 Days",
+    "spend": 2742.04,
+    "messages": 30,
+    "impressions": 7541,
+    "reach": 6443,
+    "clicks": 292,
+    "ctr": 1.94,
+    "days": 2,
+    "startDate": "2026-07-30",
+    "endDate": "2026-08-01",
+    "trends": {
+      "spend": [
+        2742.04,
+        0
+      ],
+      "messages": [
+        30,
+        0
+      ],
+      "impressions": [
+        7541,
+        0
+      ],
+      "reach": [
+        6443,
+        0
+      ],
+      "ctr": [
+        3.87,
+        0
+      ],
+      "labels": [
+        "2026-07-30",
+        "2026-08-01"
+      ]
+    }
+  },
+  "dashboardRanges": {
+    "today": {
+      "label": "Today",
+      "spend": 0,
+      "messages": 0,
+      "impressions": 0,
+      "reach": 0,
+      "clicks": 0,
+      "ctr": 0,
+      "days": 1,
+      "startDate": "2026-08-01",
+      "endDate": "2026-08-01",
+      "trends": {
+        "spend": [
+          0
+        ],
+        "messages": [
+          0
+        ],
+        "impressions": [
+          0
+        ],
+        "reach": [
+          0
+        ],
+        "ctr": [
+          0
+        ],
+        "labels": [
+          "2026-08-01"
+        ]
+      }
+    },
+    "7d": {
+      "label": "7 Days",
+      "spend": 2742.04,
+      "messages": 30,
+      "impressions": 7541,
+      "reach": 6443,
+      "clicks": 292,
+      "ctr": 1.94,
+      "days": 2,
+      "startDate": "2026-07-30",
+      "endDate": "2026-08-01",
+      "trends": {
+        "spend": [
+          2742.04,
+          0
+        ],
+        "messages": [
+          30,
+          0
+        ],
+        "impressions": [
+          7541,
+          0
+        ],
+        "reach": [
+          6443,
+          0
+        ],
+        "ctr": [
+          3.87,
+          0
+        ],
+        "labels": [
+          "2026-07-30",
+          "2026-08-01"
+        ]
+      }
+    },
+    "30d": {
+      "label": "30 Days",
+      "spend": 2742.04,
+      "messages": 30,
+      "impressions": 7541,
+      "reach": 6443,
+      "clicks": 292,
+      "ctr": 1.94,
+      "days": 2,
+      "startDate": "2026-07-30",
+      "endDate": "2026-08-01",
+      "trends": {
+        "spend": [
+          2742.04,
+          0
+        ],
+        "messages": [
+          30,
+          0
+        ],
+        "impressions": [
+          7541,
+          0
+        ],
+        "reach": [
+          6443,
+          0
+        ],
+        "ctr": [
+          3.87,
+          0
+        ],
+        "labels": [
+          "2026-07-30",
+          "2026-08-01"
+        ]
+      }
+    }
+  },
+  "monthlyReport": {
+    "month": "July 2026",
+    "monthKey": "2026-07",
+    "totalWeeks": 1,
+    "totals": {
+      "reach": 6443,
+      "impressions": 7541,
+      "messages": 30,
+      "spend": 2742.04,
+      "clicks": 292
+    },
+    "weeks": [
+      {
+        "weekNumber": 1,
+        "startDate": "2026-07-30",
+        "endDate": "2026-07-30",
+        "reach": 6443,
+        "impressions": 7541,
+        "messages": 30,
+        "spend": 2742.04,
+        "clicks": 292,
+        "ctr": 3.87,
+        "days": 1
+      }
+    ]
+  },
   "years": [
     "2023",
     "2024",
