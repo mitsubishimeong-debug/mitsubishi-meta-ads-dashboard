@@ -954,11 +954,64 @@ function initExport() {
   btn.addEventListener("click", () => window.print());
 }
 
+// ---------------- MONTHLY REPORT CSV EXPORT (v8 ADD — Phase 3) ----------------
+// Answers a direct ask: a downloadable "receipt" of last month's
+// weekly numbers (the same data already shown in the Monthly Report
+// table on Historical Intelligence), as a CSV file the user can open
+// in Excel/Sheets or attach to a report. Purely additive: reads the
+// same historyData.monthlyReport already rendered by
+// renderMonthlyReport(), builds a CSV string client-side, no new
+// dependency.
+function csvEscape(value) {
+  const str = String(value ?? "");
+  return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+}
+
+function exportMonthlyReportCsv() {
+  const report = historyData?.monthlyReport;
+  if (!report || !report.weeks || !report.weeks.length) {
+    alert("No monthly report data available yet to export.");
+    return;
+  }
+
+  const header = ["Week", "Date Range", "Reach", "Impressions", "Messages", "Spend", "CTR"];
+  const rows = report.weeks.map((w) => [
+    `Week ${w.weekNumber}`,
+    `${w.startDate} to ${w.endDate}`,
+    w.reach ?? 0,
+    w.impressions ?? 0,
+    w.messages ?? 0,
+    w.spend ?? 0,
+    w.ctr ?? 0,
+  ]);
+  const totals = report.totals || {};
+  rows.push(["Total", "", totals.reach ?? 0, totals.impressions ?? 0, totals.messages ?? 0, totals.spend ?? 0, ""]);
+
+  const csv = [header, ...rows].map((r) => r.map(csvEscape).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const safeMonth = (report.month || "monthly-report").replace(/\s+/g, "-").toLowerCase();
+  a.href = url;
+  a.download = `${safeMonth}-report.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function initMonthlyReportExport() {
+  const btn = getEl("exportMonthlyReportBtn");
+  if (!btn) return;
+  btn.addEventListener("click", exportMonthlyReportCsv);
+}
+
 // ---------------- INIT (v4 Overview) ----------------
 
 initRangeSwitch();
 initTableSorting();
 initExport();
+initMonthlyReportExport();
 loadDashboard();
 setInterval(loadDashboard, REFRESH_INTERVAL_MS); // v6 note: setInterval only — the page itself is never reloaded
 
