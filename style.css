@@ -206,6 +206,30 @@ body {
 /* v8 ADD (Phase 3): small export variant for in-card buttons + the
    header row that holds a card-eyebrow next to one of these */
 .export-btn--small { font-size: 9.5px; padding: 5px 10px; letter-spacing: 1px; }
+
+/* v6 ADD: month dropdown that sits next to the Monthly Report export
+   button, letting the user pick any archived month (not just the
+   previous one) to view in the weekly breakdown table. */
+.month-report-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.month-select {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  background: rgba(255,255,255,0.02);
+  color: var(--text);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  padding: 7px 10px;
+  cursor: pointer;
+  transition: border-color .2s var(--ease), color .2s var(--ease);
+}
+.month-select:hover { border-color: var(--primary); }
+.month-select:disabled { color: #555; cursor: not-allowed; opacity: 0.5; }
+.month-select option { background: #0d0d0d; color: var(--text); }
 .card-header-row {
   display: flex;
   align-items: center;
