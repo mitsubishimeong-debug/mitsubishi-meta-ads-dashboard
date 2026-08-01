@@ -304,6 +304,41 @@
       </div>
     </section>
 
+    <!-- v6 ADD: Meta does not expose a "transactions" API edge for
+         prepaid / QR-top-up funded ad accounts, so billing receipts
+         can't be pulled automatically. This form lets you log a
+         top-up by hand right after you add funds — it POSTs to the
+         "Manual Receipt Webhook" node in the n8n workflow, which
+         appends the row straight into the "Billing Receipts" Google
+         Sheet tab. Fill in RECEIPT_WEBHOOK_URL at the top of script.js
+         with your n8n webhook's production URL for this to work. -->
+    <section class="card table-card" id="receiptFormCard">
+      <div class="card-header-row">
+        <span class="card-eyebrow">LOG A RECEIPT (META AD ACCOUNT TOP-UP)</span>
+      </div>
+      <form class="receipt-form" id="receiptForm">
+        <div class="receipt-form-row">
+          <label>Date<input type="date" id="receiptDate" required></label>
+          <label>Amount<input type="number" step="0.01" min="0" id="receiptAmount" placeholder="0.00" required></label>
+          <label>Currency
+            <select id="receiptCurrency">
+              <option value="PHP" selected>PHP</option>
+              <option value="USD">USD</option>
+            </select>
+          </label>
+        </div>
+        <div class="receipt-form-row">
+          <label>Payment Method<input type="text" id="receiptMethod" placeholder="Card / QR PH / GCash"></label>
+          <label>Reference / Confirmation No.<input type="text" id="receiptRef" placeholder="Optional"></label>
+        </div>
+        <label class="receipt-form-note">Note<input type="text" id="receiptNote" placeholder="Optional"></label>
+        <div class="receipt-form-row receipt-form-actions">
+          <button type="submit" class="export-btn" id="receiptSubmitBtn">Log Receipt</button>
+          <span class="receipt-form-status" id="receiptFormStatus"></span>
+        </div>
+      </form>
+    </section>
+
     <section class="kpi-grid history-kpi-grid">
       <div class="kpi-card">
         <span class="kpi-label">Lifetime Spend</span>
