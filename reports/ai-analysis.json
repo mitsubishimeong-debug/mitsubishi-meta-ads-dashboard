@@ -1,79 +1,90 @@
 {
-  "executive_summary": "Overall performance nitong nakaraang buwan ay maituturing na 'hit and miss'. Nakapag-generate tayo ng quality leads pero medyo mahal ang cost-per-message sa ilang campaigns. Total spend ay nasa ₱8,610.66 (estimated base sa data), with total messages na 101, at average CTR na 3.4%. May mga campaigns na mataas ang engagement pero hindi nagko-convert sa messages, kaya kailangan nating mag-focus sa mas direct na call-to-action.",
+  "executive_summary": "Ang performance nitong July ay medyo halo-halo. Total spend ay nasa ₱2,742.04 na may kabuuang 28 messages. Ang average CTR ay nasa ~3.5% na okay naman, pero ang CPC ay naglalaro sa ₱7-₱19 range. Medyo mataas ang cost per message sa ilang campaigns, lalo na sa mga lumang ad sets, kaya kailangan nating mag-focus sa mga winning creatives at i-optimize ang audience targeting para bumaba ang acquisition cost.",
   "metrics": {
-    "spend": 8610.66,
-    "impressions": 27254,
-    "clicks": 775,
-    "messages": 101,
-    "ctr": 3.4,
-    "cpc": 11.11,
-    "cpm": 315.94
+    "spend": 2742.04,
+    "impressions": 7378,
+    "clicks": 261,
+    "messages": 28,
+    "ctr": 3.53,
+    "cpc": 10.51,
+    "cpm": 371.65
   },
   "best_campaigns": [
     "📁 2026 | Leads | Multi Models | JULY"
   ],
   "worst_campaigns": [
-    "📁 2026 | Sales | Multi Models | July"
+    "JULY ADS 2026 (mataas na cost-per-message sa bandang huli)"
   ],
   "winning_ads": [
-    "🚗 02 - Mirage G4 | ₱15K+/Month"
+    "🚗 02 - Mirage G4 | ₱15K+/Month (Best CTR: 5.68%)"
   ],
   "creative_insights": [
-    "Video ads are performing better than static images. Nakikita sa engagement data na mas mahaba ang time spent ng users sa video creatives natin, lalo na yung mga may 'client release' feel. Suggestion: Gumawa ng mas maraming 'delivery day' clips (short-form, raw video) dahil ito ang pinaka-trusted content sa car buyers."
+    "Video ads ang dominant sa high engagement; mas epektibo ang video para ipakita ang unit features.",
+    "Ang Mirage G4 offer na may monthly payment hook ang may pinakamagandang response rate.",
+    "Dapat i-simplify ang ad copy; masyadong mahaba ang primary text sa ibang versions.",
+    "Ang call-to-action (CTA) na 'Send Message' ay kailangan sa bawat ad para diretso sa inbox."
   ],
   "historical_insights": [
-    "Comparing to early 2026, mas controlled na ang spend natin ngayon pero kailangan natin ma-maintain yung low cost-per-message na nakita natin noong April/May (nasa ₱16-₱30 range noon). Ang trend ngayon ay tumataas ang cost-per-message due to competitive bidding, kaya kailangan ng mas talim na target audience."
+    "Consistent ang lead generation trend simula 2023, pero mas mahal ang cost-per-message ngayon kumpara sa April-May 2026.",
+    "Ang mga 'Engagement' campaigns dati ay nakakuha ng maraming reactions pero mas mainam ang 'Leads' o 'Sales' objective para sa direct inquiries.",
+    "Bumaba ang conversion efficiency (messages) ngayong July kumpara sa mga nakaraang months."
   ],
   "targeting_intelligence": {
     "best_locations": [
-      "Las Piñas, Parañaque, at Muntinlupa (Metro South focus).",
-      "Cavite area (Bacoor, Imus, Dasmariñas) as extension due to proximity to the dealership."
+      "Las Piñas City (Main catchment)",
+      "Parañaque City (High potential overlap)",
+      "Bacoor, Cavite (Growth area for car buyers)"
     ],
     "best_interests": [
-      "Car Financing, Small Business owners (para sa L300), Ride-hailing/Grab drivers, at mga taong naghahanap ng 'New Car' purchase options."
+      "Car financing/loans",
+      "Small business owners (para sa L300)",
+      "Mitsubishi Motors brand interest",
+      "Ride-hailing drivers (Grab/delivery services)"
     ],
     "market_demand_notes": [
-      "Mirage G4 remains the top-of-mind for first-time car buyers. L300 is consistent for business owners. Xpander remains the family favorite."
+      "Ang Mirage G4 ay nananatiling top-of-mind para sa mga first-time car buyers sa PH.",
+      "L300 ay hot commodity para sa small businesses/logistics; bigyang-diin ang 'business partner' value proposition.",
+      "Xpander ang pangunahing choice para sa families; dapat laging present sa ad rotation."
     ]
   },
   "creative_direction": [
     {
       "boost_target": "Mirage G4 Leads",
       "format": "video",
-      "headline": "Mitsubishi Mirage G4: Low DP!",
+      "headline": "Mirage G4: ₱15K/Month Lang!",
       "cta": "Send Message",
-      "description": "Owning a brand new Mirage G4 has never been easier. Low downpayment and light monthly terms available for this month only."
+      "description": "Own a brand new Mirage G4 today. Low downpayment and easy monthly terms!"
     },
     {
-      "boost_target": "L300 Business Use",
+      "boost_target": "L300 Business Lead",
       "format": "image",
-      "headline": "L300: Partner sa Negosyo",
+      "headline": "Business Partner mo: L300",
       "cta": "Get Quote",
-      "description": "Palaguin ang negosyo gamit ang matibay na L300. Inquire now for our flexible business financing plans."
+      "description": "Palaguin ang negosyo gamit ang reliable L300. Inquire now for business promos."
     }
   ],
   "recommendations": [
-    "I-pause ang lahat ng lumang 'Sales' objective campaigns na may high cost-per-message.",
-    "Mag-focus sa 'Leads' objective para sa next boost para makuha natin yung contact info (Phone/Messenger).",
-    "I-reactivate ang L300 business ads dahil ito ang bread and butter ng dealership natin.",
-    "Bawasan ang age range targeting; mag-focus sa 25-50 years old dahil ito ang core buying demographic."
+    "I-pause ang lahat ng lumang campaigns mula pa ng 2023-2025 para hindi ma-drain ang budget sa low-performing ads.",
+    "Mag-focus sa ₱100-₱300 daily budget per ad set para ma-test ang iba't ibang targeting (Location vs. Interest).",
+    "I-relaunch ang '📁 2026 | Leads | Multi Models | JULY' pero gumawa ng bagong ad set na naka-focus lang sa Las Piñas + 15km radius.",
+    "Linisin ang ad copy; bawasan ang masyadong maraming emojis at gawing mas direct ang benefits (Price/Downpayment)."
   ],
   "this_month_boost_plan": {
     "month": "August 2026",
     "actions": [
       {
         "priority": "high",
-        "boost_target": "🚗 02 - Mirage G4 | ₱15K+/Month (Ad ID: 120247840980830625)",
-        "action": "I-reactivate at dagdagan ang budget ng 20%.",
-        "reason": "Ito ang pinaka-effective na ad base sa CTR at cost-per-message.",
-        "impact": "Expected na mas marami tayong ma-generate na qualified inquiries para sa Mirage G4."
+        "boost_target": "🚗 02 - Mirage G4 | ₱15K+/Month",
+        "action": "I-relaunch with 30% budget increase",
+        "reason": "Ito ang may pinakamataas na CTR at cost-effective na leads nitong July.",
+        "expected_impact": "Mas mataas na volume ng qualified inquiries para sa Mirage."
       },
       {
         "priority": "medium",
-        "boost_target": "🚚 03 - L300 FB Dual AC | Business Promo",
-        "action": "I-duplicate ang campaign at gamitin ang bagong listahan ng business-interest groups.",
-        "reason": "Consistent ang demand sa L300 at kailangan natin ng bago at fresh na audience para hindi ma-saturate ang lumang targets.",
-        "impact": "Mas mababang acquisition cost para sa mga business-owner leads."
+        "boost_target": "🚚 03 - L300 FB Dual AC",
+        "action": "I-duplicate at i-target ang 'Business Owners' interest",
+        "reason": "Ang L300 ay may consistent demand sa market, kailangan lang natin ng tamang segment.",
+        "expected_impact": "Targeted leads na seryoso sa business vehicle purchase."
       }
     ]
   }
