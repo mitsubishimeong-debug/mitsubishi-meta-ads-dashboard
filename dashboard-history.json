@@ -1,68 +1,537 @@
 {
-  "generatedAt": "2026-08-01T14:27:02.242Z",
+  "generatedAt": "2026-08-01T14:37:14.263Z",
   "weeklyPerformance": {
-    "label": "",
-    "spend": 0,
-    "messages": 0,
-    "impressions": 0,
-    "reach": 0,
-    "clicks": 0,
-    "ctr": 0,
-    "days": 0,
-    "startDate": "",
-    "endDate": "",
-    "trends": {}
+    "label": "7 Days",
+    "spend": 1045.48,
+    "messages": 16,
+    "impressions": 2585,
+    "reach": 2303,
+    "clicks": 86,
+    "ctr": 1.98,
+    "days": 7,
+    "startDate": "2026-07-17",
+    "endDate": "2026-08-01",
+    "trends": {
+      "spend": [
+        192.05,
+        178.64,
+        272.69,
+        247.73,
+        154.37,
+        0,
+        0
+      ],
+      "messages": [
+        1,
+        1,
+        4,
+        6,
+        2,
+        2,
+        0
+      ],
+      "impressions": [
+        611,
+        445,
+        610,
+        598,
+        321,
+        0,
+        0
+      ],
+      "reach": [
+        520,
+        400,
+        567,
+        516,
+        300,
+        0,
+        0
+      ],
+      "ctr": [
+        3.7,
+        1.01,
+        1.64,
+        4.68,
+        2.8,
+        0,
+        0
+      ],
+      "labels": [
+        "2026-07-17",
+        "2026-07-18",
+        "2026-07-19",
+        "2026-07-20",
+        "2026-07-21",
+        "2026-07-22",
+        "2026-08-01"
+      ]
+    }
   },
   "dashboardRanges": {
     "today": {
-      "label": "",
+      "label": "Today",
       "spend": 0,
       "messages": 0,
       "impressions": 0,
       "reach": 0,
       "clicks": 0,
       "ctr": 0,
-      "days": 0,
-      "startDate": "",
-      "endDate": "",
-      "trends": {}
+      "days": 1,
+      "startDate": "2026-08-01",
+      "endDate": "2026-08-01",
+      "trends": {
+        "spend": [
+          0
+        ],
+        "messages": [
+          0
+        ],
+        "impressions": [
+          0
+        ],
+        "reach": [
+          0
+        ],
+        "ctr": [
+          0
+        ],
+        "labels": [
+          "2026-08-01"
+        ]
+      }
     },
     "7d": {
-      "label": "",
-      "spend": 0,
-      "messages": 0,
-      "impressions": 0,
-      "reach": 0,
-      "clicks": 0,
-      "ctr": 0,
-      "days": 0,
-      "startDate": "",
-      "endDate": "",
-      "trends": {}
+      "label": "7 Days",
+      "spend": 1045.48,
+      "messages": 16,
+      "impressions": 2585,
+      "reach": 2303,
+      "clicks": 86,
+      "ctr": 1.98,
+      "days": 7,
+      "startDate": "2026-07-17",
+      "endDate": "2026-08-01",
+      "trends": {
+        "spend": [
+          192.05,
+          178.64,
+          272.69,
+          247.73,
+          154.37,
+          0,
+          0
+        ],
+        "messages": [
+          1,
+          1,
+          4,
+          6,
+          2,
+          2,
+          0
+        ],
+        "impressions": [
+          611,
+          445,
+          610,
+          598,
+          321,
+          0,
+          0
+        ],
+        "reach": [
+          520,
+          400,
+          567,
+          516,
+          300,
+          0,
+          0
+        ],
+        "ctr": [
+          3.7,
+          1.01,
+          1.64,
+          4.68,
+          2.8,
+          0,
+          0
+        ],
+        "labels": [
+          "2026-07-17",
+          "2026-07-18",
+          "2026-07-19",
+          "2026-07-20",
+          "2026-07-21",
+          "2026-07-22",
+          "2026-08-01"
+        ]
+      }
     },
     "30d": {
-      "label": "",
-      "spend": 0,
-      "messages": 0,
-      "impressions": 0,
-      "reach": 0,
-      "clicks": 0,
-      "ctr": 0,
-      "days": 0,
-      "startDate": "",
-      "endDate": "",
-      "trends": {}
+      "label": "30 Days",
+      "spend": 2742.04,
+      "messages": 35,
+      "impressions": 7541,
+      "reach": 6443,
+      "clicks": 292,
+      "ctr": 2.5,
+      "days": 17,
+      "startDate": "2026-07-02",
+      "endDate": "2026-08-01",
+      "trends": {
+        "spend": [
+          227.26,
+          319.94,
+          225.98,
+          286.47,
+          317.71,
+          19.09,
+          0,
+          0,
+          95.45,
+          204.66,
+          192.05,
+          178.64,
+          272.69,
+          247.73,
+          154.37,
+          0,
+          0
+        ],
+        "messages": [
+          2,
+          7,
+          3,
+          3,
+          1,
+          0,
+          1,
+          0,
+          1,
+          1,
+          1,
+          1,
+          4,
+          6,
+          2,
+          2,
+          0
+        ],
+        "impressions": [
+          646,
+          688,
+          732,
+          807,
+          988,
+          64,
+          0,
+          0,
+          352,
+          679,
+          611,
+          445,
+          610,
+          598,
+          321,
+          0,
+          0
+        ],
+        "reach": [
+          521,
+          575,
+          617,
+          675,
+          828,
+          60,
+          0,
+          0,
+          295,
+          569,
+          520,
+          400,
+          567,
+          516,
+          300,
+          0,
+          0
+        ],
+        "ctr": [
+          3.1,
+          5.23,
+          4.51,
+          4.83,
+          4.25,
+          0,
+          0,
+          0,
+          2.84,
+          3.83,
+          3.7,
+          1.01,
+          1.64,
+          4.68,
+          2.8,
+          0,
+          0
+        ],
+        "labels": [
+          "2026-07-02",
+          "2026-07-03",
+          "2026-07-04",
+          "2026-07-05",
+          "2026-07-06",
+          "2026-07-07",
+          "2026-07-08",
+          "2026-07-09",
+          "2026-07-15",
+          "2026-07-16",
+          "2026-07-17",
+          "2026-07-18",
+          "2026-07-19",
+          "2026-07-20",
+          "2026-07-21",
+          "2026-07-22",
+          "2026-08-01"
+        ]
+      }
     }
   },
   "monthlyReport": {
-    "month": "",
-    "monthKey": "",
-    "totalWeeks": 0,
-    "totals": {},
-    "weeks": []
+    "month": "July 2026",
+    "monthKey": "2026-07",
+    "totalWeeks": 5,
+    "totals": {
+      "reach": 6440,
+      "impressions": 7541,
+      "messages": 28,
+      "spend": 2742.04,
+      "clicks": 292
+    },
+    "weeks": [
+      {
+        "weekNumber": 1,
+        "startDate": "2026-07-01",
+        "endDate": "2026-07-07",
+        "reach": 3276,
+        "impressions": 3925,
+        "messages": 15,
+        "spend": 1396.45,
+        "clicks": 170,
+        "ctr": 3.65,
+        "days": 6
+      },
+      {
+        "weekNumber": 2,
+        "startDate": "2026-07-08",
+        "endDate": "2026-07-14",
+        "reach": 0,
+        "impressions": 0,
+        "messages": 0,
+        "spend": 0,
+        "clicks": 0,
+        "ctr": 0,
+        "days": 2
+      },
+      {
+        "weekNumber": 3,
+        "startDate": "2026-07-15",
+        "endDate": "2026-07-21",
+        "reach": 3164,
+        "impressions": 3616,
+        "messages": 13,
+        "spend": 1345.59,
+        "clicks": 122,
+        "ctr": 3.25,
+        "days": 7
+      },
+      {
+        "weekNumber": 4,
+        "startDate": "2026-07-22",
+        "endDate": "2026-07-28",
+        "reach": 0,
+        "impressions": 0,
+        "messages": 0,
+        "spend": 0,
+        "clicks": 0,
+        "ctr": 0,
+        "days": 1
+      },
+      {
+        "weekNumber": 5,
+        "startDate": "2026-07-29",
+        "endDate": "2026-07-31",
+        "reach": 0,
+        "impressions": 0,
+        "messages": 0,
+        "spend": 0,
+        "clicks": 0,
+        "ctr": 0,
+        "days": 0
+      }
+    ]
   },
-  "monthlyReports": {},
-  "availableMonths": [],
+  "monthlyReports": {
+    "2026-07": {
+      "month": "July 2026",
+      "monthKey": "2026-07",
+      "totalWeeks": 5,
+      "totals": {
+        "reach": 6440,
+        "impressions": 7541,
+        "messages": 28,
+        "spend": 2742.04,
+        "clicks": 292
+      },
+      "weeks": [
+        {
+          "weekNumber": 1,
+          "startDate": "2026-07-01",
+          "endDate": "2026-07-07",
+          "reach": 3276,
+          "impressions": 3925,
+          "messages": 15,
+          "spend": 1396.45,
+          "clicks": 170,
+          "ctr": 3.65,
+          "days": 6
+        },
+        {
+          "weekNumber": 2,
+          "startDate": "2026-07-08",
+          "endDate": "2026-07-14",
+          "reach": 0,
+          "impressions": 0,
+          "messages": 0,
+          "spend": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "days": 2
+        },
+        {
+          "weekNumber": 3,
+          "startDate": "2026-07-15",
+          "endDate": "2026-07-21",
+          "reach": 3164,
+          "impressions": 3616,
+          "messages": 13,
+          "spend": 1345.59,
+          "clicks": 122,
+          "ctr": 3.25,
+          "days": 7
+        },
+        {
+          "weekNumber": 4,
+          "startDate": "2026-07-22",
+          "endDate": "2026-07-28",
+          "reach": 0,
+          "impressions": 0,
+          "messages": 0,
+          "spend": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "days": 1
+        },
+        {
+          "weekNumber": 5,
+          "startDate": "2026-07-29",
+          "endDate": "2026-07-31",
+          "reach": 0,
+          "impressions": 0,
+          "messages": 0,
+          "spend": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "days": 0
+        }
+      ]
+    },
+    "2026-08": {
+      "month": "August 2026",
+      "monthKey": "2026-08",
+      "totalWeeks": 5,
+      "totals": {
+        "reach": 0,
+        "impressions": 0,
+        "messages": 0,
+        "spend": 0,
+        "clicks": 0
+      },
+      "weeks": [
+        {
+          "weekNumber": 1,
+          "startDate": "2026-08-01",
+          "endDate": "2026-08-07",
+          "reach": 0,
+          "impressions": 0,
+          "messages": 0,
+          "spend": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "days": 1
+        },
+        {
+          "weekNumber": 2,
+          "startDate": "2026-08-08",
+          "endDate": "2026-08-14",
+          "reach": 0,
+          "impressions": 0,
+          "messages": 0,
+          "spend": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "days": 0
+        },
+        {
+          "weekNumber": 3,
+          "startDate": "2026-08-15",
+          "endDate": "2026-08-21",
+          "reach": 0,
+          "impressions": 0,
+          "messages": 0,
+          "spend": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "days": 0
+        },
+        {
+          "weekNumber": 4,
+          "startDate": "2026-08-22",
+          "endDate": "2026-08-28",
+          "reach": 0,
+          "impressions": 0,
+          "messages": 0,
+          "spend": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "days": 0
+        },
+        {
+          "weekNumber": 5,
+          "startDate": "2026-08-29",
+          "endDate": "2026-08-31",
+          "reach": 0,
+          "impressions": 0,
+          "messages": 0,
+          "spend": 0,
+          "clicks": 0,
+          "ctr": 0,
+          "days": 0
+        }
+      ]
+    }
+  },
+  "availableMonths": [
+    {
+      "key": "2026-07",
+      "label": "July 2026"
+    },
+    {
+      "key": "2026-08",
+      "label": "August 2026"
+    }
+  ],
   "years": [
     "2023",
     "2024",
