@@ -148,6 +148,42 @@ function setStatus(isLive) {
 // always points at a range that actually has data. Never assumes
 // "today"/"7d"/"30d" all exist — reads only from what's there.
 function applyRangeAvailability() {
+  // v9 FIX (filters going dead): dashboard.json's ranges{} object is
+  // built upstream in n8n ("Build Dashboard Ranges" -> "Prepare
+  // Dashboard JSON"). When that node chain doesn't produce output for
+  // a given run (Merge node waiting on a branch, HTTP Request auth
+  // failure, etc.) "Prepare Dashboard JSON" falls back to `ranges: {}`
+  // — which used to disable ALL THREE range buttons and leave the
+  // whole Overview tab blank, even though dashboard.json still has a
+  // perfectly good legacy top-level `overview` object with real
+  // numbers. This synthesizes a `today` range from `overview` in that
+  // case so Today keeps working instead of every button going dark.
+  // 7d/30d still correctly stay disabled since there's no way to
+  // derive a multi-day window from a single snapshot — the real fix
+  // for those is upstream in n8n (see notes shared separately).
+  if (
+    currentData &&
+    (!currentData.ranges || Object.keys(currentData.ranges).length === 0) &&
+    currentData.overview &&
+    Object.keys(currentData.overview).length > 0
+  ) {
+    const o = currentData.overview;
+    currentData.ranges = {
+      today: {
+        label: "Today",
+        spend: Number(o.spend || 0),
+        messages: Number(o.messages || 0),
+        ctr: Number(o.ctr || 0),
+        cpc: Number(o.cpc || 0),
+        cpm: Number(o.cpm || 0),
+        costPerMessage: Number(o.cost_per_message ?? o.costPerMessage ?? 0),
+        funnel: {},
+        trends: {},
+        budgetPacing: currentData.budgetPacing || {},
+      },
+    };
+  }
+
   const ranges = (currentData && currentData.ranges) || {};
   const availableKeys = Object.keys(ranges);
 
