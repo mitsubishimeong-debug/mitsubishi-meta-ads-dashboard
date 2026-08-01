@@ -52,6 +52,12 @@
 const REFRESH_INTERVAL_MS = 60000; // poll every 60s for n8n updates
 const ANIMATE_MS = 700;
 
+// v6 ADD: paste your n8n webhook's PRODUCTION URL here (the "Manual
+// Receipt Webhook" node, path "billing-receipt") to enable the "Log a
+// Receipt" form on the Historical Intelligence tab. Leave as "" to
+// keep the form disabled.
+const RECEIPT_WEBHOOK_URL = "https://propeller-quake-maker.ngrok-free.dev/webhook/billing-receipt";
+
 const CHART_COLORS = {
   primary: "#E60012",
   green: "#2ECC71",
@@ -1015,6 +1021,7 @@ initTableSorting();
 initExport();
 initMonthlyReportExport();
 initMonthDropdown();
+initReceiptForm();
 loadDashboard();
 setInterval(loadDashboard, REFRESH_INTERVAL_MS); // v6 note: setInterval only — the page itself is never reloaded
 
@@ -1656,6 +1663,69 @@ function initMonthDropdown() {
   select.addEventListener("change", () => {
     currentMonthFilter = select.value || null;
     renderMonthlyReport();
+  });
+}
+
+// v6 ADD: "Log a Receipt" form — POSTs to the n8n "Manual Receipt
+// Webhook" node (RECEIPT_WEBHOOK_URL), which appends the row into the
+// "Billing Receipts" Google Sheet tab. Exists because Meta does not
+// expose a "transactions" API edge for prepaid / QR-top-up funded ad
+// accounts, so there is no way to pull real billing receipts
+// automatically — this is the manual fallback.
+function initReceiptForm() {
+  const form = document.getElementById("receiptForm");
+  if (!form) return;
+
+  const statusEl = document.getElementById("receiptFormStatus");
+  const submitBtn = document.getElementById("receiptSubmitBtn");
+
+  if (!RECEIPT_WEBHOOK_URL) {
+    if (statusEl) {
+      statusEl.textContent = "Set RECEIPT_WEBHOOK_URL in script.js to enable this form.";
+      statusEl.classList.add("is-error");
+    }
+    if (submitBtn) submitBtn.disabled = true;
+    return;
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      date: document.getElementById("receiptDate")?.value,
+      amount: document.getElementById("receiptAmount")?.value,
+      currency: document.getElementById("receiptCurrency")?.value,
+      payment_method: document.getElementById("receiptMethod")?.value,
+      reference_id: document.getElementById("receiptRef")?.value,
+      note: document.getElementById("receiptNote")?.value,
+    };
+
+    if (submitBtn) submitBtn.disabled = true;
+    if (statusEl) {
+      statusEl.textContent = "Logging…";
+      statusEl.classList.remove("is-success", "is-error");
+    }
+
+    try {
+      const res = await fetch(RECEIPT_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      form.reset();
+      if (statusEl) {
+        statusEl.textContent = "Receipt logged.";
+        statusEl.classList.add("is-success");
+      }
+    } catch (err) {
+      if (statusEl) {
+        statusEl.textContent = `Failed to log receipt: ${err.message}`;
+        statusEl.classList.add("is-error");
+      }
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
+    }
   });
 }
 
