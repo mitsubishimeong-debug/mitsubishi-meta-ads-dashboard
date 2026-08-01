@@ -359,6 +359,10 @@ body {
   color: var(--text-primary, #fff);
 }
 
+.boost-plan-card {
+  border-left: 3px solid var(--primary);
+}
+
 .kpi-card {
   background: var(--glass-bg-soft);
   border: 1px solid var(--glass-border);
