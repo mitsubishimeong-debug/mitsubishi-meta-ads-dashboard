@@ -203,6 +203,18 @@ body {
 .export-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-1px); }
 .export-btn:active { transform: translateY(0); }
 
+/* v8 ADD (Phase 3): small export variant for in-card buttons + the
+   header row that holds a card-eyebrow next to one of these */
+.export-btn--small { font-size: 9.5px; padding: 5px 10px; letter-spacing: 1px; }
+.card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.card-header-row .card-eyebrow { margin-bottom: 0; }
+
 .status-pill {
   display: flex;
   align-items: center;
