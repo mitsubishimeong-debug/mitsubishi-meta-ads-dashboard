@@ -968,7 +968,9 @@ function csvEscape(value) {
 }
 
 function exportMonthlyReportCsv() {
-  const report = historyData?.monthlyReport;
+  const reports = historyData?.monthlyReports;
+  const report = (reports && currentMonthFilter && reports[currentMonthFilter])
+    || historyData?.monthlyReport;
   if (!report || !report.weeks || !report.weeks.length) {
     alert("No monthly report data available yet to export.");
     return;
@@ -1012,6 +1014,7 @@ initRangeSwitch();
 initTableSorting();
 initExport();
 initMonthlyReportExport();
+initMonthDropdown();
 loadDashboard();
 setInterval(loadDashboard, REFRESH_INTERVAL_MS); // v6 note: setInterval only — the page itself is never reloaded
 
@@ -1032,6 +1035,7 @@ let dailyPerformance = [];        // historyData.dailyPerformance, unmodified (d
 let historyAvailable = false;
 
 let currentYearFilter = "all";
+let currentMonthFilter = null;   // "YYYY-MM" — v6: selected month for the Monthly Report table. null = default (previous month)
 let rankingSortState = { key: "performanceScore", dir: "desc" };
 let currentTimelineView = "launches";   // "launches" | "trend"
 let currentTimelineMetric = "spend";    // "spend" | "messages"
@@ -1618,11 +1622,56 @@ function renderWeeklyPerformance() {
   setText("weekRange", range);
 }
 
-// v8 ADD: previous calendar month broken down week by week (reach,
-// impressions, messages, spend, ctr per week) — this is what gets
-// copied into the recurring monthly report.
+// v6 ADD: populate the month dropdown (Jan–Dec, across whatever years
+// n8n has actually built a report for) from historyData.availableMonths,
+// and keep it in sync with the currently selected month.
+function renderMonthDropdown() {
+  const select = document.getElementById("monthReportSelect");
+  if (!select) return;
+
+  const available = historyData?.availableMonths || [];
+
+  if (!available.length) {
+    select.innerHTML = `<option value="">No months available</option>`;
+    select.disabled = true;
+    return;
+  }
+
+  select.disabled = false;
+
+  // Default to the most recent month (matches the old "previous
+  // month" behavior) unless the user has already picked one.
+  if (!currentMonthFilter || !available.some((m) => m.key === currentMonthFilter)) {
+    currentMonthFilter = available[available.length - 1].key;
+  }
+
+  select.innerHTML = available
+    .map((m) => `<option value="${m.key}"${m.key === currentMonthFilter ? " selected" : ""}>${m.label}</option>`)
+    .join("");
+}
+
+function initMonthDropdown() {
+  const select = document.getElementById("monthReportSelect");
+  if (!select) return;
+  select.addEventListener("change", () => {
+    currentMonthFilter = select.value || null;
+    renderMonthlyReport();
+  });
+}
+
+// v8 ADD, v6 REWIRED: a selected calendar month broken down week by
+// week (reach, impressions, messages, spend, ctr per week) — reads
+// from historyData.monthlyReports[currentMonthFilter] so any month
+// n8n has archived can be viewed, not just last month. Falls back to
+// the single historyData.monthlyReport for older dashboard-history.json
+// files that don't have the monthlyReports archive yet.
 function renderMonthlyReport() {
-  const report = historyData?.monthlyReport;
+  renderMonthDropdown();
+
+  const reports = historyData?.monthlyReports;
+  const report = (reports && currentMonthFilter && reports[currentMonthFilter])
+    || historyData?.monthlyReport;
+
   const body = document.getElementById("monthlyReportTableBody");
   if (!body) return;
 
@@ -1634,7 +1683,7 @@ function renderMonthlyReport() {
     setText("monthlyReportTotalImpressions", "—");
     setText("monthlyReportTotalMessages", "—");
     setText("monthlyReportTotalSpend", "—");
-    body.innerHTML = `<tr><td colspan="7">No data yet for last month.</td></tr>`;
+    body.innerHTML = `<tr><td colspan="7">No data yet for this month.</td></tr>`;
     return;
   }
 
