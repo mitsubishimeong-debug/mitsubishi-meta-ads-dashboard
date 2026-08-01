@@ -186,6 +186,7 @@ function render() {
   setText("lastUpdated", `Last updated ${new Date().toLocaleTimeString()}`);
 
   animateGauge(currentData.accountHealth);
+  renderGaugeBasis(currentData.accountHealthBasis);
 
   // KPI cards + deltas (animated count-up on every render, including range switches)
   animateKpi("kpiSpend", rangeData.spend, formatCurrency);
@@ -512,6 +513,20 @@ function animateGauge(rawScore) {
   if (fill) fill.style.stroke = color;
 
   animateNumber("healthScore", safeScore);
+}
+
+// NEW (2026-08): Account Health is computed server-side from whichever
+// window (7d / 30d / today) actually had activity -- this makes that
+// transparent instead of the score just looking like a fixed number.
+function renderGaugeBasis(basis) {
+  const el = getEl("gaugeBasis");
+  if (!el) return;
+  const labels = {
+    "7d": "Based on last 7 days",
+    "30d": "Based on last 30 days",
+    "today": "Based on today (no recent 7d/30d activity)",
+  };
+  el.textContent = labels[basis] || "";
 }
 
 function animateNumber(id, target) {
@@ -1344,10 +1359,43 @@ function renderBestWorstCampaigns() {
   renderCampaignInsightCards("worstCampaignsList", aiData?.worst_campaigns);
 }
 
+// NEW (2026-08): aiData.targeting_intelligence = { best_locations: [],
+// best_interests: [], market_demand_notes: [] } — each a plain string
+// array. renderReasonedList already handles plain strings gracefully
+// (no badge, just text), so no new list-rendering logic needed.
+function renderTargetingIntelligence() {
+  const t = aiData?.targeting_intelligence || {};
+  renderReasonedList("targetingLocationsList", Array.isArray(t.best_locations) ? t.best_locations : [], "rec");
+  renderReasonedList("targetingInterestsList", Array.isArray(t.best_interests) ? t.best_interests : [], "rec");
+  renderReasonedList("marketDemandList", Array.isArray(t.market_demand_notes) ? t.market_demand_notes : [], "rec");
+}
+
+// NEW (2026-08): aiData.creative_direction = [{ boost_target, format
+// ("image"|"video"), headline, cta, description }]. Reuses the same
+// reasoned-list look as the boost plan — format shown as a colored
+// badge (via the existing priority-badge mechanism), headline/cta/
+// description folded into the reason line.
+function renderCreativeDirection() {
+  const list = Array.isArray(aiData?.creative_direction) ? aiData.creative_direction : [];
+  const items = list.map((c) => ({
+    text: c.boost_target ?? "—",
+    reason: [
+      c.headline ? `Headline: "${c.headline}"` : null,
+      c.cta ? `CTA: ${c.cta}` : null,
+      c.description || null,
+    ].filter(Boolean).join(" · "),
+    priority: c.format
+      ? c.format.charAt(0).toUpperCase() + c.format.slice(1).toLowerCase()
+      : null,
+  }));
+  renderReasonedList("creativeDirectionList", items, "rec");
+}
+
 // ADD — orchestrator for the whole Recommendations tab
 // v7 MODIFY: now also renders metrics and best/worst campaigns so
 // every field in reports/ai-analysis.json is displayed somewhere —
 // nothing from that file is left un-rendered.
+// v10 MODIFY: also renders targeting_intelligence and creative_direction.
 function renderAIAnalysis() {
   if (!aiAvailable) return;
   renderExecutiveSummary();
@@ -1358,6 +1406,8 @@ function renderAIAnalysis() {
   renderCreativeInsights();
   renderHistoricalAIInsights();
   renderBoostPlan();
+  renderTargetingIntelligence();
+  renderCreativeDirection();
 }
 
 // v9 ADD: "this_month_boost_plan" from reports/ai-analysis.json — the AI's
