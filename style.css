@@ -422,6 +422,42 @@ body {
 .delta.flat { color: var(--secondary); background: rgba(170,170,170,0.1); }
 .delta:empty { display: none; }
 
+/* ---- Phase 1: KPI sparklines + hover tooltips (additive, v8) ---- */
+.kpi-spark {
+  height: 22px;
+  margin-top: 2px;
+}
+.kpi-spark svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.kpi-spark:empty { display: none; }
+
+.kpi-card[data-tooltip] { position: relative; cursor: default; }
+.kpi-card[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 8px);
+  width: max-content;
+  max-width: 220px;
+  background: #101010;
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary, #fff);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  line-height: 1.4;
+  padding: 6px 8px;
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity .15s var(--ease), transform .15s var(--ease);
+  z-index: 20;
+}
+.kpi-card[data-tooltip]:hover::after,
+.kpi-card[data-tooltip]:focus-within::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* ============ BUDGET PACING ============ */
 .budget-card { margin-bottom: 16px; }
 .budget-row {
@@ -489,10 +525,29 @@ body {
   font-size: 10.5px;
   color: var(--green);
 }
+.funnel-stage-drop {
+  font-size: 9.5px;
+  color: var(--secondary);
+  opacity: .8;
+}
 .funnel-arrow {
   align-self: center;
   color: var(--border);
   font-size: 18px;
+}
+
+/* v8 ADD (Phase 2) */
+.funnel-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.funnel-overall {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--green);
 }
 
 /* ============ TOP ROW ============ */
