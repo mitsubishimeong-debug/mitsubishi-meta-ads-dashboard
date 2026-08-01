@@ -1392,6 +1392,31 @@ function renderHistoricalOverview() {
   renderHistoricalCtrChart();
   renderHistoricalCostChart();
   renderMonthlyTrendChart();
+  renderWeeklyPerformance();
+}
+
+// v8 ADD: rolling 7-day Reach / Impressions / Messages, sourced from
+// dashboard-history.json's weeklyPerformance field (built in n8n from the
+// Daily Summary sheet). Used for the recurring weekly report.
+function renderWeeklyPerformance() {
+  const week = historyData?.weeklyPerformance;
+
+  if (!week) {
+    setText("weekReach", "—");
+    setText("weekImpressions", "—");
+    setText("weekMessages", "—");
+    setText("weekRange", "—");
+    return;
+  }
+
+  setText("weekReach", formatNumber(week.reach));
+  setText("weekImpressions", formatNumber(week.impressions));
+  setText("weekMessages", formatNumber(week.messages));
+
+  const range = (week.startDate && week.endDate)
+    ? `${week.startDate} → ${week.endDate}`
+    : "—";
+  setText("weekRange", range);
 }
 
 function renderHighlights(list) {
