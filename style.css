@@ -335,6 +335,21 @@ body {
   gap: 16px;
 }
 
+.card-eyebrow-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.card-eyebrow-row .card-eyebrow {
+  margin-bottom: 0;
+}
+
+.week-kpi-grid {
+  margin-bottom: 24px;
+}
+
 .kpi-card {
   background: var(--glass-bg-soft);
   border: 1px solid var(--glass-border);
