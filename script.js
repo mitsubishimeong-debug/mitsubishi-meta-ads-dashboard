@@ -1357,6 +1357,30 @@ function renderAIAnalysis() {
   renderWinningAds();
   renderCreativeInsights();
   renderHistoricalAIInsights();
+  renderBoostPlan();
+}
+
+// v9 ADD: "this_month_boost_plan" from reports/ai-analysis.json — the AI's
+// prioritized, specific list of what to boost THIS month (which campaign/
+// ad/creative, what action, why, expected impact). Reuses the same
+// renderReasonedList() pattern as the other recommendation lists so it
+// matches the existing look (priority badges, etc.).
+function renderBoostPlan() {
+  const plan = aiData?.this_month_boost_plan;
+  setText("boostPlanMonth", plan?.month || "");
+
+  const actions = Array.isArray(plan?.actions) ? plan.actions : [];
+  const items = actions.map((a) => ({
+    text: [a.boost_target, a.action].filter(Boolean).join(" — ") || "—",
+    reason: [a.reason, a.expected_impact ? `Expected: ${a.expected_impact}` : null]
+      .filter(Boolean)
+      .join(" · "),
+    priority: a.priority
+      ? a.priority.charAt(0).toUpperCase() + a.priority.slice(1).toLowerCase()
+      : null,
+  }));
+
+  renderReasonedList("boostPlanList", items, "rec");
 }
 
 // ---------------- MODULE 1: HISTORICAL OVERVIEW (lifetime KPIs + highlights) ----------------
