@@ -350,6 +350,15 @@ body {
   margin-bottom: 24px;
 }
 
+.monthly-report-total-row {
+  font-weight: 700;
+  border-top: 1px solid var(--glass-border);
+}
+
+.monthly-report-total-row td {
+  color: var(--text-primary, #fff);
+}
+
 .kpi-card {
   background: var(--glass-bg-soft);
   border: 1px solid var(--glass-border);
