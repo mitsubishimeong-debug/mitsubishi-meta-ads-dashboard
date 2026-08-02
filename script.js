@@ -155,6 +155,17 @@ async function loadDashboard() {
 
     render();
     setStatus(true);
+
+    // FIX (Aug 2026): re-run historical processing now that currentData
+    // is fresh. processHistoricalData()'s campaignRanking fallback (see
+    // that function) depends on currentData, and dashboard.json /
+    // dashboard-history.json load independently — whichever finishes
+    // last needs to re-trigger this so Model Performance / Objectives
+    // don't get stuck on a stale/empty state from a load-order race.
+    if (historyAvailable) {
+      processHistoricalData();
+      renderAllHistoricalTabs();
+    }
   } catch (err) {
     console.warn("Dashboard data unavailable:", err.message);
     setStatus(false);
@@ -1124,6 +1135,9 @@ setInterval(loadDashboard, REFRESH_INTERVAL_MS); // v6 note: setInterval only �
 
 let historyData = null;          // raw dashboard-history.json
 let processedCampaigns = [];      // historyData.campaigns + model + performanceScore
+let historicalUsingFallback = false; // true when processedCampaigns came from
+                                      // currentData.campaignRanking instead of
+                                      // historyData.campaigns (see processHistoricalData)
 let dailyPerformance = [];        // historyData.dailyPerformance, unmodified (daily granularity preserved)
 let historyAvailable = false;
 
@@ -1323,7 +1337,31 @@ function setHistoryAvailability(isAvailable) {
 // Documented here so it's clear this is a simple heuristic, not a
 // model prediction.
 function processHistoricalData() {
-  const rawCampaigns = Array.isArray(historyData?.campaigns) ? historyData.campaigns : [];
+  let rawCampaigns = Array.isArray(historyData?.campaigns) ? historyData.campaigns : [];
+
+  // FIX (Aug 2026): dashboard-history.json's "campaigns" array has been
+  // coming back empty ([]) from the n8n run that builds it, even though
+  // the aggregate weekly/monthly totals in that same file are fine —
+  // this is the classic "node chain produced no output for this run"
+  // failure mode already documented elsewhere in this file (see the
+  // "v9 FIX" note in applyRangeAvailability). Model Performance and
+  // Objectives both read from processedCampaigns, which is why they
+  // both show "No campaign data for this period" while Overview and
+  // the KPI totals (which read from dashboard.json / monthlyReport
+  // instead) keep working fine.
+  //
+  // dashboard.json's campaignRanking still has real per-campaign rows
+  // for the same period (it's built by a separate n8n branch), so we
+  // fall back to that instead of showing an empty tab. This is a
+  // stand-in for real data, not a fix for the broken upstream node —
+  // the actual fix is on the n8n side: whatever step populates
+  // dashboard-history.json's "campaigns" array needs to be re-run /
+  // debugged so it stops returning [].
+  historicalUsingFallback = false;
+  if (rawCampaigns.length === 0 && Array.isArray(currentData?.campaignRanking) && currentData.campaignRanking.length > 0) {
+    rawCampaigns = currentData.campaignRanking;
+    historicalUsingFallback = true;
+  }
 
   processedCampaigns = rawCampaigns.map((c) => {
     const spend = Number(c.spend) || 0;
@@ -2029,11 +2067,18 @@ function renderTables() {
 function renderModelPerformance() {
   const grid = getEl("modelGrid");
   const models = calculateModelPerformance(currentYearFilter);
+  const fallbackNote = historicalUsingFallback
+    ? `<div class="model-card-empty" style="grid-column:1/-1;margin-bottom:8px;color:#E6A612;text-align:left;">
+         ⚠ Historical sync (dashboard-history.json) returned no campaign rows for this run —
+         showing the latest snapshot from dashboard.json instead. Check the n8n step that
+         builds "campaigns" in dashboard-history.json.
+       </div>`
+    : "";
 
   if (grid) {
     grid.innerHTML = models.length === 0
       ? `<div class="model-card-empty">No campaign data for this period</div>`
-      : models
+      : fallbackNote + models
           .map((m) => `
             <div class="model-card">
               <span class="model-card-name">${escapeHtml(m.model)}</span>
@@ -2068,11 +2113,18 @@ function renderObjectiveChart(objectives) {
 function renderObjectiveComparison() {
   const objectives = calculateObjectiveComparison(currentYearFilter);
   const grid = getEl("objectiveGrid");
+  const fallbackNote = historicalUsingFallback
+    ? `<div class="objective-card-empty" style="grid-column:1/-1;margin-bottom:8px;color:#E6A612;text-align:left;">
+         ⚠ Historical sync (dashboard-history.json) returned no campaign rows for this run —
+         showing the latest snapshot from dashboard.json instead. Check the n8n step that
+         builds "campaigns" in dashboard-history.json.
+       </div>`
+    : "";
 
   if (grid) {
     grid.innerHTML = objectives.length === 0
       ? `<div class="objective-card-empty">No campaign data for this period</div>`
-      : objectives
+      : fallbackNote + objectives
           .map((o) => `
             <div class="objective-card">
               <span class="objective-card-name">${escapeHtml(o.objective)}</span>
