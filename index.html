@@ -287,6 +287,7 @@
               <th data-key="messages">Messages</th>
               <th data-key="spend">Spend</th>
               <th data-key="ctr">CTR</th>
+              <th data-key="closedSales">Closed Sales</th>
             </tr>
           </thead>
           <tbody id="monthlyReportTableBody"></tbody>
@@ -298,6 +299,7 @@
               <td id="monthlyReportTotalMessages">—</td>
               <td id="monthlyReportTotalSpend">—</td>
               <td>—</td>
+              <td id="monthlyReportTotalClosedSales">—</td>
             </tr>
           </tfoot>
         </table>
@@ -349,6 +351,27 @@
         </a>
         <span class="receipt-form-status">Opens Payment Activity for this ad account — pick the month, then "Download ▾" → "Download all as ZIP/PDF".</span>
       </div>
+    </section>
+
+    <!-- v11 ADD: manual closed-sale logging, same pattern as the receipt
+         form above. POSTs to CLOSED_SALE_WEBHOOK_URL -> "Append Closed
+         Sales" sheet tab -> weekly totals computed server-side and
+         shown in the Monthly Report table + CSV export. -->
+    <section class="card table-card" id="closedSaleFormCard">
+      <div class="card-header-row">
+        <span class="card-eyebrow">LOG A CLOSED SALE (FROM ONLINE INQUIRIES)</span>
+      </div>
+      <form class="receipt-form" id="closedSaleForm">
+        <div class="receipt-form-row">
+          <label>Date<input type="date" id="closedSaleDate" required></label>
+          <label>Closed Sales<input type="number" step="1" min="1" id="closedSaleCount" placeholder="1" value="1" required></label>
+        </div>
+        <label class="receipt-form-note">Note<input type="text" id="closedSaleNote" placeholder="Optional (e.g. model, customer)"></label>
+        <div class="receipt-form-row receipt-form-actions">
+          <button type="submit" class="export-btn" id="closedSaleSubmitBtn">Log Closed Sale</button>
+          <span class="receipt-form-status" id="closedSaleFormStatus"></span>
+        </div>
+      </form>
     </section>
 
     <section class="kpi-grid history-kpi-grid">
