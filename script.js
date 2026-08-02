@@ -1732,8 +1732,43 @@ function renderHistoricalOverview() {
 // v8 ADD: rolling 7-day Reach / Impressions / Messages, sourced from
 // dashboard-history.json's weeklyPerformance field (built in n8n from the
 // Daily Summary sheet). Used for the recurring weekly report.
+//
+// FIX (Aug 2026): weeklyPerformance has been coming back stuck on a
+// stale single day (startDate === endDate, all totals 0) — the same
+// upstream "node produced no output for this run" failure documented
+// in processHistoricalData() above, just hitting a different field in
+// the same dashboard-history.json file. dashboard.json's ranges["7d"]
+// is built by a separate n8n branch and still has real numbers for
+// the same rolling window, so fall back to that instead of showing
+// zeros. This is a stand-in, not a fix — the real fix is upstream:
+// whatever n8n step rebuilds weeklyPerformance (and availableMonths,
+// which has the same "stuck on July" symptom for the month dropdown
+// and can't be patched client-side without fabricating a month's
+// totals) needs to be re-run / debugged.
 function renderWeeklyPerformance() {
-  const week = historyData?.weeklyPerformance;
+  let week = historyData?.weeklyPerformance;
+  let usingFallback = false;
+
+  const looksStale = !week || (
+    Number(week.reach) === 0 &&
+    Number(week.impressions) === 0 &&
+    Number(week.messages) === 0
+  );
+  const fallbackRange = currentData?.ranges?.["7d"];
+  const fallbackHasData = fallbackRange && (
+    Number(fallbackRange.funnel?.reach) > 0 ||
+    Number(fallbackRange.funnel?.impressions) > 0 ||
+    Number(fallbackRange.messages) > 0
+  );
+
+  if (looksStale && fallbackHasData) {
+    week = {
+      reach: fallbackRange.funnel?.reach,
+      impressions: fallbackRange.funnel?.impressions,
+      messages: fallbackRange.messages,
+    };
+    usingFallback = true;
+  }
 
   if (!week) {
     setText("weekReach", "—");
@@ -1747,9 +1782,11 @@ function renderWeeklyPerformance() {
   setText("weekImpressions", formatNumber(week.impressions));
   setText("weekMessages", formatNumber(week.messages));
 
-  const range = (week.startDate && week.endDate)
-    ? `${week.startDate} → ${week.endDate}`
-    : "—";
+  const range = usingFallback
+    ? "Last 7 days (dashboard.json snapshot — history sync stale ⚠)"
+    : (week.startDate && week.endDate)
+      ? `${week.startDate} → ${week.endDate}`
+      : "—";
   setText("weekRange", range);
 }
 
