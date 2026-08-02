@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-02T02:40:29.668Z",
+  "generatedAt": "2026-08-02T14:44:28.851Z",
   "weeklyPerformance": {
     "label": "7 Days",
     "spend": 853.43,
@@ -176,12 +176,12 @@
       "impressions": 7541,
       "reach": 6443,
       "clicks": 292,
-      "ctr": 2.36,
-      "days": 18,
-      "startDate": "2026-07-02",
+      "ctr": 2.23,
+      "days": 19,
       "endDate": "2026-08-02",
       "trends": {
         "spend": [
+          0,
           227.26,
           319.94,
           225.98,
@@ -202,6 +202,7 @@
           0
         ],
         "messages": [
+          0,
           2,
           7,
           3,
@@ -222,6 +223,7 @@
           0
         ],
         "impressions": [
+          0,
           646,
           688,
           732,
@@ -242,6 +244,7 @@
           0
         ],
         "reach": [
+          0,
           521,
           575,
           617,
@@ -262,6 +265,7 @@
           0
         ],
         "ctr": [
+          0,
           3.1,
           5.23,
           4.51,
@@ -282,6 +286,7 @@
           0
         ],
         "labels": [
+          null,
           "2026-07-02",
           "2026-07-03",
           "2026-07-04",
@@ -313,7 +318,8 @@
       "impressions": 7541,
       "messages": 34,
       "spend": 2742.04,
-      "clicks": 292
+      "clicks": 292,
+      "closedSales": 0
     },
     "weeks": [
       {
@@ -326,6 +332,7 @@
         "spend": 1396.45,
         "clicks": 170,
         "ctr": 3.65,
+        "closedSales": 0,
         "days": 6
       },
       {
@@ -338,6 +345,7 @@
         "spend": 0,
         "clicks": 0,
         "ctr": 0,
+        "closedSales": 0,
         "days": 2
       },
       {
@@ -350,6 +358,7 @@
         "spend": 1345.59,
         "clicks": 122,
         "ctr": 3.25,
+        "closedSales": 0,
         "days": 7
       },
       {
@@ -362,6 +371,7 @@
         "spend": 0,
         "clicks": 0,
         "ctr": 0,
+        "closedSales": 0,
         "days": 1
       },
       {
@@ -374,6 +384,7 @@
         "spend": 0,
         "clicks": 0,
         "ctr": 0,
+        "closedSales": 0,
         "days": 0
       }
     ]
@@ -388,7 +399,8 @@
         "impressions": 7541,
         "messages": 34,
         "spend": 2742.04,
-        "clicks": 292
+        "clicks": 292,
+        "closedSales": 0
       },
       "weeks": [
         {
@@ -401,6 +413,7 @@
           "spend": 1396.45,
           "clicks": 170,
           "ctr": 3.65,
+          "closedSales": 0,
           "days": 6
         },
         {
@@ -413,6 +426,7 @@
           "spend": 0,
           "clicks": 0,
           "ctr": 0,
+          "closedSales": 0,
           "days": 2
         },
         {
@@ -425,6 +439,7 @@
           "spend": 1345.59,
           "clicks": 122,
           "ctr": 3.25,
+          "closedSales": 0,
           "days": 7
         },
         {
@@ -437,6 +452,7 @@
           "spend": 0,
           "clicks": 0,
           "ctr": 0,
+          "closedSales": 0,
           "days": 1
         },
         {
@@ -449,6 +465,7 @@
           "spend": 0,
           "clicks": 0,
           "ctr": 0,
+          "closedSales": 0,
           "days": 0
         }
       ]
@@ -462,7 +479,8 @@
         "impressions": 0,
         "messages": 0,
         "spend": 0,
-        "clicks": 0
+        "clicks": 0,
+        "closedSales": 0
       },
       "weeks": [
         {
@@ -475,6 +493,7 @@
           "spend": 0,
           "clicks": 0,
           "ctr": 0,
+          "closedSales": 0,
           "days": 2
         },
         {
@@ -487,6 +506,7 @@
           "spend": 0,
           "clicks": 0,
           "ctr": 0,
+          "closedSales": 0,
           "days": 0
         },
         {
@@ -499,6 +519,7 @@
           "spend": 0,
           "clicks": 0,
           "ctr": 0,
+          "closedSales": 0,
           "days": 0
         },
         {
@@ -511,6 +532,7 @@
           "spend": 0,
           "clicks": 0,
           "ctr": 0,
+          "closedSales": 0,
           "days": 0
         },
         {
@@ -523,6 +545,7 @@
           "spend": 0,
           "clicks": 0,
           "ctr": 0,
+          "closedSales": 0,
           "days": 0
         }
       ]
