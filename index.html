@@ -337,6 +337,18 @@
           <span class="receipt-form-status" id="receiptFormStatus"></span>
         </div>
       </form>
+      <!-- v10 ADD: Meta has no public API for per-charge VAT invoice
+           PDFs (see script.js comment near META_AD_ACCOUNT_ID) — this
+           link just jumps straight to the right ad account's Billing &
+           Payments > Payment Activity page in a new tab, so there's no
+           menu-hunting. From there: pick the month, click "Download ▾"
+           > "Download all as ZIP/PDF". -->
+      <div class="receipt-form-row receipt-form-actions" style="margin-top: 12px;">
+        <a href="#" id="metaInvoicesLink" target="_blank" rel="noopener" class="export-btn export-btn--small" style="text-decoration: none; display: inline-block;">
+          OPEN META INVOICES
+        </a>
+        <span class="receipt-form-status">Opens Payment Activity for this ad account — pick the month, then "Download ▾" → "Download all as ZIP/PDF".</span>
+      </div>
     </section>
 
     <section class="kpi-grid history-kpi-grid">
