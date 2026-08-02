@@ -1,11 +1,11 @@
 {
-  "executive_summary": "Ang performance nitong nakaraang July ay nagpakita ng mixed results. May magandang engagement sa start ng month, pero nag-fluctuate ang cost per message natin. Sa kabuuan, gumastos tayo ng ₱2,742.04 para sa 34 na messages. Ang average CTR ay nasa 3.2% to 5.2% sa mga active days, na healthy naman, pero kailangan nating bantayan ang pagtaas ng CPM at CPC pagdating ng 3rd week.",
+  "executive_summary": "Ang performance nitong nakaraang buwan ay medyo magulo dahil sa maraming paused campaigns. May total spend na ₱2,742.04 na nag-generate ng 34 messages. Ang average CTR na ~3.0% ay healthy pero kailangan natin maging consistent sa pag-run ng ads para bumaba ang cost per message.",
   "metrics": {
     "spend": 2742.04,
     "impressions": 7541,
     "clicks": 292,
     "messages": 34,
-    "ctr": 3.45,
+    "ctr": 3.03,
     "cpc": 9.39,
     "cpm": 363.61
   },
@@ -13,74 +13,74 @@
     "📁 2026 | Leads | Multi Models | JULY"
   ],
   "worst_campaigns": [
-    "JULY ADS 2026"
+    "JULY ADS 2026 (Mataas ang cost per message sa huling mga araw)"
   ],
   "winning_ads": [
-    "🚗 02 - Mirage G4 | ₱15K+/Month"
+    "🚗 02 - Mirage G4 | ₱15K+/Month (Best CTR at cost per message)"
   ],
   "creative_insights": [
-    "Ang video creatives ay mas nag-generate ng quality leads kumpara sa static images.",
-    "Ang mga ads na nagha-highlight ng specific monthly payment (like Mirage G4) ay mas may higher CTR.",
-    "Dapat i-standardize ang video hooks; yung mga may direct call to action na 'PM for inquiry' ay mas mabilis makakuha ng chat."
+    "Video formats ay mas nagbibigay ng engagement base sa historical data.",
+    "Ang mga ads na may direct promo (Zero Down-payment) ang nakakakuha ng mas maraming attention.",
+    "Kailangan ng mas malinaw na 'Call to Action' sa video para dumami ang message conversions."
   ],
   "historical_insights": [
-    "Mas stable ang cost per message noong 2023 (avg ₱30-₱40) kumpara ngayon na nag-i-spike sa ₱70-₱90.",
-    "Napansin na pagdating ng huling bahagi ng buwan, lumalala ang ad fatigue kaya dapat nagpapalit tayo ng ad creative every 2 weeks."
+    "Dati, mas efficient ang cost-per-message natin nung active ang L300 campaigns (average nasa ₱30-₱40).",
+    "Napansin na kapag hindi tuloy-tuloy ang ads, tumataas ang cost-per-message kapag nag-relaunch."
   ],
   "targeting_intelligence": {
     "best_locations": [
-      "Las Piñas City (within 10-15km radius)",
-      "Parañaque City",
-      "Bacoor and Imus, Cavite (strategic areas malapit sa dealership)"
+      "Las Piñas City (Primary)",
+      "Parañaque City (Secondary)",
+      "Cavite (Bacoor/Imus area - High potential para sa L300 business use)"
     ],
     "best_interests": [
-      "Car financing",
-      "Ride-hailing services (for Xpander)",
-      "Small business/Logistics (for L300)",
-      "Mitsubishi Motors owners"
+      "Small Business Owners (para sa L300)",
+      "Car Financing",
+      "Ride-hailing driver groups",
+      "Mitsubishi Motors Philippines"
     ],
     "market_demand_notes": [
-      "Ang Xpander at Mirage G4 ang patuloy na drivers ng demand sa PH market.",
-      "Ang L300 ay consistent ang demand sa mga small business owners, targetin ang mga 'Logistics' at 'Construction' interests."
+      "Ang Mirage G4 ay patok sa entry-level market, habang ang L300 ay consistent ang demand sa mga negosyante.",
+      "Importante ang 'low downpayment' messaging dahil ito ang main driver ng conversion sa PH market."
     ]
   },
   "creative_direction": [
     {
-      "boost_target": "Mirage G4",
+      "boost_target": "Mirage G4 Promotion",
       "format": "video",
-      "headline": "Mirage G4: Low DP, Low Monthly!",
+      "headline": "Mirage G4: Low DP, 0% Stress",
       "cta": "Send Message",
-      "description": "Drive home a brand new Mirage G4 for as low as ₱15K/month. Limited promo slots only!"
+      "description": "Mag-drive home ng brand new Mirage G4 ngayong August! Avail our low downpayment promo today."
     },
     {
-      "boost_target": "L300",
+      "boost_target": "L300 Business Promo",
       "format": "image",
-      "headline": "Negosyo Partner: L300 FB",
+      "headline": "L300: Partner sa Negosyo",
       "cta": "Get Quote",
-      "description": "Boost your business with the reliable L300 FB. Easy financing available today!"
+      "description": "Palaguin ang negosyo gamit ang matibay na Mitsubishi L300. Inquire now for August deals!"
     }
   ],
   "recommendations": [
-    "I-pause ang lahat ng lumang campaigns mula pa ng 2024 para hindi mag-compete sa auction.",
-    "Dapat i-maximize ang 'Messaging' objective dahil ito ang pinaka-effective sa sales team natin.",
-    "Maglaan ng 20% budget para sa A/B testing ng bagong video creative kada linggo."
+    "I-reactivate ang '📁 2026 | Leads | Multi Models | JULY' campaign dahil ito ang pinaka-stable.",
+    "Huwag i-pause nang madalas ang ads; hayaan ang algorithm na mag-optimize ng audience.",
+    "I-consolidate ang budget sa isang main Lead Generation campaign imbes na maraming maliliit na adsets."
   ],
   "this_month_boost_plan": {
     "month": "August 2026",
     "actions": [
       {
         "priority": "high",
-        "boost_target": "📁 2026 | Leads | Multi Models | JULY (Rename to AUGUST)",
-        "action": "Reactivate with 30% budget increase",
-        "reason": "Ito ang pinaka-low cost per message last month (₱41.28).",
-        "impact": "Inaasahang mas madami at mas murang inquiries."
+        "boost_target": "📁 2026 | Leads | Multi Models | JULY",
+        "action": "Reactivate and increase daily budget by 20%",
+        "reason": "Ito ang may pinakamagandang cost-per-message trend sa huling data.",
+        "impact": "Expected na mas dadami ang inquiries at bababa ang cost-per-lead."
       },
       {
         "priority": "medium",
         "boost_target": "🚗 02 - Mirage G4 | ₱15K+/Month",
-        "action": "Duplicate as a new Ad within an active Adset",
-        "reason": "High CTR (5.68%) at 44 pesos cost per message lang.",
-        "impact": "Mas mabilis na conversion para sa unit na ito."
+        "action": "Duplicate as a new adset targeting Cavite area",
+        "reason": "Mataas ang CTR nito, kailangan nating i-test sa ibang hot location.",
+        "impact": "Expansion ng market reach at karagdagang leads."
       }
     ]
   }
