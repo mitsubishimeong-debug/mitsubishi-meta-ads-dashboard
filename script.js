@@ -79,6 +79,15 @@ function initMetaInvoicesLink() {
   link.href = getMetaInvoicesUrl();
 }
 
+// v11 ADD: same webhook pattern as RECEIPT_WEBHOOK_URL above, but for the
+// "Manual Closed Sale Webhook" node (path "closed-sale") — powers the
+// "Log a Closed Sale" form below.
+const CLOSED_SALE_WEBHOOK_URL = "https://propeller-quake-maker.ngrok-free.dev/webhook/closed-sale";
+
+// v11 ADD: used only for the CSV export header row ("Facebook page
+// name: ..."). Update this if the page name changes.
+const FB_PAGE_NAME = "Citimotors Las Piñas Best Offer by Romeo - Meong";
+
 const CHART_COLORS = {
   primary: "#E60012",
   green: "#2ECC71",
@@ -1030,6 +1039,16 @@ function csvEscape(value) {
   return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
 }
 
+// v11 CHANGE: rebuilt to match the exact report format already used for
+// submission (Facebook page name header, then one stacked section per
+// metric — Impressions / Reach / Online Inquiries / Closed Sales — each
+// broken into ordinal weeks (1st, 2nd, 3rd...) with a Total row. Replaces
+// the old one-row-per-week table layout.
+function ordinalWeekLabel(n) {
+  const suffixes = { 1: "1st", 2: "2nd", 3: "3rd" };
+  return suffixes[n] || `${n}th`;
+}
+
 function exportMonthlyReportCsv() {
   const reports = historyData?.monthlyReports;
   const report = (reports && currentMonthFilter && reports[currentMonthFilter])
@@ -1039,20 +1058,28 @@ function exportMonthlyReportCsv() {
     return;
   }
 
-  const header = ["Week", "Date Range", "Reach", "Impressions", "Messages", "Spend", "CTR"];
-  const rows = report.weeks.map((w) => [
-    `Week ${w.weekNumber}`,
-    `${w.startDate} to ${w.endDate}`,
-    w.reach ?? 0,
-    w.impressions ?? 0,
-    w.messages ?? 0,
-    w.spend ?? 0,
-    w.ctr ?? 0,
-  ]);
+  const weeks = report.weeks;
   const totals = report.totals || {};
-  rows.push(["Total", "", totals.reach ?? 0, totals.impressions ?? 0, totals.messages ?? 0, totals.spend ?? 0, ""]);
 
-  const csv = [header, ...rows].map((r) => r.map(csvEscape).join(",")).join("\n");
+  const rows = [];
+  rows.push(["Facebook page name:", FB_PAGE_NAME]);
+  rows.push([]);
+
+  function addSection(title, key, totalValue) {
+    rows.push([title]);
+    weeks.forEach((w) => {
+      rows.push([`${ordinalWeekLabel(w.weekNumber)}:`, w[key] ?? 0]);
+    });
+    rows.push(["Total:", totalValue ?? 0]);
+    rows.push([]);
+  }
+
+  addSection("Total impression per week", "impressions", totals.impressions);
+  addSection("Total reach per week", "reach", totals.reach);
+  addSection("Total online inquire per week", "messages", totals.messages);
+  addSection("Total closed sales from online inquires per week", "closedSales", totals.closedSales);
+
+  const csv = rows.map((r) => r.map(csvEscape).join(",")).join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -1080,6 +1107,7 @@ initMonthlyReportExport();
 initMonthDropdown();
 initReceiptForm();
 initMetaInvoicesLink();
+initClosedSaleForm();
 loadDashboard();
 setInterval(loadDashboard, REFRESH_INTERVAL_MS); // v6 note: setInterval only — the page itself is never reloaded
 
@@ -1787,7 +1815,62 @@ function initReceiptForm() {
   });
 }
 
-// v8 ADD, v6 REWIRED: a selected calendar month broken down week by
+// v11 ADD: mirrors initReceiptForm() above — same POST pattern, different
+// webhook/fields, for the "Log a Closed Sale" form.
+function initClosedSaleForm() {
+  const form = document.getElementById("closedSaleForm");
+  if (!form) return;
+
+  const statusEl = document.getElementById("closedSaleFormStatus");
+  const submitBtn = document.getElementById("closedSaleSubmitBtn");
+
+  if (!CLOSED_SALE_WEBHOOK_URL) {
+    if (statusEl) {
+      statusEl.textContent = "Set CLOSED_SALE_WEBHOOK_URL in script.js to enable this form.";
+      statusEl.classList.add("is-error");
+    }
+    if (submitBtn) submitBtn.disabled = true;
+    return;
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      date: document.getElementById("closedSaleDate")?.value,
+      count: document.getElementById("closedSaleCount")?.value,
+      note: document.getElementById("closedSaleNote")?.value,
+    };
+
+    if (submitBtn) submitBtn.disabled = true;
+    if (statusEl) {
+      statusEl.textContent = "Logging…";
+      statusEl.classList.remove("is-success", "is-error");
+    }
+
+    try {
+      const res = await fetch(CLOSED_SALE_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      form.reset();
+      document.getElementById("closedSaleCount").value = "1";
+      if (statusEl) {
+        statusEl.textContent = "Closed sale logged.";
+        statusEl.classList.add("is-success");
+      }
+    } catch (err) {
+      if (statusEl) {
+        statusEl.textContent = `Failed to log closed sale: ${err.message}`;
+        statusEl.classList.add("is-error");
+      }
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
+    }
+  });
+}
 // week (reach, impressions, messages, spend, ctr per week) — reads
 // from historyData.monthlyReports[currentMonthFilter] so any month
 // n8n has archived can be viewed, not just last month. Falls back to
@@ -1811,7 +1894,8 @@ function renderMonthlyReport() {
     setText("monthlyReportTotalImpressions", "—");
     setText("monthlyReportTotalMessages", "—");
     setText("monthlyReportTotalSpend", "—");
-    body.innerHTML = `<tr><td colspan="7">No data yet for this month.</td></tr>`;
+    setText("monthlyReportTotalClosedSales", "—");
+    body.innerHTML = `<tr><td colspan="8">No data yet for this month.</td></tr>`;
     return;
   }
 
@@ -1827,6 +1911,7 @@ function renderMonthlyReport() {
       <td>${formatNumber(w.messages)}</td>
       <td>${formatCurrency(w.spend)}</td>
       <td>${formatPercent(w.ctr)}</td>
+      <td>${formatNumber(w.closedSales)}</td>
     `;
     body.appendChild(tr);
   });
@@ -1835,6 +1920,7 @@ function renderMonthlyReport() {
   setText("monthlyReportTotalImpressions", formatNumber(report.totals?.impressions));
   setText("monthlyReportTotalMessages", formatNumber(report.totals?.messages));
   setText("monthlyReportTotalSpend", formatCurrency(report.totals?.spend));
+  setText("monthlyReportTotalClosedSales", formatNumber(report.totals?.closedSales));
 }
 
 function renderHighlights(list) {
