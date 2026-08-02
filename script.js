@@ -58,6 +58,27 @@ const ANIMATE_MS = 700;
 // keep the form disabled.
 const RECEIPT_WEBHOOK_URL = "https://propeller-quake-maker.ngrok-free.dev/webhook/billing-receipt";
 
+// v10 ADD: Meta does not expose per-charge VAT invoice PDFs through any
+// public API (confirmed dead end — see RECEIPT_WEBHOOK_URL comment above
+// for the related "no transactions edge" finding). The only place these
+// PDFs exist is the Billing & Payments > Payment Activity page in Meta
+// Business Suite, and only "Download all as ZIP/PDF" there produces them.
+// This button can't pull the files into the dashboard, but it removes the
+// menu-hunting: one click here jumps straight to the right ad account's
+// billing page, new tab, ready for the ZIP download.
+const META_AD_ACCOUNT_ID = "282527975908557";
+const META_BUSINESS_ID = "178087108528215";
+
+function getMetaInvoicesUrl() {
+  return `https://business.facebook.com/billing_hub/payment_activity/?asset_id=${META_AD_ACCOUNT_ID}&business_id=${META_BUSINESS_ID}`;
+}
+
+function initMetaInvoicesLink() {
+  const link = document.getElementById("metaInvoicesLink");
+  if (!link) return;
+  link.href = getMetaInvoicesUrl();
+}
+
 const CHART_COLORS = {
   primary: "#E60012",
   green: "#2ECC71",
@@ -1058,6 +1079,7 @@ initExport();
 initMonthlyReportExport();
 initMonthDropdown();
 initReceiptForm();
+initMetaInvoicesLink();
 loadDashboard();
 setInterval(loadDashboard, REFRESH_INTERVAL_MS); // v6 note: setInterval only — the page itself is never reloaded
 
