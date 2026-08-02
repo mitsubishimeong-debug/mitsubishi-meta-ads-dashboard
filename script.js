@@ -58,36 +58,6 @@ const ANIMATE_MS = 700;
 // keep the form disabled.
 const RECEIPT_WEBHOOK_URL = "https://propeller-quake-maker.ngrok-free.dev/webhook/billing-receipt";
 
-// v10 ADD: Meta does not expose per-charge VAT invoice PDFs through any
-// public API (confirmed dead end — see RECEIPT_WEBHOOK_URL comment above
-// for the related "no transactions edge" finding). The only place these
-// PDFs exist is the Billing & Payments > Payment Activity page in Meta
-// Business Suite, and only "Download all as ZIP/PDF" there produces them.
-// This button can't pull the files into the dashboard, but it removes the
-// menu-hunting: one click here jumps straight to the right ad account's
-// billing page, new tab, ready for the ZIP download.
-const META_AD_ACCOUNT_ID = "282527975908557";
-const META_BUSINESS_ID = "178087108528215";
-
-function getMetaInvoicesUrl() {
-  return `https://business.facebook.com/billing_hub/payment_activity/?asset_id=${META_AD_ACCOUNT_ID}&business_id=${META_BUSINESS_ID}`;
-}
-
-function initMetaInvoicesLink() {
-  const link = document.getElementById("metaInvoicesLink");
-  if (!link) return;
-  link.href = getMetaInvoicesUrl();
-}
-
-// v11 ADD: same webhook pattern as RECEIPT_WEBHOOK_URL above, but for the
-// "Manual Closed Sale Webhook" node (path "closed-sale") — powers the
-// "Log a Closed Sale" form below.
-const CLOSED_SALE_WEBHOOK_URL = "https://propeller-quake-maker.ngrok-free.dev/webhook/closed-sale";
-
-// v11 ADD: used only for the CSV export header row ("Facebook page
-// name: ..."). Update this if the page name changes.
-const FB_PAGE_NAME = "Citimotors Las Piñas Best Offer by Romeo - Meong";
-
 const CHART_COLORS = {
   primary: "#E60012",
   green: "#2ECC71",
@@ -155,17 +125,6 @@ async function loadDashboard() {
 
     render();
     setStatus(true);
-
-    // FIX (Aug 2026): re-run historical processing now that currentData
-    // is fresh. processHistoricalData()'s campaignRanking fallback (see
-    // that function) depends on currentData, and dashboard.json /
-    // dashboard-history.json load independently — whichever finishes
-    // last needs to re-trigger this so Model Performance / Objectives
-    // don't get stuck on a stale/empty state from a load-order race.
-    if (historyAvailable) {
-      processHistoricalData();
-      renderAllHistoricalTabs();
-    }
   } catch (err) {
     console.warn("Dashboard data unavailable:", err.message);
     setStatus(false);
@@ -1050,16 +1009,6 @@ function csvEscape(value) {
   return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
 }
 
-// v11 CHANGE: rebuilt to match the exact report format already used for
-// submission (Facebook page name header, then one stacked section per
-// metric — Impressions / Reach / Online Inquiries / Closed Sales — each
-// broken into ordinal weeks (1st, 2nd, 3rd...) with a Total row. Replaces
-// the old one-row-per-week table layout.
-function ordinalWeekLabel(n) {
-  const suffixes = { 1: "1st", 2: "2nd", 3: "3rd" };
-  return suffixes[n] || `${n}th`;
-}
-
 function exportMonthlyReportCsv() {
   const reports = historyData?.monthlyReports;
   const report = (reports && currentMonthFilter && reports[currentMonthFilter])
@@ -1069,28 +1018,20 @@ function exportMonthlyReportCsv() {
     return;
   }
 
-  const weeks = report.weeks;
+  const header = ["Week", "Date Range", "Reach", "Impressions", "Messages", "Spend", "CTR"];
+  const rows = report.weeks.map((w) => [
+    `Week ${w.weekNumber}`,
+    `${w.startDate} to ${w.endDate}`,
+    w.reach ?? 0,
+    w.impressions ?? 0,
+    w.messages ?? 0,
+    w.spend ?? 0,
+    w.ctr ?? 0,
+  ]);
   const totals = report.totals || {};
+  rows.push(["Total", "", totals.reach ?? 0, totals.impressions ?? 0, totals.messages ?? 0, totals.spend ?? 0, ""]);
 
-  const rows = [];
-  rows.push(["Facebook page name:", FB_PAGE_NAME]);
-  rows.push([]);
-
-  function addSection(title, key, totalValue) {
-    rows.push([title]);
-    weeks.forEach((w) => {
-      rows.push([`${ordinalWeekLabel(w.weekNumber)}:`, w[key] ?? 0]);
-    });
-    rows.push(["Total:", totalValue ?? 0]);
-    rows.push([]);
-  }
-
-  addSection("Total impression per week", "impressions", totals.impressions);
-  addSection("Total reach per week", "reach", totals.reach);
-  addSection("Total online inquire per week", "messages", totals.messages);
-  addSection("Total closed sales from online inquires per week", "closedSales", totals.closedSales);
-
-  const csv = rows.map((r) => r.map(csvEscape).join(",")).join("\n");
+  const csv = [header, ...rows].map((r) => r.map(csvEscape).join(",")).join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -1117,8 +1058,6 @@ initExport();
 initMonthlyReportExport();
 initMonthDropdown();
 initReceiptForm();
-initMetaInvoicesLink();
-initClosedSaleForm();
 loadDashboard();
 setInterval(loadDashboard, REFRESH_INTERVAL_MS); // v6 note: setInterval only — the page itself is never reloaded
 
@@ -1135,9 +1074,6 @@ setInterval(loadDashboard, REFRESH_INTERVAL_MS); // v6 note: setInterval only �
 
 let historyData = null;          // raw dashboard-history.json
 let processedCampaigns = [];      // historyData.campaigns + model + performanceScore
-let historicalUsingFallback = false; // true when processedCampaigns came from
-                                      // currentData.campaignRanking instead of
-                                      // historyData.campaigns (see processHistoricalData)
 let dailyPerformance = [];        // historyData.dailyPerformance, unmodified (daily granularity preserved)
 let historyAvailable = false;
 
@@ -1337,31 +1273,7 @@ function setHistoryAvailability(isAvailable) {
 // Documented here so it's clear this is a simple heuristic, not a
 // model prediction.
 function processHistoricalData() {
-  let rawCampaigns = Array.isArray(historyData?.campaigns) ? historyData.campaigns : [];
-
-  // FIX (Aug 2026): dashboard-history.json's "campaigns" array has been
-  // coming back empty ([]) from the n8n run that builds it, even though
-  // the aggregate weekly/monthly totals in that same file are fine —
-  // this is the classic "node chain produced no output for this run"
-  // failure mode already documented elsewhere in this file (see the
-  // "v9 FIX" note in applyRangeAvailability). Model Performance and
-  // Objectives both read from processedCampaigns, which is why they
-  // both show "No campaign data for this period" while Overview and
-  // the KPI totals (which read from dashboard.json / monthlyReport
-  // instead) keep working fine.
-  //
-  // dashboard.json's campaignRanking still has real per-campaign rows
-  // for the same period (it's built by a separate n8n branch), so we
-  // fall back to that instead of showing an empty tab. This is a
-  // stand-in for real data, not a fix for the broken upstream node —
-  // the actual fix is on the n8n side: whatever step populates
-  // dashboard-history.json's "campaigns" array needs to be re-run /
-  // debugged so it stops returning [].
-  historicalUsingFallback = false;
-  if (rawCampaigns.length === 0 && Array.isArray(currentData?.campaignRanking) && currentData.campaignRanking.length > 0) {
-    rawCampaigns = currentData.campaignRanking;
-    historicalUsingFallback = true;
-  }
+  const rawCampaigns = Array.isArray(historyData?.campaigns) ? historyData.campaigns : [];
 
   processedCampaigns = rawCampaigns.map((c) => {
     const spend = Number(c.spend) || 0;
@@ -1732,43 +1644,8 @@ function renderHistoricalOverview() {
 // v8 ADD: rolling 7-day Reach / Impressions / Messages, sourced from
 // dashboard-history.json's weeklyPerformance field (built in n8n from the
 // Daily Summary sheet). Used for the recurring weekly report.
-//
-// FIX (Aug 2026): weeklyPerformance has been coming back stuck on a
-// stale single day (startDate === endDate, all totals 0) — the same
-// upstream "node produced no output for this run" failure documented
-// in processHistoricalData() above, just hitting a different field in
-// the same dashboard-history.json file. dashboard.json's ranges["7d"]
-// is built by a separate n8n branch and still has real numbers for
-// the same rolling window, so fall back to that instead of showing
-// zeros. This is a stand-in, not a fix — the real fix is upstream:
-// whatever n8n step rebuilds weeklyPerformance (and availableMonths,
-// which has the same "stuck on July" symptom for the month dropdown
-// and can't be patched client-side without fabricating a month's
-// totals) needs to be re-run / debugged.
 function renderWeeklyPerformance() {
-  let week = historyData?.weeklyPerformance;
-  let usingFallback = false;
-
-  const looksStale = !week || (
-    Number(week.reach) === 0 &&
-    Number(week.impressions) === 0 &&
-    Number(week.messages) === 0
-  );
-  const fallbackRange = currentData?.ranges?.["7d"];
-  const fallbackHasData = fallbackRange && (
-    Number(fallbackRange.funnel?.reach) > 0 ||
-    Number(fallbackRange.funnel?.impressions) > 0 ||
-    Number(fallbackRange.messages) > 0
-  );
-
-  if (looksStale && fallbackHasData) {
-    week = {
-      reach: fallbackRange.funnel?.reach,
-      impressions: fallbackRange.funnel?.impressions,
-      messages: fallbackRange.messages,
-    };
-    usingFallback = true;
-  }
+  const week = historyData?.weeklyPerformance;
 
   if (!week) {
     setText("weekReach", "—");
@@ -1782,11 +1659,9 @@ function renderWeeklyPerformance() {
   setText("weekImpressions", formatNumber(week.impressions));
   setText("weekMessages", formatNumber(week.messages));
 
-  const range = usingFallback
-    ? "Last 7 days (dashboard.json snapshot — history sync stale ⚠)"
-    : (week.startDate && week.endDate)
-      ? `${week.startDate} → ${week.endDate}`
-      : "—";
+  const range = (week.startDate && week.endDate)
+    ? `${week.startDate} → ${week.endDate}`
+    : "—";
   setText("weekRange", range);
 }
 
@@ -1890,62 +1765,7 @@ function initReceiptForm() {
   });
 }
 
-// v11 ADD: mirrors initReceiptForm() above — same POST pattern, different
-// webhook/fields, for the "Log a Closed Sale" form.
-function initClosedSaleForm() {
-  const form = document.getElementById("closedSaleForm");
-  if (!form) return;
-
-  const statusEl = document.getElementById("closedSaleFormStatus");
-  const submitBtn = document.getElementById("closedSaleSubmitBtn");
-
-  if (!CLOSED_SALE_WEBHOOK_URL) {
-    if (statusEl) {
-      statusEl.textContent = "Set CLOSED_SALE_WEBHOOK_URL in script.js to enable this form.";
-      statusEl.classList.add("is-error");
-    }
-    if (submitBtn) submitBtn.disabled = true;
-    return;
-  }
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const payload = {
-      date: document.getElementById("closedSaleDate")?.value,
-      count: document.getElementById("closedSaleCount")?.value,
-      note: document.getElementById("closedSaleNote")?.value,
-    };
-
-    if (submitBtn) submitBtn.disabled = true;
-    if (statusEl) {
-      statusEl.textContent = "Logging…";
-      statusEl.classList.remove("is-success", "is-error");
-    }
-
-    try {
-      const res = await fetch(CLOSED_SALE_WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      form.reset();
-      document.getElementById("closedSaleCount").value = "1";
-      if (statusEl) {
-        statusEl.textContent = "Closed sale logged.";
-        statusEl.classList.add("is-success");
-      }
-    } catch (err) {
-      if (statusEl) {
-        statusEl.textContent = `Failed to log closed sale: ${err.message}`;
-        statusEl.classList.add("is-error");
-      }
-    } finally {
-      if (submitBtn) submitBtn.disabled = false;
-    }
-  });
-}
+// v8 ADD, v6 REWIRED: a selected calendar month broken down week by
 // week (reach, impressions, messages, spend, ctr per week) — reads
 // from historyData.monthlyReports[currentMonthFilter] so any month
 // n8n has archived can be viewed, not just last month. Falls back to
@@ -1969,8 +1789,7 @@ function renderMonthlyReport() {
     setText("monthlyReportTotalImpressions", "—");
     setText("monthlyReportTotalMessages", "—");
     setText("monthlyReportTotalSpend", "—");
-    setText("monthlyReportTotalClosedSales", "—");
-    body.innerHTML = `<tr><td colspan="8">No data yet for this month.</td></tr>`;
+    body.innerHTML = `<tr><td colspan="7">No data yet for this month.</td></tr>`;
     return;
   }
 
@@ -1986,7 +1805,6 @@ function renderMonthlyReport() {
       <td>${formatNumber(w.messages)}</td>
       <td>${formatCurrency(w.spend)}</td>
       <td>${formatPercent(w.ctr)}</td>
-      <td>${formatNumber(w.closedSales)}</td>
     `;
     body.appendChild(tr);
   });
@@ -1995,7 +1813,6 @@ function renderMonthlyReport() {
   setText("monthlyReportTotalImpressions", formatNumber(report.totals?.impressions));
   setText("monthlyReportTotalMessages", formatNumber(report.totals?.messages));
   setText("monthlyReportTotalSpend", formatCurrency(report.totals?.spend));
-  setText("monthlyReportTotalClosedSales", formatNumber(report.totals?.closedSales));
 }
 
 function renderHighlights(list) {
@@ -2104,18 +1921,11 @@ function renderTables() {
 function renderModelPerformance() {
   const grid = getEl("modelGrid");
   const models = calculateModelPerformance(currentYearFilter);
-  const fallbackNote = historicalUsingFallback
-    ? `<div class="model-card-empty" style="grid-column:1/-1;margin-bottom:8px;color:#E6A612;text-align:left;">
-         ⚠ Historical sync (dashboard-history.json) returned no campaign rows for this run —
-         showing the latest snapshot from dashboard.json instead. Check the n8n step that
-         builds "campaigns" in dashboard-history.json.
-       </div>`
-    : "";
 
   if (grid) {
     grid.innerHTML = models.length === 0
       ? `<div class="model-card-empty">No campaign data for this period</div>`
-      : fallbackNote + models
+      : models
           .map((m) => `
             <div class="model-card">
               <span class="model-card-name">${escapeHtml(m.model)}</span>
@@ -2150,18 +1960,11 @@ function renderObjectiveChart(objectives) {
 function renderObjectiveComparison() {
   const objectives = calculateObjectiveComparison(currentYearFilter);
   const grid = getEl("objectiveGrid");
-  const fallbackNote = historicalUsingFallback
-    ? `<div class="objective-card-empty" style="grid-column:1/-1;margin-bottom:8px;color:#E6A612;text-align:left;">
-         ⚠ Historical sync (dashboard-history.json) returned no campaign rows for this run —
-         showing the latest snapshot from dashboard.json instead. Check the n8n step that
-         builds "campaigns" in dashboard-history.json.
-       </div>`
-    : "";
 
   if (grid) {
     grid.innerHTML = objectives.length === 0
       ? `<div class="objective-card-empty">No campaign data for this period</div>`
-      : fallbackNote + objectives
+      : objectives
           .map((o) => `
             <div class="objective-card">
               <span class="objective-card-name">${escapeHtml(o.objective)}</span>
