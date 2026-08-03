@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-03T00:38:19.364Z",
+  "generatedAt": "2026-08-03T05:51:32.450Z",
   "weeklyPerformance": {
     "label": "7 Days",
     "spend": 674.79,
@@ -319,7 +319,8 @@
       "impressions": 7541,
       "messages": 34,
       "spend": 2742.04,
-      "clicks": 292
+      "clicks": 292,
+      "closedSales": 1
     },
     "weeks": [
       {
@@ -332,6 +333,7 @@
         "spend": 1396.45,
         "clicks": 170,
         "ctr": 3.65,
+        "closedSales": 0,
         "days": 6
       },
       {
@@ -344,6 +346,7 @@
         "spend": 0,
         "clicks": 0,
         "ctr": 0,
+        "closedSales": 0,
         "days": 2
       },
       {
@@ -356,6 +359,7 @@
         "spend": 1345.59,
         "clicks": 122,
         "ctr": 3.25,
+        "closedSales": 0,
         "days": 7
       },
       {
@@ -368,6 +372,7 @@
         "spend": 0,
         "clicks": 0,
         "ctr": 0,
+        "closedSales": 0,
         "days": 1
       },
       {
@@ -380,6 +385,7 @@
         "spend": 0,
         "clicks": 0,
         "ctr": 0,
+        "closedSales": 1,
         "days": 0
       }
     ]
@@ -394,7 +400,8 @@
         "impressions": 7541,
         "messages": 34,
         "spend": 2742.04,
-        "clicks": 292
+        "clicks": 292,
+        "closedSales": 1
       },
       "weeks": [
         {
@@ -407,6 +414,7 @@
           "spend": 1396.45,
           "clicks": 170,
           "ctr": 3.65,
+          "closedSales": 0,
           "days": 6
         },
         {
@@ -419,6 +427,7 @@
           "spend": 0,
           "clicks": 0,
           "ctr": 0,
+          "closedSales": 0,
           "days": 2
         },
         {
@@ -431,6 +440,7 @@
           "spend": 1345.59,
           "clicks": 122,
           "ctr": 3.25,
+          "closedSales": 0,
           "days": 7
         },
         {
@@ -443,6 +453,7 @@
           "spend": 0,
           "clicks": 0,
           "ctr": 0,
+          "closedSales": 0,
           "days": 1
         },
         {
@@ -455,6 +466,7 @@
           "spend": 0,
           "clicks": 0,
           "ctr": 0,
+          "closedSales": 1,
           "days": 0
         }
       ]
@@ -468,7 +480,8 @@
         "impressions": 0,
         "messages": 0,
         "spend": 0,
-        "clicks": 0
+        "clicks": 0,
+        "closedSales": 0
       },
       "weeks": [
         {
@@ -481,6 +494,7 @@
           "spend": 0,
           "clicks": 0,
           "ctr": 0,
+          "closedSales": 0,
           "days": 3
         },
         {
@@ -493,6 +507,7 @@
           "spend": 0,
           "clicks": 0,
           "ctr": 0,
+          "closedSales": 0,
           "days": 0
         },
         {
@@ -505,6 +520,7 @@
           "spend": 0,
           "clicks": 0,
           "ctr": 0,
+          "closedSales": 0,
           "days": 0
         },
         {
@@ -517,6 +533,7 @@
           "spend": 0,
           "clicks": 0,
           "ctr": 0,
+          "closedSales": 0,
           "days": 0
         },
         {
@@ -529,6 +546,7 @@
           "spend": 0,
           "clicks": 0,
           "ctr": 0,
+          "closedSales": 0,
           "days": 0
         }
       ]
