@@ -302,8 +302,28 @@ function render() {
   renderPrediction();
 
   // AI recommendations & alerts (account-level, not per range)
-  renderReasonedList("recList", currentData?.recommendations, "rec");
-  renderReasonedList("alertList", currentData?.alerts, "alert");
+  // v15 FIX: backend sends recommendations as { title, detail, priority }
+  // and alerts as { severity, message } -- renderReasonedList only reads
+  // { text, reason, priority }, so every item was silently falling back
+  // to "—" even though the array itself (and its length/priority badges)
+  // was correct. Map to the expected shape here instead of touching the
+  // shared renderReasonedList (alerts elsewhere may still be plain strings).
+  const recItems = Array.isArray(currentData?.recommendations)
+    ? currentData.recommendations.map((r) => (typeof r === "string" ? r : {
+        text: r.text ?? r.title ?? "—",
+        reason: r.reason ?? r.detail ?? null,
+        priority: r.priority ?? null,
+      }))
+    : currentData?.recommendations;
+  const alertItems = Array.isArray(currentData?.alerts)
+    ? currentData.alerts.map((a) => (typeof a === "string" ? a : {
+        text: a.text ?? a.message ?? "—",
+        reason: a.reason ?? null,
+        priority: a.priority ?? a.severity ?? null,
+      }))
+    : currentData?.alerts;
+  renderReasonedList("recList", recItems, "rec");
+  renderReasonedList("alertList", alertItems, "alert");
 
   // Prediction
   setText("predCtr", formatPercent(currentData.predictionTomorrow?.ctr));
@@ -341,7 +361,9 @@ const topCreative = (currentData && currentData.topCreative) || {};
 const topAudience = (currentData && currentData.topAudience) || {};
 
 // Top Campaign
-setText("topCampaignName", topCampaign.name ?? "—");
+// v15 FIX: backend sends `campaign_name`, not `name` -- was always
+// falling through to "—" regardless of real data being present.
+setText("topCampaignName", topCampaign.campaign_name ?? "—");
 setText("topCampaignRec", topCampaign.recommendation ?? "—");
 
 // Top Ad
@@ -1457,21 +1479,24 @@ function renderExecutiveSummary() {
   el.textContent = summary ? String(summary) : "—";
 }
 
-// ADD
-// Schema assumption (adjust field names once the real n8n output is
-// confirmed): aiData.winning_ads is an array of objects such as
-// { ad_name, reason, ctr, messages }. Falls back gracefully if any
-// field is missing rather than crashing.
+// v15 FIX: aiData.winning_ads actually comes through as an array of
+// plain strings (e.g. "🚗 02 - Mirage G4 | ₱15K+/Month (Best CTR:
+// 5.68%)"), not objects with ad_name/reason/ctr/messages fields as
+// originally assumed -- every item's `.ad_name` on a string is
+// undefined, so this always rendered "—" even with real data present.
 function renderWinningAds() {
   const ads = Array.isArray(aiData?.winning_ads) ? aiData.winning_ads : [];
-  const items = ads.map((ad) => ({
-    text: ad.ad_name ?? ad.name ?? "—",
-    reason: ad.reason ?? [
-      ad.ctr !== undefined ? `${formatPercent(ad.ctr)} CTR` : null,
-      ad.messages !== undefined ? `${formatNumber(ad.messages)} messages` : null,
-    ].filter(Boolean).join(" · "),
-    priority: ad.priority ?? null,
-  }));
+  const items = ads.map((ad) => {
+    if (typeof ad === "string") return ad;
+    return {
+      text: ad.ad_name ?? ad.name ?? "—",
+      reason: ad.reason ?? [
+        ad.ctr !== undefined ? `${formatPercent(ad.ctr)} CTR` : null,
+        ad.messages !== undefined ? `${formatNumber(ad.messages)} messages` : null,
+      ].filter(Boolean).join(" · "),
+      priority: ad.priority ?? null,
+    };
+  });
   renderReasonedList("winningAdsList", items, "rec");
 }
 
