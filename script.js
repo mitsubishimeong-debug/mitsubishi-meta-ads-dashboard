@@ -2495,3 +2495,552 @@ loadHistoricalData();
 loadAIAnalysis(); // ADD
 setInterval(loadAIAnalysis, REFRESH_INTERVAL_MS); // ADD — never reloads the page, only re-fetches JSON
 setInterval(loadHistoricalData, REFRESH_INTERVAL_MS); // never reloads the page, only re-fetches JSON
+
+// ============================================================
+// =================== AI CHAT ASSISTANT MODULE ===============
+// Isolated, additive feature. Does not touch, wrap, or override
+// any function above this line. Reuses existing global state
+// (currentData, currentRange, historyData, aiData) and the
+// existing escapeHtml() helper — no new fetch pattern, no new
+// polling loop. Talks to a brand-new, independent n8n webhook
+// (see ai-chat-assistant-workflow.json) — never the two existing
+// scheduled workflows.
+//
+// PASTE YOUR WEBHOOK'S PRODUCTION URL BELOW after importing and
+// activating ai-chat-assistant-workflow.json in n8n.
+// ============================================================
+
+const AI_CHAT_WEBHOOK_URL = "https://YOUR-N8N-DOMAIN/webhook/ai-chat-assistant";
+
+const AI_CHAT_STORAGE_KEY = "citimotorsAiChatHistory_v1";
+const AI_CHAT_MAX_STORED_MESSAGES = 40;
+
+let aiChatMessages = []; // [{ role: "user"|"assistant", content: string, error?: boolean }]
+let aiChatOpen = false;
+let aiChatSending = false;
+
+const AI_CHAT_SUGGESTIONS = [
+  "Summarize today's performance",
+  "Which campaign has the best ROAS?",
+  "Where am I wasting budget?",
+  "Compare this week vs last week",
+  "Which ads should I pause?",
+  "What should I optimize?",
+];
+
+// ---------------- STORAGE ----------------
+
+function loadAiChatHistory() {
+  try {
+    const raw = localStorage.getItem(AI_CHAT_STORAGE_KEY);
+    aiChatMessages = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(aiChatMessages)) aiChatMessages = [];
+  } catch (err) {
+    aiChatMessages = [];
+  }
+}
+
+function saveAiChatHistory() {
+  try {
+    const trimmed = aiChatMessages.slice(-AI_CHAT_MAX_STORED_MESSAGES);
+    localStorage.setItem(AI_CHAT_STORAGE_KEY, JSON.stringify(trimmed));
+  } catch (err) {
+    // localStorage unavailable (private mode / quota) — chat still
+    // works for the current session, it just won't persist.
+    console.warn("AI chat: could not save history:", err.message);
+  }
+}
+
+// ---------------- CONTEXT BUILDING ----------------
+// Builds a compact snapshot of exactly what's currently on screen —
+// the active range, that range's numbers, and whatever the AI
+// Analysis / Historical pipelines have already loaded — so the
+// assistant answers strictly from live dashboard state.
+
+function buildAiChatContext() {
+  const ranges = (currentData && currentData.ranges) || {};
+  const rangeData = ranges[currentRange] || {};
+
+  const rangeLabels = { today: "Today", "7d": "Last 7 Days", "30d": "Last 30 Days" };
+
+  const context = {
+    reportDate: (currentData && currentData.reportDate) || null,
+    activeRange: currentRange,
+    activeRangeLabel: rangeLabels[currentRange] || currentRange,
+    activeRangeData: rangeData,
+    allAvailableRanges: Object.keys(ranges),
+    accountHealth: (currentData && currentData.accountHealth) || null,
+    topCampaign: (currentData && currentData.topCampaign) || null,
+    topAd: (currentData && currentData.topAd) || null,
+    topCreative: (currentData && currentData.topCreative) || null,
+    topAudience: (currentData && currentData.topAudience) || null,
+    budgetPacing: rangeData.budgetPacing || (currentData && currentData.budgetPacing) || null,
+  };
+
+  // reports/ai-analysis.json — narrative recommendations, alerts,
+  // best/worst campaigns, creative + historical insights.
+  if (aiData && Object.keys(aiData).length > 0) {
+    context.aiAnalysis = aiData;
+  }
+
+  // dashboard-history.json — keep this small: just counts + the most
+  // recent handful of entries rather than the entire multi-KB file,
+  // so the prompt stays lean. processedCampaigns / dailyPerformance
+  // are populated by processHistoricalData() in the Historical module.
+  if (typeof historyAvailable !== "undefined" && historyAvailable) {
+    context.historySummary = {
+      campaignCount: Array.isArray(processedCampaigns) ? processedCampaigns.length : undefined,
+      recentDailyPerformance: Array.isArray(dailyPerformance) ? dailyPerformance.slice(-14) : undefined,
+      topCampaignsByHistory: Array.isArray(processedCampaigns)
+        ? processedCampaigns.slice(0, 10)
+        : undefined,
+    };
+  }
+
+  return context;
+}
+
+// ---------------- MARKDOWN (light) ----------------
+// Minimal, dependency-free renderer: bold, bullet/numbered lists,
+// paragraphs, inline code. Escapes HTML first so the model's output
+// can never inject markup.
+
+function renderAiChatMarkdown(raw) {
+  const escaped = escapeHtml(raw || "");
+  const lines = escaped.split(/\r?\n/);
+  let html = "";
+  let inList = null; // "ul" | "ol" | null
+
+  function closeList() {
+    if (inList) { html += `</${inList}>`; inList = null; }
+  }
+
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+    const bulletMatch = trimmed.match(/^[-*]\s+(.*)/);
+    const numberMatch = trimmed.match(/^\d+[.)]\s+(.*)/);
+
+    if (bulletMatch) {
+      if (inList !== "ul") { closeList(); html += "<ul>"; inList = "ul"; }
+      html += `<li>${inlineAiChatMarkdown(bulletMatch[1])}</li>`;
+    } else if (numberMatch) {
+      if (inList !== "ol") { closeList(); html += "<ol>"; inList = "ol"; }
+      html += `<li>${inlineAiChatMarkdown(numberMatch[1])}</li>`;
+    } else if (trimmed === "") {
+      closeList();
+    } else {
+      closeList();
+      html += `<p>${inlineAiChatMarkdown(trimmed)}</p>`;
+    }
+  });
+  closeList();
+  return html || `<p>${inlineAiChatMarkdown(escaped)}</p>`;
+}
+
+function inlineAiChatMarkdown(text) {
+  return text
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>");
+}
+
+// ---------------- RENDERING ----------------
+
+function renderAiChatContextLabel() {
+  const el = getEl("aiChatContextLabel");
+  if (!el) return;
+  const rangeLabels = { today: "Today", "7d": "Last 7 Days", "30d": "Last 30 Days" };
+  const label = rangeLabels[currentRange] || currentRange;
+  el.textContent = `Reading ${label}'s data`;
+}
+
+function renderAiChatMessages() {
+  const container = getEl("aiChatMessages");
+  if (!container) return;
+
+  if (aiChatMessages.length === 0) {
+    container.innerHTML = `
+      <div class="ai-chat-empty">
+        <strong>Ask me about your Meta Ads</strong>
+        I can read your live dashboard — spend, ROAS, leads, campaigns, audiences — for whatever range is currently selected.
+      </div>`;
+    renderAiChatSuggestions(true);
+    return;
+  }
+
+  renderAiChatSuggestions(false);
+
+  container.innerHTML = aiChatMessages
+    .map((msg, idx) => {
+      const isUser = msg.role === "user";
+      const bubbleClass = msg.error ? "ai-chat-bubble ai-chat-error-bubble" : "ai-chat-bubble";
+      const body = isUser ? `<p>${escapeHtml(msg.content)}</p>` : renderAiChatMarkdown(msg.content);
+      const copyBtn = !isUser && !msg.error
+        ? `<button class="ai-chat-copy-btn" data-copy-idx="${idx}" type="button">COPY</button>`
+        : "";
+      return `
+        <div class="ai-chat-msg ${isUser ? "user" : "assistant"}">
+          <div class="ai-chat-msg-avatar">${isUser ? "YOU" : "AI"}</div>
+          <div>
+            <div class="${bubbleClass}">${body}</div>
+            ${copyBtn}
+          </div>
+        </div>`;
+    })
+    .join("");
+
+  container.querySelectorAll("[data-copy-idx]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const idx = Number(btn.dataset.copyIdx);
+      const msg = aiChatMessages[idx];
+      if (!msg) return;
+      navigator.clipboard?.writeText(msg.content).then(() => {
+        const original = btn.textContent;
+        btn.textContent = "COPIED";
+        setTimeout(() => { btn.textContent = original; }, 1200);
+      }).catch(() => {});
+    });
+  });
+
+  container.scrollTop = container.scrollHeight;
+}
+
+function renderAiChatSuggestions(show) {
+  const el = getEl("aiChatSuggestions");
+  if (!el) return;
+  if (!show) { el.innerHTML = ""; return; }
+  el.innerHTML = AI_CHAT_SUGGESTIONS
+    .map((q) => `<button type="button" class="ai-chat-suggestion-chip" data-suggestion="${escapeHtml(q)}">${escapeHtml(q)}</button>`)
+    .join("");
+  el.querySelectorAll("[data-suggestion]").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const input = getEl("aiChatInput");
+      if (input) { input.value = chip.dataset.suggestion; input.focus(); }
+    });
+  });
+}
+
+function showAiChatTyping() {
+  const container = getEl("aiChatMessages");
+  if (!container) return;
+  const el = document.createElement("div");
+  el.className = "ai-chat-msg assistant";
+  el.id = "aiChatTypingRow";
+  el.innerHTML = `
+    <div class="ai-chat-msg-avatar">AI</div>
+    <div class="ai-chat-bubble">
+      <div class="ai-chat-typing"><span></span><span></span><span></span></div>
+    </div>`;
+  container.appendChild(el);
+  container.scrollTop = container.scrollHeight;
+}
+
+function hideAiChatTyping() {
+  const el = document.getElementById("aiChatTypingRow");
+  if (el) el.remove();
+}
+
+// ---------------- SEND ----------------
+
+async function sendAiChatMessage(question) {
+  const trimmed = (question || "").trim();
+  if (!trimmed || aiChatSending) return;
+
+  aiChatMessages.push({ role: "user", content: trimmed });
+  saveAiChatHistory();
+  renderAiChatMessages();
+
+  aiChatSending = true;
+  updateAiChatSendState();
+  showAiChatTyping();
+
+  const payload = {
+    question: trimmed,
+    history: aiChatMessages
+      .filter((m) => !m.error)
+      .slice(-9, -1) // conversation before this new question
+      .map((m) => ({ role: m.role, content: m.content })),
+    context: buildAiChatContext(),
+  };
+
+  try {
+    const res = await fetch(AI_CHAT_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const reply = (data && data.reply) ? data.reply : "Sorry, I didn't get a usable response — please try again.";
+    aiChatMessages.push({ role: "assistant", content: reply });
+  } catch (err) {
+    console.warn("AI chat request failed:", err.message);
+    aiChatMessages.push({
+      role: "assistant",
+      content: "I couldn't reach the AI Assistant service just now. Please check your connection (or the n8n webhook) and try again.",
+      error: true,
+    });
+  } finally {
+    hideAiChatTyping();
+    aiChatSending = false;
+    updateAiChatSendState();
+    saveAiChatHistory();
+    renderAiChatMessages();
+  }
+}
+
+function updateAiChatSendState() {
+  const btn = getEl("aiChatSendBtn");
+  if (btn) btn.disabled = aiChatSending;
+}
+
+// ---------------- OPEN / CLOSE / CLEAR ----------------
+
+function openAiChat() {
+  aiChatOpen = true;
+  const panel = getEl("aiChatPanel");
+  if (panel) { panel.classList.add("ai-chat-open"); panel.setAttribute("aria-hidden", "false"); }
+  const openIcon = getEl("aiChatIconOpen");
+  const closeIcon = getEl("aiChatIconClose");
+  if (openIcon) openIcon.style.display = "none";
+  if (closeIcon) closeIcon.style.display = "";
+  renderAiChatContextLabel();
+  renderAiChatMessages();
+  const input = getEl("aiChatInput");
+  if (input) input.focus();
+}
+
+function closeAiChat() {
+  aiChatOpen = false;
+  const panel = getEl("aiChatPanel");
+  if (panel) { panel.classList.remove("ai-chat-open"); panel.setAttribute("aria-hidden", "true"); }
+  const openIcon = getEl("aiChatIconOpen");
+  const closeIcon = getEl("aiChatIconClose");
+  if (openIcon) openIcon.style.display = "";
+  if (closeIcon) closeIcon.style.display = "none";
+}
+
+function toggleAiChat() {
+  if (aiChatOpen) closeAiChat(); else openAiChat();
+}
+
+function clearAiChat() {
+  aiChatMessages = [];
+  saveAiChatHistory();
+  renderAiChatMessages();
+}
+
+// ---------------- INIT ----------------
+
+function initAiChat() {
+  loadAiChatHistory();
+
+  const toggleBtn = getEl("aiChatToggle");
+  const closeBtn = getEl("aiChatCloseBtn");
+  const newBtn = getEl("aiChatNewBtn");
+  const clearBtn = getEl("aiChatClearBtn");
+  const form = getEl("aiChatForm");
+  const input = getEl("aiChatInput");
+
+  if (toggleBtn) toggleBtn.addEventListener("click", toggleAiChat);
+  if (closeBtn) closeBtn.addEventListener("click", closeAiChat);
+  if (newBtn) newBtn.addEventListener("click", clearAiChat);
+  if (clearBtn) clearBtn.addEventListener("click", clearAiChat);
+
+  if (input) {
+    input.addEventListener("input", () => {
+      input.style.height = "auto";
+      input.style.height = Math.min(input.scrollHeight, 96) + "px";
+    });
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        form?.requestSubmit();
+      }
+    });
+  }
+
+  if (form) {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (!input) return;
+      const value = input.value;
+      input.value = "";
+      input.style.height = "auto";
+      sendAiChatMessage(value);
+    });
+  }
+}
+
+// Runs alongside every other init call already at the bottom of this
+// file — independent of Overview/Historical/AI-analysis loading, so
+// a failure here (e.g. missing webhook URL) never affects the rest
+// of the dashboard, and vice versa.
+initAiChat();
+
+// ============================================================
+// ================ AI CHAT — VOICE COMMAND MODULE =============
+// Additive on top of the AI Chat Assistant module above. Two
+// independent pieces, each fully optional and self-disabling if
+// the browser doesn't support it:
+//   1) Voice INPUT  — mic button transcribes speech into the
+//      chat textarea using the Web Speech API's SpeechRecognition
+//      (auto-sends when the browser reports a final result).
+//   2) Voice OUTPUT — an optional toggle (off by default) that
+//      reads new assistant replies aloud with speechSynthesis.
+// Nothing here touches n8n, the webhook payload shape, or any
+// function from the modules above — it only calls
+// sendAiChatMessage() (already defined) and appends to
+// aiChatMessages the same way typing does.
+// ============================================================
+
+let aiChatRecognition = null;
+let aiChatListening = false;
+let aiChatSpeakEnabled = false;
+
+const AiChatSpeechRecognitionCtor =
+  window.SpeechRecognition || window.webkitSpeechRecognition || null;
+const aiChatSpeechSupported = !!AiChatSpeechRecognitionCtor;
+const aiChatTtsSupported = "speechSynthesis" in window;
+
+function initAiChatVoice() {
+  const micBtn = getEl("aiChatMicBtn");
+  const speakToggle = getEl("aiChatSpeakToggle");
+  const voiceStatus = getEl("aiChatVoiceStatus");
+
+  // ---- Voice input (mic → text) ----
+  if (!aiChatSpeechSupported) {
+    if (micBtn) micBtn.classList.add("ai-chat-mic-unsupported");
+  } else if (micBtn) {
+    aiChatRecognition = new AiChatSpeechRecognitionCtor();
+    aiChatRecognition.continuous = false;
+    aiChatRecognition.interimResults = true;
+    aiChatRecognition.maxAlternatives = 1;
+    // Defaults to the page language if set, else browser default —
+    // works for both English and Filipino speech out of the box on
+    // Chrome; user can still just type if recognition mishears.
+    aiChatRecognition.lang = document.documentElement.lang || "en-US";
+
+    aiChatRecognition.onstart = () => {
+      aiChatListening = true;
+      micBtn.classList.add("ai-chat-mic-listening");
+      micBtn.setAttribute("aria-pressed", "true");
+      if (voiceStatus) voiceStatus.style.display = "flex";
+    };
+
+    aiChatRecognition.onresult = (event) => {
+      const input = getEl("aiChatInput");
+      if (!input) return;
+      let transcript = "";
+      let isFinal = false;
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+        if (event.results[i].isFinal) isFinal = true;
+      }
+      input.value = transcript;
+      if (isFinal && transcript.trim()) {
+        const value = transcript.trim();
+        input.value = "";
+        sendAiChatMessage(value);
+      }
+    };
+
+    aiChatRecognition.onerror = (event) => {
+      console.warn("AI chat voice input error:", event.error);
+      stopAiChatListening();
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        const input = getEl("aiChatInput");
+        if (input) input.placeholder = "Mic access denied — type your question instead";
+      }
+    };
+
+    aiChatRecognition.onend = () => {
+      stopAiChatListening();
+    };
+
+    micBtn.addEventListener("click", () => {
+      if (aiChatListening) {
+        aiChatRecognition.stop();
+      } else {
+        try {
+          aiChatRecognition.start();
+        } catch (err) {
+          // start() throws if called while already running/starting —
+          // safe to ignore, onend/onerror will reset state.
+        }
+      }
+    });
+  }
+
+  // ---- Voice output (reply → speech) ----
+  if (!aiChatTtsSupported && speakToggle) {
+    speakToggle.style.display = "none";
+  } else if (speakToggle) {
+    try {
+      aiChatSpeakEnabled = localStorage.getItem("citimotorsAiChatSpeak_v1") === "1";
+    } catch (err) {
+      aiChatSpeakEnabled = false;
+    }
+    updateAiChatSpeakToggleUI();
+
+    speakToggle.addEventListener("click", () => {
+      aiChatSpeakEnabled = !aiChatSpeakEnabled;
+      try { localStorage.setItem("citimotorsAiChatSpeak_v1", aiChatSpeakEnabled ? "1" : "0"); } catch (err) {}
+      if (!aiChatSpeakEnabled) window.speechSynthesis.cancel();
+      updateAiChatSpeakToggleUI();
+    });
+  }
+}
+
+function stopAiChatListening() {
+  aiChatListening = false;
+  const micBtn = getEl("aiChatMicBtn");
+  const voiceStatus = getEl("aiChatVoiceStatus");
+  if (micBtn) { micBtn.classList.remove("ai-chat-mic-listening"); micBtn.setAttribute("aria-pressed", "false"); }
+  if (voiceStatus) voiceStatus.style.display = "none";
+}
+
+function updateAiChatSpeakToggleUI() {
+  const toggle = getEl("aiChatSpeakToggle");
+  const onIcon = getEl("aiChatSpeakOnIcon");
+  const offIcon = getEl("aiChatSpeakOffIcon");
+  if (!toggle) return;
+  toggle.setAttribute("aria-pressed", String(aiChatSpeakEnabled));
+  toggle.title = aiChatSpeakEnabled ? "Read replies aloud: on" : "Read replies aloud: off";
+  if (onIcon) onIcon.style.display = aiChatSpeakEnabled ? "" : "none";
+  if (offIcon) offIcon.style.display = aiChatSpeakEnabled ? "none" : "";
+}
+
+// Strips light Markdown down to plain speakable text before handing
+// it to speechSynthesis, so it doesn't read out asterisks/backticks.
+function speakAiChatReply(text) {
+  if (!aiChatTtsSupported || !aiChatSpeakEnabled || !text) return;
+  const plain = text
+    .replace(/[*_`#]/g, "")
+    .replace(/^\s*[-\d.)]+\s+/gm, "")
+    .trim();
+  if (!plain) return;
+  window.speechSynthesis.cancel(); // never overlap with a previous reply
+  const utterance = new SpeechSynthesisUtterance(plain);
+  utterance.lang = document.documentElement.lang || "en-US";
+  window.speechSynthesis.speak(utterance);
+}
+
+// ---- Hook into sendAiChatMessage's result without modifying it ----
+// sendAiChatMessage() already pushes { role: "assistant", ... } onto
+// aiChatMessages and calls renderAiChatMessages(). We wrap the
+// existing function reference here (composition, not editing the
+// function body above) so a new assistant reply also gets spoken
+// when voice output is on. If sendAiChatMessage isn't defined for
+// any reason, this is a silent no-op and typing/chat still works.
+if (typeof sendAiChatMessage === "function") {
+  const _originalSendAiChatMessage = sendAiChatMessage;
+  sendAiChatMessage = async function (question) {
+    const countBefore = aiChatMessages.length;
+    await _originalSendAiChatMessage(question);
+    const newAssistantMsgs = aiChatMessages.slice(countBefore).filter((m) => m.role === "assistant" && !m.error);
+    newAssistantMsgs.forEach((m) => speakAiChatReply(m.content));
+  };
+}
+
+initAiChatVoice();
