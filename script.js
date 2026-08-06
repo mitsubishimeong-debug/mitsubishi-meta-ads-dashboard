@@ -2510,7 +2510,7 @@ setInterval(loadHistoricalData, REFRESH_INTERVAL_MS); // never reloads the page,
 // activating ai-chat-assistant-workflow.json in n8n.
 // ============================================================
 
-const AI_CHAT_WEBHOOK_URL = "https://YOUR-N8N-DOMAIN/webhook/ai-chat-assistant";
+const AI_CHAT_WEBHOOK_URL = "https://propeller-quake-maker.ngrok-free.dev/webhook/ai-chat-assistant";
 
 const AI_CHAT_STORAGE_KEY = "citimotorsAiChatHistory_v1";
 const AI_CHAT_MAX_STORED_MESSAGES = 40;
@@ -2542,7 +2542,12 @@ function loadAiChatHistory() {
 
 function saveAiChatHistory() {
   try {
-    const trimmed = aiChatMessages.slice(-AI_CHAT_MAX_STORED_MESSAGES);
+    // Nala's auto-greeting is marked transient — it's regenerated
+    // fresh from live data on every load, so it's deliberately never
+    // persisted (otherwise every reload would pile another stale
+    // greeting into saved history).
+    const persistable = aiChatMessages.filter((m) => !m.transient);
+    const trimmed = persistable.slice(-AI_CHAT_MAX_STORED_MESSAGES);
     localStorage.setItem(AI_CHAT_STORAGE_KEY, JSON.stringify(trimmed));
   } catch (err) {
     // localStorage unavailable (private mode / quota) — chat still
@@ -2661,8 +2666,8 @@ function renderAiChatMessages() {
   if (aiChatMessages.length === 0) {
     container.innerHTML = `
       <div class="ai-chat-empty">
-        <strong>Ask me about your Meta Ads</strong>
-        I can read your live dashboard — spend, ROAS, leads, campaigns, audiences — for whatever range is currently selected.
+        <strong>Hi, I'm Nala 👋</strong>
+        Ask me about your Meta Ads — spend, ROAS, leads, campaigns, audiences — for whatever range is currently selected.
       </div>`;
     renderAiChatSuggestions(true);
     return;
@@ -2680,7 +2685,7 @@ function renderAiChatMessages() {
         : "";
       return `
         <div class="ai-chat-msg ${isUser ? "user" : "assistant"}">
-          <div class="ai-chat-msg-avatar">${isUser ? "YOU" : "AI"}</div>
+          <div class="ai-chat-msg-avatar">${isUser ? "YOU" : "N"}</div>
           <div>
             <div class="${bubbleClass}">${body}</div>
             ${copyBtn}
@@ -2727,7 +2732,7 @@ function showAiChatTyping() {
   el.className = "ai-chat-msg assistant";
   el.id = "aiChatTypingRow";
   el.innerHTML = `
-    <div class="ai-chat-msg-avatar">AI</div>
+    <div class="ai-chat-msg-avatar">N</div>
     <div class="ai-chat-bubble">
       <div class="ai-chat-typing"><span></span><span></span><span></span></div>
     </div>`;
@@ -2766,7 +2771,14 @@ async function sendAiChatMessage(question) {
   try {
     const res = await fetch(AI_CHAT_WEBHOOK_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        // Free ngrok domains show an HTML "you are about to visit..."
+        // interstitial to anything that looks like a browser request,
+        // which breaks fetch()'s JSON parsing. This header tells
+        // ngrok to skip it. Harmless to send to any other host.
+        "ngrok-skip-browser-warning": "true",
+      },
       body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -2923,52 +2935,101 @@ function initAiChatVoice() {
 
     aiChatRecognition.onstart = () => {
       aiChatListening = true;
-      micBtn.classList.add("ai-chat-mic-listening");
-      micBtn.setAttribute("aria-pressed", "true");
-      if (voiceStatus) voiceStatus.style.display = "flex";
+      if (aiChatMode === "manual" || aiChatMode === "idle") {
+        // Manual press-to-talk (mic button in the input row).
+        aiChatMode = "manual";
+        micBtn.classList.add("ai-chat-mic-listening");
+        micBtn.setAttribute("aria-pressed", "true");
+        if (voiceStatus) {
+          voiceStatus.classList.remove("ai-chat-voice-status--wake");
+          voiceStatus.innerHTML = `<span class="ai-chat-voice-dot"></span> Listening… speak your question`;
+          voiceStatus.style.display = "flex";
+        }
+      }
+      // passive/capturing (wake-word mode) has its own UI, handled by
+      // startAiChatPassiveListening() / enterAiChatCapturingMode().
     };
 
     aiChatRecognition.onresult = (event) => {
-      const input = getEl("aiChatInput");
-      if (!input) return;
       let transcript = "";
       let isFinal = false;
       for (let i = event.resultIndex; i < event.results.length; i++) {
         transcript += event.results[i][0].transcript;
         if (event.results[i].isFinal) isFinal = true;
       }
-      input.value = transcript;
-      if (isFinal && transcript.trim()) {
-        const value = transcript.trim();
-        input.value = "";
-        sendAiChatMessage(value);
+
+      if (aiChatMode === "manual") {
+        const input = getEl("aiChatInput");
+        if (input) input.value = transcript;
+        if (isFinal && transcript.trim()) {
+          const value = transcript.trim();
+          if (input) input.value = "";
+          sendAiChatMessage(value);
+        }
+        return;
+      }
+
+      if ((aiChatMode === "passive" || aiChatMode === "capturing") && isFinal) {
+        aiChatHandleWakeResult(transcript);
       }
     };
 
     aiChatRecognition.onerror = (event) => {
       console.warn("AI chat voice input error:", event.error);
+      const wasManual = aiChatMode === "manual";
       stopAiChatListening();
       if (event.error === "not-allowed" || event.error === "service-not-allowed") {
         const input = getEl("aiChatInput");
         if (input) input.placeholder = "Mic access denied — type your question instead";
+        aiChatWakeEnabled = false;
+        try { localStorage.setItem(AI_CHAT_WAKE_STORAGE_KEY, "0"); } catch (err) {}
+        updateAiChatWakeToggleUI();
+      } else if (!wasManual && aiChatWakeEnabled) {
+        // Transient error (e.g. "no-speech", brief network hiccup) —
+        // restart passive listening shortly instead of giving up.
+        setTimeout(() => { if (aiChatWakeEnabled) startAiChatPassiveListening(); }, 600);
       }
     };
 
     aiChatRecognition.onend = () => {
-      stopAiChatListening();
+      const wasManual = aiChatMode === "manual";
+      aiChatListening = false;
+      micBtn.classList.remove("ai-chat-mic-listening");
+      micBtn.setAttribute("aria-pressed", "false");
+      if (wasManual && voiceStatus) voiceStatus.style.display = "none";
+
+      if (wasManual) {
+        aiChatMode = aiChatWakeEnabled ? "idle" : "idle";
+        // Manual recording just finished — hand the mic back to
+        // passive wake-word listening if that mode is turned on.
+        if (aiChatWakeEnabled) setTimeout(() => startAiChatPassiveListening(), 250);
+      } else if (aiChatWakeEnabled && (aiChatMode === "passive" || aiChatMode === "capturing")) {
+        // Chrome ends continuous recognition periodically on its own
+        // (silence timeout, network blip) — restart it seamlessly so
+        // wake-word listening feels "always on".
+        const resumeCapturing = aiChatMode === "capturing";
+        setTimeout(() => {
+          if (!aiChatWakeEnabled) return;
+          startAiChatPassiveListening();
+          if (resumeCapturing) enterAiChatCapturingMode();
+        }, 250);
+      }
     };
 
     micBtn.addEventListener("click", () => {
-      if (aiChatListening) {
+      if (aiChatMode === "manual" && aiChatListening) {
         aiChatRecognition.stop();
-      } else {
-        try {
-          aiChatRecognition.start();
-        } catch (err) {
-          // start() throws if called while already running/starting —
-          // safe to ignore, onend/onerror will reset state.
-        }
+        return;
       }
+      // Manual press-to-talk always takes priority over passive
+      // wake-word listening — stop passive first, then start fresh.
+      clearAiChatCaptureTimer();
+      try { aiChatRecognition.stop(); } catch (err) {}
+      aiChatMode = "manual";
+      aiChatRecognition.continuous = false;
+      setTimeout(() => {
+        try { aiChatRecognition.start(); } catch (err) {}
+      }, 120);
     });
   }
 
@@ -3044,3 +3105,260 @@ if (typeof sendAiChatMessage === "function") {
 }
 
 initAiChatVoice();
+initAiChatWakeWord();
+
+// ============================================================
+// ================= AI CHAT — WAKE WORD MODULE ================
+// "Jarvis mode": when enabled, keeps a background SpeechRecognition
+// session running (continuous: true) and listens for a wake phrase.
+// Once heard, it opens the chat panel and either (a) sends whatever
+// the user said right after the wake phrase in the same breath, or
+// (b) if they just said the wake phrase alone, switches to a short
+// "capturing" window and sends the next thing they say.
+//
+// This reuses the SAME aiChatRecognition instance created in
+// initAiChatVoice() (browsers only allow one active recognition
+// session at a time) — it just changes .continuous on the fly and
+// tracks a small state machine (aiChatMode) so the manual
+// press-to-talk mic button and passive wake-word listening never
+// fight over the mic. Nothing above this block is modified.
+// ============================================================
+
+const AI_CHAT_WAKE_WORDS = [
+  "hey nala",
+  "hi nala",
+  "hey nala assistant",
+  "ok nala",
+  "nala",
+];
+const AI_CHAT_WAKE_STORAGE_KEY = "citimotorsAiChatWake_v1";
+const AI_CHAT_CAPTURE_TIMEOUT_MS = 7000;
+
+let aiChatWakeEnabled = false;
+let aiChatMode = "idle"; // idle | manual | passive | capturing
+let aiChatCaptureTimer = null;
+
+function normalizeAiChatSpeech(text) {
+  return String(text || "").toLowerCase().trim().replace(/[.,!?]+$/g, "");
+}
+
+function findAiChatWakeMatch(normalizedText) {
+  for (const phrase of AI_CHAT_WAKE_WORDS) {
+    const idx = normalizedText.indexOf(phrase);
+    if (idx !== -1) {
+      return { phrase, remainder: normalizedText.slice(idx + phrase.length).trim() };
+    }
+  }
+  return null;
+}
+
+function initAiChatWakeWord() {
+  const wakeToggle = getEl("aiChatWakeToggle");
+  if (!wakeToggle) return;
+
+  if (!aiChatSpeechSupported) {
+    wakeToggle.style.display = "none";
+    return;
+  }
+
+  try {
+    aiChatWakeEnabled = localStorage.getItem(AI_CHAT_WAKE_STORAGE_KEY) === "1";
+  } catch (err) {
+    aiChatWakeEnabled = false;
+  }
+  updateAiChatWakeToggleUI();
+  if (aiChatWakeEnabled) startAiChatPassiveListening();
+
+  wakeToggle.addEventListener("click", () => {
+    aiChatWakeEnabled = !aiChatWakeEnabled;
+    try { localStorage.setItem(AI_CHAT_WAKE_STORAGE_KEY, aiChatWakeEnabled ? "1" : "0"); } catch (err) {}
+    updateAiChatWakeToggleUI();
+    if (aiChatWakeEnabled) {
+      startAiChatPassiveListening();
+    } else {
+      stopAiChatPassiveListening();
+    }
+  });
+}
+
+function updateAiChatWakeToggleUI() {
+  const toggle = getEl("aiChatWakeToggle");
+  const onIcon = getEl("aiChatWakeOnIcon");
+  const offIcon = getEl("aiChatWakeOffIcon");
+  const toggleBtn = getEl("aiChatToggle");
+  const ring = getEl("aiChatWakeRing");
+  if (toggle) {
+    toggle.setAttribute("aria-pressed", String(aiChatWakeEnabled));
+    toggle.title = aiChatWakeEnabled
+      ? 'Wake word ("Hey Nala"): on'
+      : 'Wake word ("Hey Nala"): off';
+  }
+  if (onIcon) onIcon.style.display = aiChatWakeEnabled ? "" : "none";
+  if (offIcon) offIcon.style.display = aiChatWakeEnabled ? "none" : "";
+  if (ring) ring.style.display = aiChatWakeEnabled ? "block" : "none";
+  if (toggleBtn) toggleBtn.classList.toggle("ai-chat-wake-capturing", aiChatMode === "capturing");
+}
+
+function startAiChatPassiveListening() {
+  if (!aiChatRecognition || aiChatMode === "manual") return; // let a manual recording finish first
+  try {
+    aiChatMode = "passive";
+    aiChatRecognition.continuous = true;
+    aiChatRecognition.interimResults = true;
+    aiChatRecognition.start();
+  } catch (err) {
+    // Already running — fine, onend will loop us back here if needed.
+  }
+}
+
+function stopAiChatPassiveListening() {
+  clearAiChatCaptureTimer();
+  if (aiChatMode === "passive" || aiChatMode === "capturing") {
+    aiChatMode = "idle";
+    try { aiChatRecognition && aiChatRecognition.stop(); } catch (err) {}
+  }
+  updateAiChatWakeToggleUI();
+}
+
+function clearAiChatCaptureTimer() {
+  if (aiChatCaptureTimer) { clearTimeout(aiChatCaptureTimer); aiChatCaptureTimer = null; }
+}
+
+function enterAiChatCapturingMode() {
+  aiChatMode = "capturing";
+  updateAiChatWakeToggleUI();
+  const voiceStatus = getEl("aiChatVoiceStatus");
+  if (voiceStatus) {
+    voiceStatus.classList.remove("ai-chat-voice-status--wake");
+    voiceStatus.innerHTML = `<span class="ai-chat-voice-dot"></span> Yes? Listening for your question…`;
+    voiceStatus.style.display = "flex";
+  }
+  if (!openAiChatPanelIfClosed()) { /* already open */ }
+  clearAiChatCaptureTimer();
+  aiChatCaptureTimer = setTimeout(() => {
+    // No follow-up heard in time — quietly go back to passive standby.
+    if (aiChatMode === "capturing") backToAiChatPassiveMode();
+  }, AI_CHAT_CAPTURE_TIMEOUT_MS);
+}
+
+function backToAiChatPassiveMode() {
+  clearAiChatCaptureTimer();
+  const voiceStatus = getEl("aiChatVoiceStatus");
+  if (voiceStatus) voiceStatus.style.display = "none";
+  aiChatMode = aiChatWakeEnabled ? "passive" : "idle";
+  updateAiChatWakeToggleUI();
+}
+
+function openAiChatPanelIfClosed() {
+  if (!aiChatOpen) { openAiChat(); return true; }
+  return false;
+}
+
+// Handles a finalized speech result while in passive/capturing mode.
+// Called from the shared onresult handler in initAiChatVoice() below
+// via the aiChatHandleWakeResult hook.
+function aiChatHandleWakeResult(finalTranscript) {
+  const normalized = normalizeAiChatSpeech(finalTranscript);
+  if (!normalized) return;
+
+  if (aiChatMode === "capturing") {
+    clearAiChatCaptureTimer();
+    backToAiChatPassiveMode();
+    sendAiChatMessage(finalTranscript.trim());
+    return;
+  }
+
+  // aiChatMode === "passive": only act if a wake word was actually heard.
+  const match = findAiChatWakeMatch(normalized);
+  if (!match) return;
+
+  if (match.remainder) {
+    openAiChatPanelIfClosed();
+    sendAiChatMessage(match.remainder);
+    // stay in passive mode — no need to wait for a follow-up
+  } else {
+    enterAiChatCapturingMode();
+  }
+}
+
+// ============================================================
+// ==================== NALA AUTO-GREET MODULE ==================
+// The moment live dashboard data has actually loaded (currentData
+// populated by loadDashboard(), same global used by Overview),
+// Nala opens the chat panel on her own and posts a short status
+// greeting built entirely from that live data — no hardcoded
+// numbers, nothing from the AI webhook (so it appears instantly
+// and never depends on n8n/ngrok being reachable).
+//
+// The greeting is shown for this page load only — it is NOT saved
+// into localStorage, so refreshing the dashboard always gets a
+// fresh, current greeting instead of piling up old ones in chat
+// history every time the page loads.
+// ============================================================
+
+let aiChatGreeted = false;
+
+function composeNalaGreeting() {
+  const rangeLabels = { today: "Today", "7d": "the last 7 days", "30d": "the last 30 days" };
+  const rangeLabel = rangeLabels[currentRange] || currentRange;
+  const ranges = (currentData && currentData.ranges) || {};
+  const r = ranges[currentRange] || {};
+
+  const lines = [];
+  lines.push(`Hi, I'm **Nala** 👋 Here's where things stand for **${rangeLabel}**:`);
+
+  const stats = [];
+  if (r.spend !== undefined) stats.push(`Spend **${formatCurrency(r.spend)}**`);
+  if (r.messages !== undefined) stats.push(`**${formatNumber(r.messages)}** messages`);
+  if (r.ctr !== undefined) stats.push(`CTR **${formatPercent(r.ctr)}**`);
+  const costPerMsg = r.costPerMessage ?? r.cost_per_message;
+  if (costPerMsg !== undefined) stats.push(`cost/message **${formatCurrency(costPerMsg)}**`);
+  if (stats.length) lines.push(stats.join(" · "));
+
+  if (currentData && currentData.accountHealth !== undefined && currentData.accountHealth !== null) {
+    lines.push(`Account health: **${currentData.accountHealth}/100**`);
+  }
+
+  const topCampaign = currentData && currentData.topCampaign;
+  const topCampaignName = topCampaign && (topCampaign.name || topCampaign.campaign_name || topCampaign.title);
+  if (topCampaignName) lines.push(`Top campaign right now: **${topCampaignName}**`);
+
+  if (aiData && Array.isArray(aiData.recommendations) && aiData.recommendations.length > 0) {
+    const first = aiData.recommendations[0];
+    const text = typeof first === "string" ? first : (first.title || first.detail);
+    if (text) lines.push(`One thing worth a look: ${text}`);
+  }
+
+  if (r.spend === undefined && !topCampaignName) {
+    lines.push(`No live numbers are coming through for ${rangeLabel} just yet — ask me once your campaigns have data, or try a different range.`);
+  }
+
+  lines.push(`Ask me anything, or tap the mic 🎙️.`);
+
+  return lines.join("\n\n");
+}
+
+function tryNalaAutoGreet() {
+  if (aiChatGreeted) return;
+  // Wait until Overview's real fetch has actually resolved at least
+  // once (currentData is set inside loadDashboard() after a
+  // successful fetch) — not just "the page is up".
+  if (!currentData || !currentData.ranges) return;
+
+  aiChatGreeted = true;
+
+  const greeting = { role: "assistant", content: composeNalaGreeting(), transient: true };
+  aiChatMessages.push(greeting);
+  openAiChat();
+  renderAiChatMessages();
+  speakAiChatReply(greeting.content);
+}
+
+const aiChatGreetPoll = setInterval(() => {
+  tryNalaAutoGreet();
+  if (aiChatGreeted) clearInterval(aiChatGreetPoll);
+}, 400);
+// Safety net: stop polling after 20s even if data never loads, so a
+// permanently-broken dashboard.json can't leave a stray interval
+// running forever.
+setTimeout(() => clearInterval(aiChatGreetPoll), 20000);
