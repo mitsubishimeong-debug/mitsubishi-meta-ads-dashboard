@@ -3033,7 +3033,7 @@ function initAiChatVoice() {
     });
   }
 
-  // ---- Voice output (reply → speech) ----
+  // ---- Voice output (reply → speech, female voice preferred) ----
   if (!aiChatTtsSupported && speakToggle) {
     speakToggle.style.display = "none";
   } else if (speakToggle) {
@@ -3043,6 +3043,15 @@ function initAiChatVoice() {
       aiChatSpeakEnabled = false;
     }
     updateAiChatSpeakToggleUI();
+
+    // Voice lists load asynchronously in Chrome/Edge (empty on the
+    // very first call) — refresh our pick whenever the browser
+    // reports the list is ready, and also try once immediately for
+    // Firefox/Safari, which often have it available right away.
+    refreshAiChatVoicePick();
+    if ("onvoiceschanged" in window.speechSynthesis) {
+      window.speechSynthesis.onvoiceschanged = refreshAiChatVoicePick;
+    }
 
     speakToggle.addEventListener("click", () => {
       aiChatSpeakEnabled = !aiChatSpeakEnabled;
@@ -3067,9 +3076,73 @@ function updateAiChatSpeakToggleUI() {
   const offIcon = getEl("aiChatSpeakOffIcon");
   if (!toggle) return;
   toggle.setAttribute("aria-pressed", String(aiChatSpeakEnabled));
-  toggle.title = aiChatSpeakEnabled ? "Read replies aloud: on" : "Read replies aloud: off";
+  toggle.title = aiChatSpeakEnabled ? "Read replies aloud (Nala's voice): on" : "Read replies aloud (Nala's voice): off";
   if (onIcon) onIcon.style.display = aiChatSpeakEnabled ? "" : "none";
   if (offIcon) offIcon.style.display = aiChatSpeakEnabled ? "none" : "";
+}
+
+// ---- Female voice selection ----
+// speechSynthesis doesn't expose a gender field, so this matches
+// against the names browsers commonly ship for their female system
+// voices, in priority order. Falls back gracefully: any voice
+// matching the page language, then simply the first available voice,
+// so speech still works even if no clearly-female voice is installed.
+let aiChatPreferredVoice = null;
+
+const AI_CHAT_FEMALE_VOICE_HINTS = [
+  "female",
+  "google uk english female",
+  "google us english",
+  "microsoft zira",
+  "zira",
+  "samantha",
+  "victoria",
+  "karen",
+  "moira",
+  "tessa",
+  "fiona",
+  "susan",
+  "linda",
+  "ava",
+  "serena",
+  "allison",
+  "kathy",
+  "veena",
+  "heera",
+  "salli",
+  "joanna",
+  "kendra",
+  "kimberly",
+  "ivy",
+  "google filipino",
+];
+
+function refreshAiChatVoicePick() {
+  if (!aiChatTtsSupported) return;
+  const voices = window.speechSynthesis.getVoices() || [];
+  if (!voices.length) return;
+
+  const pageLang = (document.documentElement.lang || "en").toLowerCase();
+
+  // 1) Exact/substring match against known female voice names.
+  let match = voices.find((v) => AI_CHAT_FEMALE_VOICE_HINTS.some((hint) => v.name.toLowerCase().includes(hint)));
+
+  // 2) Same-language voice with "female" anywhere in its name/voiceURI.
+  if (!match) {
+    match = voices.find(
+      (v) => v.lang.toLowerCase().startsWith(pageLang.slice(0, 2)) && /female/i.test(v.name + v.voiceURI)
+    );
+  }
+
+  // 3) Any voice matching the page language at all.
+  if (!match) {
+    match = voices.find((v) => v.lang.toLowerCase().startsWith(pageLang.slice(0, 2)));
+  }
+
+  // 4) Last resort: whatever the browser offers first.
+  if (!match) match = voices[0];
+
+  aiChatPreferredVoice = match || null;
 }
 
 // Strips light Markdown down to plain speakable text before handing
@@ -3082,8 +3155,12 @@ function speakAiChatReply(text) {
     .trim();
   if (!plain) return;
   window.speechSynthesis.cancel(); // never overlap with a previous reply
+  if (!aiChatPreferredVoice) refreshAiChatVoicePick(); // one more attempt in case voices just finished loading
   const utterance = new SpeechSynthesisUtterance(plain);
   utterance.lang = document.documentElement.lang || "en-US";
+  if (aiChatPreferredVoice) utterance.voice = aiChatPreferredVoice;
+  utterance.pitch = 1.05; // slightly brighter, more natural for a female voice
+  utterance.rate = 1;
   window.speechSynthesis.speak(utterance);
 }
 
