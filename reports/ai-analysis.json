@@ -1,15 +1,16 @@
 {
-  "executive_summary": "Ang performance nitong July 2026 ay nagpapakita ng magandang CTR (avg. 3-5%) pero medyo volatile ang cost per message. Nag-spend tayo ng total na 2,742.04 PHP na nag-generate ng 34 messages. Ang focus sa susunod na buwan ay dapat sa pag-stabilize ng cost per message at paggamit ng proven formats (video) na nag-drive ng engagement.",
+  "executive_summary": "Ang overall performance noong nakaraang buwan (July 2026) ay nagpapakita ng magandang CTR na 3.65% sa unang linggo, pero bumaba ito sa 3.25% noong ikatlong linggo. Ang total spend ay 2,742.04 PHP na nakakuha ng 34 messages. Ang focus natin ngayon ay i-sustain ang momentum at ayusin ang consistency ng pag-run ng ads dahil may mga linggong zero spend na nagreresulta sa paghina ng lead flow.",
   "metrics": {
     "spend": 2742.04,
     "impressions": 7541,
     "clicks": 292,
     "messages": 34,
-    "ctr": 3.47,
+    "ctr": 3.45,
     "cpc": 9.39,
     "cpm": 363.62
   },
   "best_campaigns": [
+    "JULY ADS 2026",
     "📁 2026 | Leads | Multi Models | JULY"
   ],
   "worst_campaigns": [
@@ -17,47 +18,55 @@
   ],
   "winning_ads": [
     "🚙 01 - Xpander GLX AT | Low DP",
-    "🚗 02 - Mirage G4 | ₱15K+/Month"
+    "🚚 03 - L300 FB Dual AC | Business Promo"
   ],
   "creative_insights": [
-    "Mas epektibo ang video creatives sa engagement kumpara sa static images.",
-    "Ang mga ad copy na may kasamang 'Low DP' at 'Monthly Payment' ang may pinakamataas na CTR.",
-    "Kailangan nating i-maintain ang 3-5% CTR para mapababa ang cost per message."
+    "Video ads ang mas epektibo kaysa sa images base sa engagement pattern.",
+    "Ang Xpander at L300 ang pinakamalakas ang conversion response.",
+    "Kailangan ng mas clear na Call-to-Action (CTA) sa mga reels para tumaas ang message rate."
   ],
   "historical_insights": [
-    "Mas stable ang lead flow noong Q1 at Q2 kumpara sa July, kung saan naging erratic ang spending.",
-    "Bumaba ang efficiency ng cost-per-message mula 30-40 PHP range (historical) patungong 45-75 PHP (July).",
-    "Kailangang balikan ang format na 'Engagement Ad' na ginamit noong March dahil mataas ang message response."
+    "Mas maganda ang performance ng mga ads noong 2023-2024 kung saan tuloy-tuloy ang pag-run ng budget kumpara sa pa-stop-start na strategy ngayon.",
+    "Bumaba ang efficiency ng lead acquisition dahil sa inconsistent na ad delivery noong July 2026."
   ],
   "targeting_intelligence": {
     "best_locations": [
-      "Las Piñas City (within 10-15km radius)",
-      "Bacoor and Imus, Cavite",
-      "Parañaque (BF Homes/Sucat area)"
+      "Las Piñas",
+      "Parañaque",
+      "Bacoor (Cavite)"
     ],
     "best_interests": [
-      "Car financing, Mitsubishi Motors, Small Business owners (for L300), Ride-hailing/Grab driver community"
+      "Small business owners (para sa L300)",
+      "Car financing/installment plans",
+      "Ride-hailing/Transport drivers"
     ],
     "market_demand_notes": [
-      "Ang Xpander at Mirage G4 ang consistent na 'bread and butter' ng Mitsubishi sa PH.",
-      "Mataas ang demand para sa L300 sa mga small business owners at logistics/delivery sector sa South Manila.",
-      "Kailangan i-highlight ang 'low downpayment' promos dahil ito ang primary driver ng inquiries sa market ngayon."
+      "Ang L300 ay consistent na best-seller para sa negosyo.",
+      "Ang Xpander ang primary driver para sa family market.",
+      "Mirage G4 ay ideal para sa first-time car buyers dahil sa fuel efficiency."
     ]
   },
   "creative_direction": [
     {
-      "boost_target": "Xpander & Mirage G4",
+      "boost_target": "L300 Business Promo",
       "format": "video",
-      "headline": "Mitsubishi Gaan-Down Payment!",
+      "headline": "L300 Negosyo Promo!",
       "cta": "Send Message",
-      "description": "Drive home a brand new Mitsubishi with our low monthly payment plans. Message us for a free quote today!"
+      "description": "Palaguin ang negosyo gamit ang L300! Available sa mababang downpayment."
+    },
+    {
+      "boost_target": "Xpander Family SUV",
+      "format": "video",
+      "headline": "Xpander: Perfect for Family",
+      "cta": "Get Quote",
+      "description": "Comfort at style para sa buong pamilya. Check our August promos today!"
     }
   ],
   "recommendations": [
-    "I-relaunch ang 'Leads' campaign para sa August dahil mas mataas ang lead quality nito kaysa sa 'Sales' objective campaigns.",
-    "Bawasan ang budget sa mga broad interest at mag-focus sa 'Lookalike' or existing engaged users.",
-    "Reactivate ang winning creatives mula sa July, partikular ang Xpander at L300 ads na may video content.",
-    "I-optimize ang ad schedule; itigil ang pag-boost tuwing weekend kung mababa ang reply rate ng team."
+    "Huwag i-pause ang campaigns; kailangan ng 'learning phase' para mag-stabilize ang algorithm.",
+    "I-reactivate ang L300 at Xpander winning ads dahil ito ang may pinakamababang cost-per-message.",
+    "Dagdag budget sa mga ads na may CTR na lampas 3% para mas maabot ang tamang audience.",
+    "Siguraduhin na ang link ng application form ay laging updated sa ads."
   ],
   "this_month_boost_plan": {
     "month": "August 2026",
@@ -65,16 +74,16 @@
       {
         "priority": "high",
         "boost_target": "📁 2026 | Engagement | Reels Storytelling | AUGUST Campaign",
-        "action": "Dagdagan ang daily budget ng 20% para ma-maximize ang reach sa mga bagong prospect.",
-        "reason": "Maganda ang initial CTR na 2.31% sa mga reels storytelling, kailangan natin ng more volume.",
-        "expected_impact": "Mas mataas na top-of-funnel reach at potential increase sa direct messages."
+        "action": "Dagdagan ng 20% ang daily budget",
+        "reason": "Ito ang active campaign ngayon at kailangan natin i-maximize ang reach habang bago pa ang creatives.",
+        "expected_impact": "Tataas ang engagement rate at magbubukas ng panibagong leads para sa August."
       },
       {
-        "priority": "medium",
-        "boost_target": "🚙 01 - Xpander GLX AT | Low DP (Ad)",
-        "action": "I-reactivate sa isang bagong CBO campaign kasama ang Mirage G4 ad.",
-        "reason": "Ito ang pinakamagandang performing creative noong July bago ito i-pause.",
-        "expected_impact": "Pagbaba ng cost per message patungong 40 PHP."
+        "priority": "high",
+        "boost_target": "🚙 01 - Xpander GLX AT | Low DP (Ad ID: 120247833797440625)",
+        "action": "I-reactivate at i-set as evergreen campaign",
+        "reason": "Subok na itong winning ad noong July na may magandang response sa mga users.",
+        "expected_impact": "Magiging consistent source ng inquiries para sa Xpander."
       }
     ]
   }
