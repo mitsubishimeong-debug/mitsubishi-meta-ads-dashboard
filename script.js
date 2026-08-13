@@ -1042,10 +1042,35 @@ function initRangeSwitch() {
 
 // ---------------- EXPORT ----------------
 
+// PART 9B: Export Report prints all tab-panels at once (see
+// @media print in style.css), but charts on tabs the user never
+// manually clicked into were created while their panel was
+// display:none — same zero-size Chart.js issue initTabNav() already
+// works around on tab switch. Re-run those exact same render calls
+// here before printing so every chart is sized correctly first.
+// Purely additive: no new charts, no dataset/calculation changes.
+function prepareChartsForPrint() {
+  if (historyAvailable) {
+    renderHistoricalOverview();
+    renderModelPerformance();
+    renderObjectiveComparison();
+    renderTimeline();
+  }
+  if (aiAvailable) renderAIAnalysis();
+}
+
 function initExport() {
   const btn = getEl("exportBtn");
   if (!btn) return;
-  btn.addEventListener("click", () => window.print());
+  btn.addEventListener("click", () => {
+    prepareChartsForPrint();
+    // Let the re-rendered charts finish drawing (canvas layout +
+    // Chart.js animation frame) before the print dialog captures
+    // the page.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => window.print());
+    });
+  });
 }
 
 // ---------------- MONTHLY REPORT CSV EXPORT (v8 ADD — Phase 3) ----------------
