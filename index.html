@@ -11,8 +11,9 @@
 
 <div class="scan-line"></div>
 
-<header class="topbar">
-  <div class="brand">
+<div class="app-shell">
+<aside class="sidebar no-print">
+  <div class="sidebar-brand">
     <div class="brand-mark">
       <svg viewBox="0 0 100 100" class="tri-logo">
         <polygon points="50,4 96,80 4,80" class="tri tri-1"/>
@@ -23,10 +24,55 @@
     <div class="brand-text">
       <h1>CITIMOTORS LAS PIÑAS <span>META ADS</span></h1>
       <p class="subtitle">Best Offer by Romeo - Meong <span class="version-tag">v5</span></p>
-      <a class="agent-tag" href="https://business.facebook.com/latest/home?global_scope_id=178087108528215&business_id=178087108528215&page_id=101309966303054&asset_id=101309966303054" target="_blank" rel="noopener">
-        Romeo Cuyacot &middot; Sales Executive &middot; Visit Facebook Page ↗
-      </a>
     </div>
+  </div>
+
+  <!-- ============ V5: TAB NAVIGATION ============ -->
+  <nav class="tab-nav" id="tabNav">
+    <button class="tab-nav-btn active" data-tab="overview">
+      <svg class="tab-nav-icon" viewBox="0 0 24 24" fill="none"><path d="M4 11.5 12 4l8 7.5M6 10v9a1 1 0 0 0 1 1h3v-5.5h4V20h3a1 1 0 0 0 1-1v-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Overview
+    </button>
+    <button class="tab-nav-btn" data-tab="historical">
+      <svg class="tab-nav-icon" viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4.5l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Historical Intelligence
+    </button>
+    <button class="tab-nav-btn" data-tab="model">
+      <svg class="tab-nav-icon" viewBox="0 0 24 24" fill="none"><rect x="3.5" y="13" width="4" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="10" y="8" width="4" height="12" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="16.5" y="4" width="4" height="16" rx="1" stroke="currentColor" stroke-width="1.8"/></svg>
+      Model Performance
+    </button>
+    <button class="tab-nav-btn" data-tab="objectives">
+      <svg class="tab-nav-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="0.6" fill="currentColor" stroke="currentColor" stroke-width="1.8"/></svg>
+      Objectives
+    </button>
+    <button class="tab-nav-btn" data-tab="recommendations">
+      <svg class="tab-nav-icon" viewBox="0 0 24 24" fill="none"><path d="M12 3a6 6 0 0 0-3.5 10.9c.5.4.8 1 .8 1.7V17h5.4v-1.4c0-.7.3-1.3.8-1.7A6 6 0 0 0 12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9.5 20h5M10.2 21.5h3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      Recommendations
+    </button>
+    <button class="tab-nav-btn" data-tab="timeline">
+      <svg class="tab-nav-icon" viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="16" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      Timeline
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <a class="sidebar-profile" href="https://business.facebook.com/latest/home?global_scope_id=178087108528215&business_id=178087108528215&page_id=101309966303054&asset_id=101309966303054" target="_blank" rel="noopener">
+      <span class="sidebar-profile-avatar">RC</span>
+      <span class="sidebar-profile-text">
+        <span class="sidebar-profile-name">Romeo Cuyacot</span>
+        <span class="sidebar-profile-role">Sales Executive</span>
+      </span>
+    </a>
+    <a class="sidebar-fb-link" href="https://business.facebook.com/latest/home?global_scope_id=178087108528215&business_id=178087108528215&page_id=101309966303054&asset_id=101309966303054" target="_blank" rel="noopener">Visit Facebook Page ↗</a>
+  </div>
+</aside>
+
+<div class="content-area">
+
+<header class="topbar">
+  <div class="topbar-greeting">
+    <h1 id="greetingText">Good day, Romeo! 👋</h1>
+    <p class="topbar-subtitle">Here's your Meta Ads performance overview</p>
   </div>
   <div class="topbar-right no-print">
     <div class="range-switch" id="rangeSwitch">
@@ -35,25 +81,15 @@
       <button class="range-btn" data-range="30d">30 Days</button>
     </div>
     <div class="report-date">
-      <span class="label">REPORT DATE</span>
+      <span class="label">Report date</span>
       <span id="reportDate" class="value">—</span>
     </div>
     <div class="status-pill" id="liveStatus">
       <span class="dot"></span> LIVE
     </div>
-    <button class="export-btn" id="exportBtn" title="Export / Print report">EXPORT</button>
+    <button class="export-btn" id="exportBtn" title="Export / Print report">Export report</button>
   </div>
 </header>
-
-<!-- ============ V5: TAB NAVIGATION ============ -->
-<nav class="tab-nav no-print" id="tabNav">
-  <button class="tab-nav-btn active" data-tab="overview">OVERVIEW</button>
-  <button class="tab-nav-btn" data-tab="historical">HISTORICAL INTELLIGENCE</button>
-  <button class="tab-nav-btn" data-tab="model">MODEL PERFORMANCE</button>
-  <button class="tab-nav-btn" data-tab="objectives">OBJECTIVES</button>
-  <button class="tab-nav-btn" data-tab="recommendations">RECOMMENDATIONS</button>
-  <button class="tab-nav-btn" data-tab="timeline">TIMELINE</button>
-</nav>
 
 <main class="dashboard tab-panel active" data-tab-panel="overview">
 
@@ -74,36 +110,42 @@
 
     <div class="kpi-grid">
       <div class="kpi-card" data-tooltip="Total amount spent for the selected date range.">
+        <span class="kpi-icon kpi-icon--blue"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2v20M17 6.5c0-1.9-2.2-3-5-3s-5 1.3-5 3.3S9.2 10 12 10s5 1.3 5 3.5-2.2 3.5-5 3.5-5-1.2-5-3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
         <span class="kpi-label">Spend</span>
         <span class="kpi-value" id="kpiSpend">—</span>
         <div class="kpi-foot"><span class="kpi-unit">PHP</span><span class="delta" id="deltaSpend"></span></div>
         <div class="kpi-spark" id="sparkSpend"></div>
       </div>
       <div class="kpi-card" data-tooltip="Total Messenger conversations started for the selected range.">
+        <span class="kpi-icon kpi-icon--green"><svg viewBox="0 0 24 24" fill="none"><path d="M21 11.5a8.4 8.4 0 0 1-8.9 8.4 8.6 8.6 0 0 1-3.4-.7L3 21l1.9-5.4a8.4 8.4 0 0 1-.9-3.6A8.4 8.4 0 0 1 12.6 3 8.5 8.5 0 0 1 21 11.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
         <span class="kpi-label">Messages</span>
         <span class="kpi-value" id="kpiMessages">—</span>
         <div class="kpi-foot"><span class="kpi-unit">conversations</span><span class="delta" id="deltaMessages"></span></div>
         <div class="kpi-spark" id="sparkMessages"></div>
       </div>
       <div class="kpi-card" data-tooltip="Click-through rate: clicks divided by impressions.">
+        <span class="kpi-icon kpi-icon--purple"><svg viewBox="0 0 24 24" fill="none"><path d="M5 3l6.5 17 2-7 7-2L5 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
         <span class="kpi-label">CTR</span>
         <span class="kpi-value" id="kpiCtr">—</span>
         <div class="kpi-foot"><span class="kpi-unit">click-through</span><span class="delta" id="deltaCtr"></span></div>
         <div class="kpi-spark" id="sparkCtr"></div>
       </div>
       <div class="kpi-card" data-tooltip="Average cost per click for the selected range.">
+        <span class="kpi-icon kpi-icon--amber"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M3 10h18M16 14.5h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
         <span class="kpi-label">CPC</span>
         <span class="kpi-value" id="kpiCpc">—</span>
         <div class="kpi-foot"><span class="kpi-unit">per click</span><span class="delta" id="deltaCpc"></span></div>
         <div class="kpi-spark" id="sparkCpc"></div>
       </div>
       <div class="kpi-card" data-tooltip="Average cost per 1,000 impressions for the selected range.">
+        <span class="kpi-icon kpi-icon--cyan"><svg viewBox="0 0 24 24" fill="none"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.6" stroke="currentColor" stroke-width="1.8"/></svg></span>
         <span class="kpi-label">CPM</span>
         <span class="kpi-value" id="kpiCpm">—</span>
         <div class="kpi-foot"><span class="kpi-unit">per 1000 impr.</span><span class="delta" id="deltaCpm"></span></div>
         <div class="kpi-spark" id="sparkCpm"></div>
       </div>
       <div class="kpi-card" data-tooltip="Total spend divided by total messages for the selected range.">
+        <span class="kpi-icon kpi-icon--pink"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="m3.5 6 8.5 7 8.5-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         <span class="kpi-label">Cost / Message</span>
         <span class="kpi-value" id="kpiCostMsg">—</span>
         <div class="kpi-foot"><span class="kpi-unit">per lead</span><span class="delta" id="deltaCostMsg"></span></div>
@@ -135,21 +177,25 @@
   <!-- TOP PERFORMERS ROW -->
   <section class="top-row">
     <div class="card top-card">
-      <span class="card-eyebrow">TOP CAMPAIGN</span>
+      <span class="top-card-icon top-card-icon--amber">🏆</span>
+      <span class="card-eyebrow">Top Campaign</span>
       <h2 id="topCampaignName">—</h2>
       <span class="rec-badge" id="topCampaignRec">SCALE</span>
     </div>
     <div class="card top-card">
-      <span class="card-eyebrow">TOP AD</span>
+      <span class="top-card-icon top-card-icon--blue">📣</span>
+      <span class="card-eyebrow">Top Ad</span>
       <h2 id="topAdName">—</h2>
       <div class="top-metric"><span id="topAdCtr">—</span><small>CTR</small></div>
     </div>
     <div class="card top-card">
-      <span class="card-eyebrow">TOP CREATIVE</span>
+      <span class="top-card-icon top-card-icon--purple">🖼️</span>
+      <span class="card-eyebrow">Top Creative</span>
       <h2 id="topCreativeName">—</h2>
     </div>
     <div class="card top-card">
-      <span class="card-eyebrow">TOP AUDIENCE</span>
+      <span class="top-card-icon top-card-icon--green">👥</span>
+      <span class="card-eyebrow">Top Audience</span>
       <h2 id="topAudienceName">—</h2>
       <span class="audience-range" id="topAudienceRange">—</span>
     </div>
@@ -571,6 +617,9 @@
 
   <span id="lastUpdated">Last updated —</span>
 </footer>
+
+</div><!-- /.content-area -->
+</div><!-- /.app-shell -->
 
 <!-- ============================================================
      AI CHAT ASSISTANT (isolated feature — new markup only, nothing
