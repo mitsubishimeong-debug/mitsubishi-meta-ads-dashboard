@@ -153,6 +153,12 @@ body {
   font-size: 9.5px;
 }
 
+/* ============ PRINT-ONLY REPORT HEADER (PART 9C) ============
+   Static branding + report title, rendered only when printing /
+   exporting (see @media print below). Never shown on the normal
+   on-screen dashboard. */
+.print-report-header { display: none; }
+
 /* ============ TOPBAR (inside content area) ============ */
 .content-area {
   flex: 1 1 auto;
@@ -1268,21 +1274,146 @@ body {
   }
 }
 
-/* ============ PRINT / EXPORT ============ */
+/* ============ PRINT / EXPORT ============
+   PART 9C — visual-only polish for the exported/printed report.
+   Nothing here touches data, calculations, Chart.js logic, or the
+   normal on-screen dashboard (all rules are scoped to @media print). */
 @media print {
-  body { background: #fff; color: #000; }
+  @page { margin: 14mm 12mm; }
+
+  body { background: #fff; color: #000; font-size: 12.5px; }
   .no-print { display: none !important; }
   .app-shell { display: block; }
+  .content-area { display: block; }
+
+  /* ---- Print-only report header (brand + report title) ---- */
+  .print-report-header {
+    display: block;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+    border-bottom: 2px solid var(--accent);
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+  .print-report-header-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .print-report-header-brand {
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    color: #0F172A;
+  }
+  .print-report-header-brand small {
+    display: block;
+    margin-top: 2px;
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    color: #475569;
+  }
+  .print-report-header-doctype {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  /* ---- Collapse the sticky on-screen topbar down to just the
+     existing report-date value, shown directly under the print
+     header above (no hardcoded date — reuses #reportDate as-is) ---- */
+  .topbar {
+    position: static;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    padding: 0 0 10px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #ddd;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+  .topbar-greeting { display: none !important; }
+  .topbar-right.no-print {
+    display: flex !important;
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .topbar-right .range-switch,
+  .topbar-right .status-pill,
+  .topbar-right .export-btn { display: none !important; }
+  .report-date { display: flex; align-items: baseline; gap: 6px; }
+  .report-date .label { font-size: 10.5px; color: #64748B; }
+  .report-date .value { font-size: 12px; font-weight: 700; color: #0F172A; }
+
+  /* ---- Clear separation between the six report sections ---- */
+  [data-tab-panel="historical"],
+  [data-tab-panel="model"],
+  [data-tab-panel="objectives"],
+  [data-tab-panel="recommendations"],
+  [data-tab-panel="timeline"] {
+    break-before: page;
+    page-break-before: always;
+  }
+  .page-intro-title {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  /* ---- Hide editable logging forms from the exported report ---- */
+  #receiptFormCard,
+  #closedSaleFormCard { display: none !important; }
+
+  /* ---- Card / KPI readability ---- */
   .card, .health-block, .kpi-card {
     background: #fff;
     border: 1px solid #ccc;
     box-shadow: none;
     break-inside: avoid;
+    page-break-inside: avoid;
   }
-  .charts-row, .top-row, .triple-row { break-inside: avoid; }
+  .charts-row, .top-row, .triple-row {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
   .footer { color: #666; }
+  .kpi-grid { gap: 10px; }
+  .kpi-card { padding: 12px 14px; }
+  .card { padding: 14px 16px; }
+  .card-eyebrow { margin-bottom: 8px; font-size: 10.5px; }
+  .chart-card { min-height: 0; }
+  .chart-card canvas { max-height: 190px !important; }
+
+  /* ---- Tables: fit page width, keep headers distinct, avoid
+     splitting a single row across a page break ---- */
   .table-wrap { max-height: none; overflow: visible; }
-  .campaigns-table thead th { position: static; background: #fff; }
+  .campaigns-table {
+    width: 100%;
+    font-size: 11px;
+    table-layout: fixed;
+  }
+  .campaigns-table th,
+  .campaigns-table td {
+    padding: 6px 8px;
+    overflow-wrap: break-word;
+  }
+  .campaigns-table thead th {
+    position: static;
+    background: #eef2f7 !important;
+    color: #0F172A;
+    border-bottom: 1px solid #ccc;
+  }
+  .campaigns-table thead { display: table-header-group; }
+  .campaigns-table tbody tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
   .tab-nav { display: none !important; }
   .tab-panel { display: block !important; }
 }
@@ -2067,4 +2198,406 @@ body {
 }
 @media (max-width: 420px) {
   [data-tab-panel="model"] .model-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   PART 5 — OBJECTIVES PAGE READABILITY PASS
+   Every rule below is scoped to [data-tab-panel="objectives"]
+   (the project's actual data-tab-panel value for this page).
+   .card, .card-eyebrow, .history-empty-state and .page-intro*
+   are shared with other tabs, so they're overridden only inside
+   this scope; .objective-grid/.objective-card/.objective-chart-card
+   are currently unique to this page but are scoped too for safety.
+   No IDs, event handlers, calculations, filtering, sorting, or
+   chart data touched — typography/spacing/color only. The
+   <h2>/<p> added in index.html above the grid are static, id-less
+   labels with no functionality of their own, matching the pattern
+   already used on Historical Intelligence and Model Performance.
+   Note: this page's markup has no table, filters, progress bars,
+   or status badges — only the objective-grid of objective-cards
+   and the existing objectiveChart canvas — so PART 5 items that
+   say "if the page already has X" (tables, filters, progress
+   indicators) don't apply here; nothing was invented to fill
+   those slots.
+   ============================================================ */
+
+/* ---- 2. Page header ---- */
+[data-tab-panel="objectives"] .page-intro { margin-bottom: 18px; }
+[data-tab-panel="objectives"] .page-intro-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: var(--text);
+}
+[data-tab-panel="objectives"] .page-intro-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--secondary);
+  margin-top: 4px;
+}
+
+/* ---- Wrapping card + eyebrow label ---- */
+[data-tab-panel="objectives"] .card { padding: 26px 28px; }
+[data-tab-panel="objectives"] .card-eyebrow {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 18px;
+}
+
+/* ---- 3. Objective summary cards ---- */
+[data-tab-panel="objectives"] .objective-grid {
+  grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+  gap: 18px;
+  margin-bottom: 0;
+}
+[data-tab-panel="objectives"] .objective-card {
+  padding: 22px;
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+}
+[data-tab-panel="objectives"] .objective-card:hover {
+  box-shadow: var(--shadow-md);
+}
+[data-tab-panel="objectives"] .objective-card-name {
+  font-size: 13px;
+  letter-spacing: 0.3px;
+  margin-bottom: 12px;
+}
+[data-tab-panel="objectives"] .objective-card-metrics {
+  gap: 12px 14px;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+[data-tab-panel="objectives"] .objective-card-metrics b {
+  font-size: 18px;
+  font-weight: 800;
+  margin-top: 3px;
+  letter-spacing: -0.2px;
+  color: var(--accent);
+}
+[data-tab-panel="objectives"] .objective-card-empty {
+  font-size: 14.5px;
+  padding: 40px 24px;
+}
+
+/* ---- 5. Existing objectiveChart canvas (reused, not rewritten) ---- */
+[data-tab-panel="objectives"] .objective-chart-card {
+  margin-top: 22px;
+}
+
+/* ---- 10. Responsive ---- */
+@media (max-width: 980px) {
+  [data-tab-panel="objectives"] .objective-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+  [data-tab-panel="objectives"] .card { padding: 22px; }
+}
+@media (max-width: 640px) {
+  [data-tab-panel="objectives"] .objective-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+  [data-tab-panel="objectives"] .objective-card { padding: 18px; }
+  [data-tab-panel="objectives"] .objective-card-name { font-size: 12px; }
+  [data-tab-panel="objectives"] .objective-card-metrics b { font-size: 16px; }
+  [data-tab-panel="objectives"] .page-intro-title { font-size: 19px; }
+}
+@media (max-width: 420px) {
+  [data-tab-panel="objectives"] .objective-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   PART 6 — RECOMMENDATIONS PAGE READABILITY PASS
+   Every rule below is scoped to [data-tab-panel="recommendations"]
+   (the project's actual data-tab-panel value for this page).
+   .card, .card-eyebrow, .rec-list/.alert-list, .item-title,
+   .item-reason, .priority-badge, .exec-summary-card,
+   .boost-plan-card, .targeting-grid/.targeting-col-label and
+   .page-intro* are all shared with other tabs, so they're
+   overridden only inside this scope — same approach already used
+   for [data-tab-panel="overview"]'s rec-list/alert-list styling.
+   No IDs, event handlers, recommendation generation/ranking/
+   filtering logic, or data touched — typography/spacing/color
+   only. The <h2>/<p> added in index.html above the content are
+   static, id-less labels with no functionality of their own.
+   Note: this page has no charts/canvases to activate (unlike
+   Model Performance in Part 4A) — every render target here
+   (execSummary, boostPlanList, histRecList, winningAdsList,
+   creativeInsightsList, historicalInsightsList,
+   targetingLocationsList/targetingInterestsList/marketDemandList,
+   creativeDirectionList) already has a working element and
+   render function, so PART 6's "missing target element" check
+   found nothing to add — this is a pure CSS pass, script.js is
+   untouched.
+   ============================================================ */
+
+/* ---- 2. Page header ---- */
+[data-tab-panel="recommendations"] .page-intro { margin-bottom: 18px; }
+[data-tab-panel="recommendations"] .page-intro-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: var(--text);
+}
+[data-tab-panel="recommendations"] .page-intro-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--secondary);
+  margin-top: 4px;
+}
+
+/* ---- Wrapping card + eyebrow label ---- */
+[data-tab-panel="recommendations"] .card { padding: 26px 28px; }
+[data-tab-panel="recommendations"] .card-eyebrow {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 18px;
+}
+
+/* ---- Executive summary + boost plan ---- */
+[data-tab-panel="recommendations"] .exec-summary-card p {
+  font-size: 15.5px;
+  line-height: 1.65;
+}
+[data-tab-panel="recommendations"] .boost-plan-card { padding: 26px 28px; }
+
+/* ---- 3/4/6. Recommendation cards / lists: hierarchy + readability ---- */
+[data-tab-panel="recommendations"] .rec-list,
+[data-tab-panel="recommendations"] .alert-list {
+  gap: 12px;
+}
+[data-tab-panel="recommendations"] .rec-list li,
+[data-tab-panel="recommendations"] .alert-list li {
+  font-size: 15px;
+  line-height: 1.55;
+  padding: 15px 16px;
+  border-radius: 12px;
+  gap: 6px;
+}
+[data-tab-panel="recommendations"] .item-title {
+  font-size: 17px;
+  font-weight: 700;
+}
+[data-tab-panel="recommendations"] .item-reason {
+  font-size: 13.5px;
+  line-height: 1.55;
+  padding-left: 20px;
+}
+[data-tab-panel="recommendations"] .priority-badge {
+  font-size: 12px;
+  padding: 3px 10px;
+}
+
+/* ---- Targeting & market intelligence (plain lists) ---- */
+[data-tab-panel="recommendations"] .targeting-col-label {
+  font-size: 12px;
+}
+[data-tab-panel="recommendations"] .rec-list.plain-list li {
+  font-size: 14.5px;
+  padding: 9px 0;
+}
+
+/* ---- 10. Responsive ---- */
+@media (max-width: 980px) {
+  [data-tab-panel="recommendations"] .card,
+  [data-tab-panel="recommendations"] .boost-plan-card { padding: 22px; }
+}
+@media (max-width: 640px) {
+  [data-tab-panel="recommendations"] .rec-list li,
+  [data-tab-panel="recommendations"] .alert-list li { padding: 13px 14px; font-size: 14px; }
+  [data-tab-panel="recommendations"] .item-title { font-size: 16px; }
+  [data-tab-panel="recommendations"] .page-intro-title { font-size: 19px; }
+}
+
+/* ============================================================
+   PART 7 — TIMELINE PAGE READABILITY PASS
+   Every rule below is scoped to [data-tab-panel="timeline"]
+   (the project's actual data-tab-panel value for this page,
+   confirmed in index.html: <main ... data-tab-panel="timeline">).
+   .card, .card-eyebrow, .history-empty-state, .history-toolbar,
+   .timeline-switch/.timeline-btn and .page-intro* are shared
+   with Overview/Historical/Model/Objectives/Recommendations, so
+   scoping keeps every other tab pixel-identical to Parts 1–6.
+   No IDs, event handlers, data logic, calculations, filtering,
+   view/metric switching, chart rendering or NALA logic touched —
+   typography, spacing and color only.
+
+   Missing-element check (per Model Performance canvas issue in
+   Part 4A): NOT APPLICABLE here. #timelineTrendChart canvas,
+   #timelineLaunches container, #timelineEmptyState and
+   #timelineContent already exist in index.html and already match
+   what renderTimeline()/renderTimelineTrendChart()/
+   renderTimelineLaunches() in script.js expect. script.js is
+   untouched — this is a pure CSS + one static header pass. The
+   only index.html change was adding a `.page-intro` title/
+   subtitle block (no id, no functionality) above the existing
+   #timelineEmptyState div, matching the pattern already used on
+   Historical/Model/Objectives/Recommendations.
+   ============================================================ */
+
+/* ---- 1. Page header ---- */
+[data-tab-panel="timeline"] .page-intro { margin-bottom: 18px; }
+[data-tab-panel="timeline"] .page-intro-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: var(--text);
+}
+[data-tab-panel="timeline"] .page-intro-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--secondary);
+  margin-top: 4px;
+}
+
+/* ---- 2. Toolbar: view switch (Campaign Launches / Daily Trend)
+   and metric switch (Spend / Messages) ---- */
+[data-tab-panel="timeline"] .history-toolbar { margin-bottom: 18px; }
+[data-tab-panel="timeline"] .timeline-switch { border-radius: 12px; }
+[data-tab-panel="timeline"] .timeline-btn {
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 10px 18px;
+}
+[data-tab-panel="timeline"] .timeline-btn:hover { background: var(--card-soft); color: var(--text); }
+[data-tab-panel="timeline"] .timeline-btn.active { background: var(--accent); color: #fff; }
+
+/* ---- 3. Daily Trend chart card ---- */
+[data-tab-panel="timeline"] .timeline-trend-card { min-height: 280px; padding: 26px 28px; }
+[data-tab-panel="timeline"] .timeline-trend-card canvas { max-height: 220px; }
+[data-tab-panel="timeline"] .timeline-trend-card .card-eyebrow {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 18px;
+}
+
+/* ---- 4. Campaign Launch Timeline card ---- */
+[data-tab-panel="timeline"] .timeline-launches-card { padding: 26px 28px; }
+[data-tab-panel="timeline"] .timeline-launches-card .card-eyebrow {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 18px;
+}
+
+/* ---- 5. Timeline list: spacing so events are easy to scan top to bottom ---- */
+[data-tab-panel="timeline"] .timeline-launches {
+  gap: 14px;
+  max-height: 620px;
+}
+
+/* ---- 6. Year group dividers ---- */
+[data-tab-panel="timeline"] .timeline-year-group {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-top: 16px;
+  padding-top: 16px;
+}
+[data-tab-panel="timeline"] .timeline-year-group:first-child { margin-top: 0; padding-top: 0; }
+
+/* ---- 7. Timeline event rows / cards ---- */
+[data-tab-panel="timeline"] .timeline-item {
+  padding: 16px 18px;
+  border-radius: 12px;
+  gap: 16px;
+}
+[data-tab-panel="timeline"] .timeline-item:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+[data-tab-panel="timeline"] .timeline-item-main { gap: 5px; min-width: 0; }
+[data-tab-panel="timeline"] .timeline-item-name {
+  font-size: 15.5px;
+  line-height: 1.4;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+[data-tab-panel="timeline"] .timeline-item-meta {
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+[data-tab-panel="timeline"] .timeline-item-stats {
+  font-size: 13px;
+  flex-shrink: 0;
+}
+[data-tab-panel="timeline"] .timeline-item-stats b { font-size: 13.5px; }
+
+/* ---- 8. Empty state (no campaigns for period / history unavailable) ---- */
+[data-tab-panel="timeline"] .timeline-empty { font-size: 14.5px; padding: 32px; }
+[data-tab-panel="timeline"] .history-empty-state p { font-size: 16px; }
+[data-tab-panel="timeline"] .history-empty-state .empty-sub { font-size: 13px; }
+
+/* ---- 9. Responsive ---- */
+@media (max-width: 980px) {
+  [data-tab-panel="timeline"] .timeline-trend-card,
+  [data-tab-panel="timeline"] .timeline-launches-card { padding: 22px; }
+}
+@media (max-width: 640px) {
+  [data-tab-panel="timeline"] .page-intro-title { font-size: 19px; }
+  [data-tab-panel="timeline"] .timeline-btn { padding: 9px 14px; font-size: 13px; }
+  [data-tab-panel="timeline"] .timeline-item { padding: 14px 15px; }
+  [data-tab-panel="timeline"] .timeline-item-stats { text-align: left; }
+  [data-tab-panel="timeline"] .timeline-launches { max-height: none; }
+}
+
+/* ============================================================
+   PART 8 — NALA AI CHATBOT UI READABILITY PASS
+   Scope: every rule below targets only .ai-chat-* selectors
+   (the NALA chat panel's actual classes/IDs, confirmed in
+   index.html: #aiChatRoot, #aiChatToggle, #aiChatPanel,
+   #aiChatMessages, #aiChatSuggestions, #aiChatVoiceStatus,
+   #aiChatForm/#aiChatInput/#aiChatSendBtn/#aiChatMicBtn, plus
+   .ai-chat-msg/.ai-chat-bubble/.ai-chat-copy-btn/.ai-chat-typing/
+   .ai-chat-error-bubble). None of these class/ID names are used
+   by any dashboard page, so this cannot affect Overview,
+   Historical Intelligence, Model Performance, Objectives,
+   Recommendations or Timeline.
+
+   Most of the sizing groundwork (panel 520x660, 18px title,
+   15.5px/1.7 bubbles, 15.5px input, 46px buttons) was already
+   done in the PART 2 pass above — this pass fills the remaining
+   gaps: visible keyboard-focus states (none existed before on
+   the input/buttons beyond a border-color change) and a few
+   metadata labels that sat under the ~12-13px readability floor.
+   No HTML/JS touched — script.js is unmodified, and no markup
+   changed in index.html for this part (all targeted elements
+   already existed with the classes/IDs used below). Webhook
+   URL, message-send handler, typing/loading trigger, mic/wake
+   logic, error handling and message parsing are all untouched.
+   ============================================================ */
+
+/* ---- 1. Visible focus states (accessibility) ---- */
+.ai-chat-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.ai-chat-send-btn:focus-visible,
+.ai-chat-mic-btn:focus-visible,
+.ai-chat-icon-btn:focus-visible,
+.ai-chat-toggle:focus-visible,
+.ai-chat-suggestion-chip:focus-visible,
+.ai-chat-copy-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---- 2. Metadata text below the ~12-13px readability floor ---- */
+.ai-chat-header-sub { font-size: 12.5px; }
+.ai-chat-copy-btn { font-size: 12px; padding: 5px 10px; }
+.ai-chat-voice-status { font-size: 12.5px; }
+.ai-chat-empty { font-size: 13.5px; }
+
+/* ---- 3. Slightly larger click targets for the small header icon
+   buttons, without changing their layout or spacing ---- */
+.ai-chat-icon-btn { width: 34px; height: 34px; }
+
+/* ---- 4. Responsive: keep the panel comfortably within the
+   viewport on tablet widths (desktop 520px and mobile full-width
+   drawer from PART 2 are unchanged) ---- */
+@media (max-width: 600px) and (min-width: 481px) {
+  .ai-chat-panel { width: 420px; }
 }
