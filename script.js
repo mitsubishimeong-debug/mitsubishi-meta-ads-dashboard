@@ -89,15 +89,15 @@ const CLOSED_SALE_WEBHOOK_URL = "https://propeller-quake-maker.ngrok-free.dev/we
 const FB_PAGE_NAME = "Citimotors Las Piñas Best Offer by Romeo - Meong";
 
 const CHART_COLORS = {
-  primary: "#E60012",
-  green: "#2ECC71",
-  amber: "#F5A623",
-  grid: "#2C2C2C",
-  text: "#AAAAAA",
+  primary: "#DC2626",
+  green: "#16A34A",
+  amber: "#D97706",
+  grid: "#E6EAF0",
+  text: "#64748B",
 };
 
 if (typeof Chart !== "undefined") {
-  Chart.defaults.font.family = "'JetBrains Mono', monospace";
+  Chart.defaults.font.family = "'Inter', sans-serif";
   Chart.defaults.color = CHART_COLORS.text;
 }
 
@@ -167,7 +167,7 @@ function setStatus(isLive) {
   if (isLive) {
     pill.innerHTML = `<span class="dot"></span> LIVE`;
   } else {
-    pill.innerHTML = `<span class="dot" style="background:#E60012;box-shadow:0 0 8px #E60012;"></span> NO DATA`;
+    pill.innerHTML = `<span class="dot" style="background:#DC2626;"></span> NO DATA`;
   }
 }
 
@@ -673,8 +673,8 @@ function animateGauge(rawScore) {
   if (fill) fill.style.strokeDashoffset = offset;
 
   let color = CHART_COLORS.green;
-  if (safeScore < 50) color = "#E60012";
-  else if (safeScore < 80) color = "#F5A623";
+  if (safeScore < 50) color = "#DC2626";
+  else if (safeScore < 80) color = "#D97706";
   if (fill) fill.style.stroke = color;
 
   animateNumber("healthScore", safeScore);
@@ -1120,8 +1120,23 @@ function initMonthlyReportExport() {
   btn.addEventListener("click", exportMonthlyReportCsv);
 }
 
+// ---------------- GREETING (v12 ADD, PART 1 redesign) ----------------
+// Purely cosmetic — sets the "Good morning/afternoon/evening, Romeo!"
+// header text based on local time of day. No fetch, no API call, no
+// dependency on dashboard.json. Guarded the same way every other
+// render*() helper in this file is guarded, so it's a silent no-op
+// if the element isn't present in a given build of the HTML.
+function renderGreeting() {
+  const el = getEl("greetingText");
+  if (!el) return;
+  const hour = new Date().getHours();
+  const part = hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
+  el.textContent = `Good ${part}, Romeo! 👋`;
+}
+
 // ---------------- INIT (v4 Overview) ----------------
 
+renderGreeting();
 initRangeSwitch();
 initTableSorting();
 initExport();
