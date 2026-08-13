@@ -1962,3 +1962,109 @@ body {
   [data-tab-panel="historical"] .campaigns-table { font-size: 13px; }
   [data-tab-panel="historical"] .page-intro-title { font-size: 19px; }
 }
+
+/* ============================================================
+   PART 4 — MODEL PERFORMANCE PAGE READABILITY PASS
+   Every rule below is scoped to [data-tab-panel="model"]
+   (the project's actual data-tab-panel value for this page).
+   .card, .card-eyebrow, .history-empty-state and .page-intro*
+   are shared with other tabs, so they're overridden only inside
+   this scope; .model-grid/.model-card are currently unique to
+   this page but are scoped too for safety. No IDs, event
+   handlers, calculations, filtering, sorting, ranking, chart
+   data, or NALA logic touched — typography/spacing/color only.
+   The <h2>/<p> added in index.html above the grid are static,
+   id-less labels with no functionality of their own.
+   Note: this page's markup has no summary KPI cards, table,
+   score badges, best/worst highlight, or live chart canvas —
+   only the model-grid of model-cards — so PART 4 items that
+   say "if the page already has X" (KPI cards, tables, score
+   badges, charts, best/worst highlights) don't apply here;
+   nothing was invented to fill those slots.
+   ============================================================ */
+
+/* ---- 1. Page header ---- */
+[data-tab-panel="model"] .page-intro { margin-bottom: 18px; }
+[data-tab-panel="model"] .page-intro-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: var(--text);
+}
+[data-tab-panel="model"] .page-intro-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--secondary);
+  margin-top: 4px;
+}
+
+/* ---- Wrapping card + eyebrow label ---- */
+[data-tab-panel="model"] .card { padding: 26px 28px; }
+[data-tab-panel="model"] .card-eyebrow {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 18px;
+}
+
+/* ---- Model Performance chart (activates existing renderModelPerformanceChart) ---- */
+[data-tab-panel="model"] .model-chart-card {
+  min-height: 280px;
+  margin-top: 22px;
+}
+[data-tab-panel="model"] .model-chart-card canvas {
+  max-height: 230px;
+}
+
+/* ---- 3 & 4. Model cards: name, metrics, wrapping ---- */
+[data-tab-panel="model"] .model-grid {
+  grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+  gap: 18px;
+}
+[data-tab-panel="model"] .model-card {
+  padding: 22px;
+  gap: 12px;
+  border-radius: 14px;
+}
+[data-tab-panel="model"] .model-card:hover {
+  box-shadow: var(--shadow-md);
+}
+[data-tab-panel="model"] .model-card-name {
+  font-size: 18px;
+  line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+[data-tab-panel="model"] .model-card-metrics {
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 14px;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+[data-tab-panel="model"] .model-card-metrics b {
+  font-size: 18px;
+  font-weight: 800;
+  margin-top: 3px;
+  letter-spacing: -0.2px;
+}
+[data-tab-panel="model"] .model-card-empty {
+  font-size: 14.5px;
+  padding: 40px 24px;
+}
+
+/* ---- 11. Responsive ---- */
+@media (max-width: 980px) {
+  [data-tab-panel="model"] .model-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+  [data-tab-panel="model"] .card { padding: 22px; }
+}
+@media (max-width: 640px) {
+  [data-tab-panel="model"] .model-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+  [data-tab-panel="model"] .model-card { padding: 18px; }
+  [data-tab-panel="model"] .model-card-name { font-size: 16.5px; }
+  [data-tab-panel="model"] .model-card-metrics b { font-size: 16px; }
+  [data-tab-panel="model"] .page-intro-title { font-size: 19px; }
+}
+@media (max-width: 420px) {
+  [data-tab-panel="model"] .model-grid { grid-template-columns: 1fr; }
+}
