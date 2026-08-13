@@ -495,6 +495,10 @@
 
 <!-- ============ V5: MODEL PERFORMANCE ============ -->
 <main class="dashboard tab-panel" data-tab-panel="model">
+  <div class="page-intro">
+    <h2 class="page-intro-title">Model Performance</h2>
+    <p class="page-intro-subtitle">Compare advertising performance across Mitsubishi models.</p>
+  </div>
   <div class="history-empty-state" id="modelEmptyState" hidden>
     <span class="empty-icon">⚠</span>
     <p>Historical data unavailable</p>
@@ -503,6 +507,10 @@
   <section class="card">
     <span class="card-eyebrow">MITSUBISHI MODEL PERFORMANCE</span>
     <div class="model-grid" id="modelGrid"></div>
+  </section>
+  <section class="card chart-card model-chart-card">
+    <span class="card-eyebrow">SPEND BY MODEL</span>
+    <canvas id="modelPerformanceChart"></canvas>
   </section>
 </main>
 
