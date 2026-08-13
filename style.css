@@ -1585,3 +1585,163 @@ body {
 
 .ai-chat-voice-status.ai-chat-voice-status--wake { color: var(--green); }
 .ai-chat-voice-status.ai-chat-voice-status--wake .ai-chat-voice-dot { background: var(--green); }
+
+/* ============================================================
+   PART 2 — OVERVIEW PAGE READABILITY PASS
+   Scoped to [data-tab-panel="overview"] wherever the underlying
+   class is shared with other tabs (kpi-card, top-card, rec-list,
+   alert-list, card-eyebrow, etc.) so Historical Intelligence,
+   Model Performance, Objectives, Recommendations and Timeline
+   are left exactly as they were. The shared top bar and the
+   global NALA chat panel are intentionally NOT scoped — they are
+   persistent chrome shown on every tab, not page content.
+   No HTML/JS/IDs/data logic touched — typography, spacing and
+   layout only.
+   ============================================================ */
+
+/* ---- 1. Page header: slightly larger, clearer ---- */
+.topbar-greeting h1 { font-size: 24px; letter-spacing: -0.3px; }
+.topbar-subtitle { font-size: 14.5px; }
+.report-date .label { font-size: 10.5px; }
+.report-date .value { font-size: 14px; }
+.range-btn { font-size: 13.5px; padding: 10px 17px; }
+.status-pill { font-size: 12.5px; padding: 8px 15px; }
+.export-btn { font-size: 13px; padding: 10px 17px; }
+
+/* ---- 2. KPI section ---- */
+[data-tab-panel="overview"] .kpi-card {
+  padding: 18px 20px;
+}
+[data-tab-panel="overview"] .kpi-label {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+[data-tab-panel="overview"] .kpi-value {
+  font-size: 32px;
+  letter-spacing: -0.5px;
+}
+[data-tab-panel="overview"] .kpi-unit { font-size: 12px; }
+[data-tab-panel="overview"] .delta { font-size: 12px; padding: 3px 8px; }
+[data-tab-panel="overview"] .kpi-icon { width: 38px; height: 38px; }
+[data-tab-panel="overview"] .kpi-icon svg { width: 19px; height: 19px; }
+
+/* ---- 3. Account Health + Performance Funnel ---- */
+[data-tab-panel="overview"] .gauge-svg { width: 220px; height: 130px; }
+[data-tab-panel="overview"] .gauge-number { font-size: 46px; }
+[data-tab-panel="overview"] .gauge-max { font-size: 15px; }
+[data-tab-panel="overview"] .gauge-label { font-size: 12.5px; letter-spacing: 0.7px; }
+[data-tab-panel="overview"] .gauge-basis { font-size: 12px; line-height: 1.5; max-width: 200px; }
+
+[data-tab-panel="overview"] .funnel-stage { padding: 18px 10px; }
+[data-tab-panel="overview"] .funnel-stage-value { font-size: 23px; }
+[data-tab-panel="overview"] .funnel-stage-label { font-size: 11.5px; letter-spacing: 0.4px; }
+[data-tab-panel="overview"] .funnel-stage-pct { font-size: 12.5px; }
+[data-tab-panel="overview"] .funnel-stage-drop { font-size: 11px; }
+[data-tab-panel="overview"] .funnel-arrow { font-size: 20px; }
+[data-tab-panel="overview"] .funnel-overall { font-size: 13px; }
+
+/* ---- 4. Top performance cards ---- */
+[data-tab-panel="overview"] .top-row { gap: 18px; }
+[data-tab-panel="overview"] .top-row {
+  align-items: stretch; /* keep the row visually aligned as card heights grow */
+}
+[data-tab-panel="overview"] .top-card {
+  min-height: 150px;
+  height: auto;
+  padding: 22px 24px;
+}
+[data-tab-panel="overview"] .top-card h2 {
+  font-size: 19px;
+  line-height: 1.4;
+  margin-top: 4px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  /* No max-height / no scroll — card grows to fit the full name. */
+}
+[data-tab-panel="overview"] .top-card-icon { width: 38px; height: 38px; font-size: 19px; }
+[data-tab-panel="overview"] .rec-badge { font-size: 12px; padding: 4px 11px; }
+[data-tab-panel="overview"] .top-metric span:first-child { font-size: 22px; }
+[data-tab-panel="overview"] .top-metric small { font-size: 12.5px; }
+[data-tab-panel="overview"] .audience-range { font-size: 13.5px; }
+
+/* ---- 5. Lower insights: AI Recommendations, Alerts, Prediction ---- */
+[data-tab-panel="overview"] .triple-row { gap: 18px; }
+[data-tab-panel="overview"] .triple-row > .card { padding: 24px 26px; }
+
+[data-tab-panel="overview"] .rec-list,
+[data-tab-panel="overview"] .alert-list {
+  gap: 13px;
+}
+[data-tab-panel="overview"] .rec-list li,
+[data-tab-panel="overview"] .alert-list li {
+  font-size: 16px;
+  line-height: 1.55;
+  padding: 15px 16px;
+  gap: 7px;
+}
+[data-tab-panel="overview"] .item-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+[data-tab-panel="overview"] .item-reason {
+  font-size: 13.5px;
+  line-height: 1.55;
+  padding-left: 20px;
+}
+[data-tab-panel="overview"] .priority-badge {
+  font-size: 11.5px;
+  padding: 3px 10px;
+}
+
+[data-tab-panel="overview"] .prediction-value { font-size: 36px; }
+[data-tab-panel="overview"] .prediction-label { font-size: 13px; }
+[data-tab-panel="overview"] .prediction-divider { height: 56px; }
+
+/* Card labels ("AI RECOMMENDATION" / "ALERTS" / "PREDICTION TOMORROW")
+   and the top-performer eyebrows read clearer a touch larger too. */
+[data-tab-panel="overview"] .triple-row .card-eyebrow,
+[data-tab-panel="overview"] .top-row .card-eyebrow,
+[data-tab-panel="overview"] .health-block .card-eyebrow,
+[data-tab-panel="overview"] .funnel-card .card-eyebrow {
+  font-size: 13px;
+}
+
+/* ---- 7. NALA chat panel: larger, more comfortable to read ----
+   Global chrome (rendered on every tab), improved per PART 2 §7.
+   Logic/webhook/prompts untouched — sizing & spacing only. */
+.ai-chat-panel {
+  width: 520px;
+  height: 660px;
+}
+.ai-chat-header-title h2 { font-size: 18px; }
+.ai-chat-header-sub { font-size: 12.5px; max-width: 300px; }
+.ai-chat-bubble { font-size: 15.5px; line-height: 1.7; padding: 13px 16px; }
+.ai-chat-suggestion-chip { font-size: 12.5px; padding: 8px 13px; }
+.ai-chat-input { font-size: 15.5px; padding: 12px 15px; }
+.ai-chat-input-row { padding: 15px 17px; }
+.ai-chat-send-btn,
+.ai-chat-mic-btn { width: 46px; height: 46px; }
+.ai-chat-send-btn svg { width: 19px; height: 19px; }
+.ai-chat-mic-btn svg { width: 18px; height: 18px; }
+
+/* ---- 8. Responsive ---- */
+@media (max-width: 980px) {
+  [data-tab-panel="overview"] .top-row { grid-template-columns: repeat(2, 1fr); }
+  [data-tab-panel="overview"] .triple-row { grid-template-columns: 1fr; }
+  .ai-chat-panel { width: 460px; }
+}
+@media (max-width: 640px) {
+  [data-tab-panel="overview"] .top-row { grid-template-columns: 1fr; }
+  [data-tab-panel="overview"] .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  [data-tab-panel="overview"] .kpi-value { font-size: 28px; }
+  [data-tab-panel="overview"] .top-card h2 { font-size: 18px; }
+}
+@media (max-width: 480px) {
+  .ai-chat-panel {
+    right: 0; left: 0; bottom: 0;
+    width: 100vw; max-width: 100vw;
+    height: 88vh; max-height: 88vh;
+    border-radius: 20px 20px 0 0;
+  }
+  .ai-chat-toggle { width: 60px; height: 60px; }
+}
