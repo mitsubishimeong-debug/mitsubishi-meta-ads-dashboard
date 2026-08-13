@@ -1745,3 +1745,220 @@ body {
   }
   .ai-chat-toggle { width: 60px; height: 60px; }
 }
+
+/* ============================================================
+   PART 3 — HISTORICAL INTELLIGENCE PAGE READABILITY PASS
+   Every rule below is scoped to [data-tab-panel="historical"]
+   because the underlying classes (kpi-card, top-card,
+   campaigns-table, history-toolbar, year-switch, card-eyebrow,
+   export-btn, receipt-form, etc.) are shared with Overview,
+   Model Performance, Objectives, Recommendations and Timeline.
+   Scoping keeps every other tab pixel-identical to PART 1/2.
+   No IDs, event handlers, data logic, calculations, filtering,
+   sorting, CSV export, form submission or NALA logic touched —
+   typography, spacing and color only. The two <h2>/<p> lines
+   added in index.html above the year filter are static labels
+   with no id — they carry no functionality of their own.
+   ============================================================ */
+
+/* ---- 1. Page header ---- */
+[data-tab-panel="historical"] .page-intro { margin-bottom: 18px; }
+[data-tab-panel="historical"] .page-intro-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: var(--text);
+}
+[data-tab-panel="historical"] .page-intro-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--secondary);
+  margin-top: 4px;
+}
+
+/* ---- 2. Year filter ---- */
+[data-tab-panel="historical"] .year-switch {
+  border-radius: 12px;
+}
+[data-tab-panel="historical"] .year-btn {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 11px 20px;
+}
+[data-tab-panel="historical"] .year-btn:hover { background: var(--card-soft); color: var(--text); }
+[data-tab-panel="historical"] .year-btn.active { background: var(--accent); color: #fff; }
+
+/* ---- 3 & 4. This Week (rolling 7 days) KPI cards + date range ---- */
+[data-tab-panel="historical"] .week-kpi-grid {
+  gap: 16px;
+}
+[data-tab-panel="historical"] .week-kpi-grid .kpi-card {
+  padding: 20px 22px;
+  min-height: 108px;
+  justify-content: center;
+}
+[data-tab-panel="historical"] .week-kpi-grid .kpi-label {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+[data-tab-panel="historical"] .week-kpi-grid .kpi-value {
+  font-size: 30px;
+  margin-top: 4px;
+}
+[data-tab-panel="historical"] .card-eyebrow-row .card-eyebrow {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+[data-tab-panel="historical"] #weekRange {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--secondary);
+}
+
+/* ---- 5 & 8. Monthly Report + Winning Campaign Ranking tables ---- */
+[data-tab-panel="historical"] .campaigns-table {
+  font-size: 14.5px;
+}
+[data-tab-panel="historical"] .campaigns-table th {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--card-soft);
+  padding: 13px 14px;
+}
+[data-tab-panel="historical"] .campaigns-table td {
+  padding: 14px;
+  line-height: 1.5;
+}
+/* Monthly Report: Week, Date Range are text; Reach onward (col 3+) numeric. */
+[data-tab-panel="historical"] #monthlyReportTable thead th:nth-child(n+3),
+[data-tab-panel="historical"] #monthlyReportTable tbody td:nth-child(n+3) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+/* Total row has a colspan="2" first cell, so its numeric columns are
+   targeted this way (skip the first/"Total" cell) instead of nth-child. */
+[data-tab-panel="historical"] .monthly-report-total-row td:not(:first-child) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+/* Winning Campaign Ranking: Rank, Campaign, Objective are text;
+   Total Spend onward (col 4+) numeric. */
+[data-tab-panel="historical"] #rankingTable thead th:nth-child(n+4),
+[data-tab-panel="historical"] #rankingTable tbody td:nth-child(n+4) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+[data-tab-panel="historical"] #monthlyReportTable td:nth-child(2) {
+  white-space: normal;
+  min-width: 140px;
+  color: var(--secondary);
+}
+[data-tab-panel="historical"] .campaigns-table tbody tr:hover { background: var(--card-soft); }
+
+/* Total row: clearly separated, stronger weight, neutral blue tint */
+[data-tab-panel="historical"] .monthly-report-total-row {
+  font-weight: 700;
+  font-size: 14.5px;
+  background: var(--accent-soft);
+  border-top: 2px solid var(--accent);
+}
+[data-tab-panel="historical"] .monthly-report-total-row td {
+  color: var(--text);
+  padding: 14px;
+}
+
+/* ---- 6. Month selector ---- */
+[data-tab-panel="historical"] .month-select {
+  font-size: 13.5px;
+  font-weight: 500;
+  padding: 10px 14px;
+  border-radius: 10px;
+}
+[data-tab-panel="historical"] .month-select:focus { outline: none; border-color: var(--accent); }
+
+/* ---- 7. Export CSV — primary blue action ---- */
+[data-tab-panel="historical"] #exportMonthlyReportBtn {
+  font-size: 12.5px;
+  padding: 10px 16px;
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+[data-tab-panel="historical"] #exportMonthlyReportBtn:hover {
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
+  color: #fff;
+}
+
+/* ---- 9. Log a Receipt / Log a Closed Sale forms ---- */
+[data-tab-panel="historical"] .receipt-form { gap: 16px; }
+[data-tab-panel="historical"] .receipt-form-row { gap: 16px; }
+[data-tab-panel="historical"] .receipt-form label,
+[data-tab-panel="historical"] .receipt-form-note {
+  font-size: 13px;
+  font-weight: 600;
+  gap: 7px;
+}
+[data-tab-panel="historical"] .receipt-form input,
+[data-tab-panel="historical"] .receipt-form select {
+  font-size: 14.5px;
+  padding: 12px 14px;
+  border-radius: 10px;
+}
+[data-tab-panel="historical"] .receipt-form input:focus,
+[data-tab-panel="historical"] .receipt-form select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+[data-tab-panel="historical"] .receipt-form-status { font-size: 13px; }
+
+/* ---- Lifetime KPI grid + highlight cards (Best Campaign / Lowest Cost / Highest CTR) ---- */
+[data-tab-panel="historical"] .history-kpi-grid:not(.week-kpi-grid) .kpi-card {
+  padding: 20px 22px;
+}
+[data-tab-panel="historical"] .history-kpi-grid:not(.week-kpi-grid) .kpi-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+[data-tab-panel="historical"] .history-kpi-grid:not(.week-kpi-grid) .kpi-value {
+  font-size: 28px;
+}
+[data-tab-panel="historical"] .highlight-card { padding: 22px 24px; }
+[data-tab-panel="historical"] .highlight-card h2 {
+  font-size: 18px;
+  line-height: 1.4;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+[data-tab-panel="historical"] .highlight-card .audience-range {
+  font-size: 13px;
+}
+[data-tab-panel="historical"] .top-row.history-highlight-row { gap: 18px; }
+
+/* ---- 11. General card-eyebrow labels on this page ---- */
+[data-tab-panel="historical"] .table-card > .card-eyebrow,
+[data-tab-panel="historical"] .table-card .card-header-row .card-eyebrow {
+  font-size: 13.5px;
+}
+
+/* ---- 10. Empty / zero values stay neutral, not error-red ---- */
+[data-tab-panel="historical"] .campaigns-table td,
+[data-tab-panel="historical"] .kpi-value {
+  color: var(--text);
+}
+
+/* ---- 12. Responsive ---- */
+@media (max-width: 980px) {
+  [data-tab-panel="historical"] .week-kpi-grid { grid-template-columns: repeat(3, 1fr); }
+  [data-tab-panel="historical"] .history-kpi-grid:not(.week-kpi-grid) { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 640px) {
+  [data-tab-panel="historical"] .week-kpi-grid { grid-template-columns: 1fr; }
+  [data-tab-panel="historical"] .history-kpi-grid:not(.week-kpi-grid) { grid-template-columns: repeat(2, 1fr); }
+  [data-tab-panel="historical"] .year-btn { padding: 10px 14px; font-size: 13px; }
+  [data-tab-panel="historical"] .campaigns-table { font-size: 13px; }
+  [data-tab-panel="historical"] .page-intro-title { font-size: 19px; }
+}
