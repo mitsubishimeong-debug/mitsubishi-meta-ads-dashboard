@@ -519,7 +519,12 @@ function renderDelta(id, value, invert = false) {
   const el = getEl(id);
   if (!el) return;
   if (value === undefined || value === null || isNaN(Number(value))) {
-    el.textContent = "—";
+    // v17 FIX (Part 9D, Issue 2): leave the element empty instead of "—"
+    // so the existing .delta:empty { display:none; } CSS rule hides the
+    // placeholder entirely. renderDelta() itself is unchanged otherwise —
+    // once the backend sends a real *ChangeYesterday value, this branch
+    // is skipped and the ▲/▼ indicator below renders exactly as before.
+    el.textContent = "";
     el.className = "delta";
     return;
   }
