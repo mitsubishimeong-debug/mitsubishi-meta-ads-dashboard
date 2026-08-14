@@ -628,6 +628,17 @@ function renderBudget(budgetPacing, spend) {
   const allocatedDailyBudget = Number(budgetPacing.allocated_daily_budget) || 0;
   const spendNum = Number(spend);
 
+  // FIX (Part 9F): n8n's "Build Dashboard Ranges" now scales
+  // allocated_daily_budget by how many days the selected range covers
+  // (1 for Today, 7 for 7 Days, etc.) instead of repeating the same
+  // daily number on every range, so Budget Pacing % is meaningful for
+  // 7d/30d too. period_days (new, optional field) drives the label
+  // text below; if it's absent — e.g. an older dashboard.json — this
+  // defaults to 1 and reads exactly as it always did ("Daily Budget").
+  const periodDays = Number(budgetPacing.period_days) || 1;
+  const periodLabel = periodDays <= 1 ? "Daily Budget" : `${periodDays}-Day Budget`;
+  const periodWord = periodDays <= 1 ? "daily" : `${periodDays}-day`;
+
   const pct =
     allocatedDailyBudget > 0 && !isNaN(spendNum) ? (spendNum / allocatedDailyBudget) * 100 : null;
 
@@ -645,10 +656,10 @@ function renderBudget(budgetPacing, spend) {
     }
   }
 
-  const pctLabel = pct === null ? "" : ` • ${pct.toFixed(1)}% of daily budget`;
+  const pctLabel = pct === null ? "" : ` • ${pct.toFixed(1)}% of ${periodWord} budget`;
   setText(
     "budgetReadout",
-    `${formatNumber(activeCampaigns)} Active Campaign${activeCampaigns === 1 ? "" : "s"} • ${formatCurrency(allocatedDailyBudget)} Daily Budget${pctLabel}`
+    `${formatNumber(activeCampaigns)} Active Campaign${activeCampaigns === 1 ? "" : "s"} • ${formatCurrency(allocatedDailyBudget)} ${periodLabel}${pctLabel}`
   );
 }
 
