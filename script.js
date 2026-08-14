@@ -275,13 +275,61 @@ function render() {
   renderDelta("deltaCpm", rangeData.cpmChangeYesterday, true);
   renderDelta("deltaCostMsg", rangeData.costPerMessageChangeYesterday, true);
 
+  // v16 ADD (Part 10, Issue 4): Good / Needs Improvement / Bad status
+  // indicators for each KPI card. Pacing % (spend vs. allocated daily
+  // budget — same figures Budget Pacing already uses below) is computed
+  // once here and reused both for the Spend status and for the Budget
+  // Pacing bar, so the two stay consistent with each other.
+  const allocatedDailyBudget = Number(rangeData.budgetPacing?.allocated_daily_budget);
+  const spendNum = Number(rangeData.spend);
+  const pacingPct =
+    !isNaN(allocatedDailyBudget) && allocatedDailyBudget > 0 && !isNaN(spendNum)
+      ? (spendNum / allocatedDailyBudget) * 100
+      : null;
+
+  renderKpiStatus("statusSpend", getMetricStatus("spend", rangeData.spend, { pacingPct }));
+  renderKpiStatus("statusMessages", getMetricStatus("messages", rangeData.messages));
+  renderKpiStatus("statusCtr", getMetricStatus("ctr", rangeData.ctr));
+  renderKpiStatus("statusCpc", getMetricStatus("cpc", rangeData.cpc));
+  renderKpiStatus("statusCpm", getMetricStatus("cpm", rangeData.cpm));
+  // Cost/Message is mathematically 0 whenever Messages is 0 (nothing to
+  // divide spend by) — that's an absence of data, not a "Good" ₱0 cost,
+  // so it's evaluated only when there's at least one message to base it on.
+  renderKpiStatus(
+    "statusCostMsg",
+    Number(rangeData.messages) > 0
+      ? getMetricStatus("costPerMessage", rangeData.costPerMessage)
+      : { cls: "none", label: "No Data" }
+  );
+
   // v8 ADD (Phase 1): sparklines under Spend / Messages / CTR cards
-  renderKpiSparklines(rangeData.trends);
+  // v16 FIX (Part 10, Issue 3): Today's trends payload legitimately has
+  // a single data point, but dashboard.json's label for it can lag one
+  // day behind the selected report date shown in the header (upstream
+  // timezone rollover). The KPI values themselves are untouched — only
+  // the displayed date label for that single point is aligned to the
+  // header's report date so charts/sparklines don't show a date that
+  // contradicts what "Today" is currently set to.
+  let trendsForDisplay = rangeData.trends;
+  if (
+    currentRange === "today" &&
+    trendsForDisplay &&
+    Array.isArray(trendsForDisplay.labels) &&
+    trendsForDisplay.labels.length === 1 &&
+    currentData.reportDate &&
+    trendsForDisplay.labels[0] !== currentData.reportDate
+  ) {
+    trendsForDisplay = { ...trendsForDisplay, labels: [currentData.reportDate] };
+  }
+  renderKpiSparklines(trendsForDisplay);
 
   // CHANGED (v7.1): was `renderBudget(rangeData.budget)`.
   // dashboard.json now provides ranges.<range>.budgetPacing instead
   // of ranges.<range>.budget — same call site, new field name only.
-  renderBudget(rangeData.budgetPacing);
+  // v16 FIX (Part 10, Issue 2): also pass rangeData.spend through so
+  // renderBudget can compute an actual pacing % instead of leaving the
+  // bar permanently at 0%.
+  renderBudget(rangeData.budgetPacing, rangeData.spend);
 
   // Funnel
   renderFunnel(rangeData.funnel);
@@ -330,11 +378,25 @@ function render() {
   setText("predMessages", formatNumber(currentData.predictionTomorrow?.expectedMessages));
 
   // Charts
-  renderTrendCharts(rangeData.trends);
-  renderRankingChart(rangeData.campaigns);
+  renderTrendCharts(trendsForDisplay);
+  // v16 FIX (Part 10, Issue 3): ranges.<range>.campaigns doesn't exist
+  // anywhere in the current dashboard.json schema (checked all three
+  // ranges), so the Campaign Ranking chart and All Campaigns table were
+  // unconditionally empty on every range, not just Today — that's what
+  // made Today look like it had "no data" even though its KPI numbers
+  // were populated. The real per-campaign rows already exist at the
+  // top level as currentData.campaignRanking (n8n's "Build Campaign
+  // Ranking" output) and just weren't wired into either function. No
+  // new data is invented here — only the existing top-level object is
+  // read and its field names mapped to what these two functions expect.
+  const campaignRows =
+    Array.isArray(rangeData.campaigns) && rangeData.campaigns.length
+      ? rangeData.campaigns
+      : normalizeCampaignRanking(currentData.campaignRanking);
+  renderRankingChart(campaignRows);
 
   // Campaigns table
-  renderCampaignsTable(rangeData.campaigns);
+  renderCampaignsTable(campaignRows);
 
   // v7 ADD: client-computed AI Health Score for the active range.
   // Purely additive — no-ops safely if the optional gauge markup
@@ -531,27 +593,110 @@ function renderKpiSparklines(trends) {
   // rather than fabricating a fake trend line.
 }
 
-function renderBudget(budgetPacing) {
+// v16 FIX (Part 10, Issue 2): budgetPacing only carries active_campaigns
+// + allocated_daily_budget — no "spent" figure of its own — but the
+// range's own spend total (rangeData.spend, already rendered a few
+// lines up in the Spend KPI card) is exactly the "spent" half of the
+// ratio. Nothing new is invented: both numbers already exist in
+// dashboard.json, just in two different places, so `spend` is now
+// passed in from render()'s call site alongside budgetPacing.
+function getPacingStatusClass(pct) {
+  if (pct === null || pct === undefined || isNaN(pct)) return "pacing-none";
+  if (pct <= 100) return "pacing-good";
+  if (pct <= 120) return "pacing-warn";
+  return "pacing-bad";
+}
+
+function renderBudget(budgetPacing, spend) {
   const fill = getEl("budgetFill");
 
   if (!budgetPacing || typeof budgetPacing !== "object") {
-    if (fill) fill.style.width = "0%";
+    if (fill) {
+      fill.style.width = "0%";
+      fill.classList.remove("pacing-good", "pacing-warn", "pacing-bad");
+    }
     setText("budgetReadout", "—");
     return;
   }
 
   const activeCampaigns = Number(budgetPacing.active_campaigns) || 0;
   const allocatedDailyBudget = Number(budgetPacing.allocated_daily_budget) || 0;
+  const spendNum = Number(spend);
 
-  // No "spent vs daily" ratio exists in this schema anymore, so the
-  // bar no longer represents a percentage — left at 0% rather than
-  // removed, so the surrounding layout/markup is untouched.
-  if (fill) fill.style.width = "0%";
+  const pct =
+    allocatedDailyBudget > 0 && !isNaN(spendNum) ? (spendNum / allocatedDailyBudget) * 100 : null;
 
+  if (fill) {
+    fill.classList.remove("pacing-good", "pacing-warn", "pacing-bad");
+    if (pct === null) {
+      fill.style.width = "0%";
+    } else {
+      // Visual fill is clamped to 100% of the track width (a >100%
+      // pacing still reads as "full bar, red" rather than overflowing
+      // the track) — the actual percentage number is still shown
+      // uncapped in the readout text below.
+      fill.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+      fill.classList.add(getPacingStatusClass(pct));
+    }
+  }
+
+  const pctLabel = pct === null ? "" : ` • ${pct.toFixed(1)}% of daily budget`;
   setText(
     "budgetReadout",
-    `${formatNumber(activeCampaigns)} Active Campaign${activeCampaigns === 1 ? "" : "s"} • ${formatCurrency(allocatedDailyBudget)} Daily Budget`
+    `${formatNumber(activeCampaigns)} Active Campaign${activeCampaigns === 1 ? "" : "s"} • ${formatCurrency(allocatedDailyBudget)} Daily Budget${pctLabel}`
   );
+}
+
+// ---------------- KPI STATUS INDICATORS (v16 ADD — Part 10, Issue 4) ----------------
+// Good / Needs Improvement / Bad / No Data for each KPI card, using the
+// thresholds supplied in the Part 10 brief (no existing thresholds were
+// found elsewhere in this file to reuse). Spend is the one exception —
+// per the brief it's evaluated against Budget Pacing context (the same
+// spend-vs-allocated-daily-budget % renderBudget computes) rather than
+// a flat currency threshold.
+function getMetricStatus(metric, value, ctx) {
+  if (metric === "spend") {
+    const pct = ctx && ctx.pacingPct;
+    if (pct === null || pct === undefined || isNaN(pct)) return { cls: "none", label: "No Data" };
+    if (pct <= 100) return { cls: "good", label: "Good" };
+    if (pct <= 120) return { cls: "warn", label: "Needs Improvement" };
+    return { cls: "bad", label: "Bad" };
+  }
+
+  const v = Number(value);
+  if (value === undefined || value === null || value === "" || isNaN(v)) {
+    return { cls: "none", label: "No Data" };
+  }
+
+  switch (metric) {
+    case "ctr":
+      if (v >= 1.0) return { cls: "good", label: "Good" };
+      if (v >= 0.5) return { cls: "warn", label: "Needs Improvement" };
+      return { cls: "bad", label: "Bad" };
+    case "cpc":
+      if (v <= 10) return { cls: "good", label: "Good" };
+      if (v <= 20) return { cls: "warn", label: "Needs Improvement" };
+      return { cls: "bad", label: "Bad" };
+    case "cpm":
+      if (v <= 300) return { cls: "good", label: "Good" };
+      if (v <= 500) return { cls: "warn", label: "Needs Improvement" };
+      return { cls: "bad", label: "Bad" };
+    case "costPerMessage":
+      if (v <= 50) return { cls: "good", label: "Good" };
+      if (v <= 100) return { cls: "warn", label: "Needs Improvement" };
+      return { cls: "bad", label: "Bad" };
+    case "messages":
+      return v > 0 ? { cls: "good", label: "Good" } : { cls: "bad", label: "Bad" };
+    default:
+      return { cls: "none", label: "No Data" };
+  }
+}
+
+function renderKpiStatus(id, status) {
+  const el = getEl(id);
+  if (!el) return;
+  el.textContent = status.label;
+  el.className = `kpi-status kpi-status--${status.cls}`;
 }
 
 // ---------------- FUNNEL ----------------
@@ -819,7 +964,12 @@ function renderAIHealthScore(rangeData) {
 
 function formatCurrency(n) {
   if (n === undefined || n === null || n === "" || isNaN(Number(n))) return "—";
-  return `₱${Number(n).toLocaleString("en-PH", { maximumFractionDigits: 2 })}`;
+  // v16 FIX (Part 10, Issue 1): added minimumFractionDigits so whole-peso
+  // values (e.g. a ₱250 daily budget) still render as "₱250.00" instead
+  // of "₱250", consistent with every other currency figure on the page.
+  // The ₱ prefix itself was already applied everywhere via this shared
+  // formatter — every Overview currency value already routes through it.
+  return `₱${Number(n).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 function formatNumber(n) {
   if (n === undefined || n === null || n === "" || isNaN(Number(n))) return "—";
@@ -947,6 +1097,25 @@ function upsertChart(canvasId, type, data, options) {
 // has to do a single reflow instead of one per row, for both the
 // Overview campaigns table and the Historical ranking table below.
 // ============================================================
+
+// v16 ADD (Part 10, Issue 3): maps currentData.campaignRanking's field
+// names (campaign_name / cost_per_message) onto the { name, status,
+// spend, messages, ctr, cpc, costPerMessage } shape renderRankingChart
+// and renderCampaignsTable already expect. campaignRanking has no
+// `status` field, so status is left undefined (renders as "—") rather
+// than inventing one.
+function normalizeCampaignRanking(list) {
+  if (!Array.isArray(list)) return [];
+  return list.map((c) => ({
+    name: c?.campaign_name ?? c?.name ?? "—",
+    status: c?.status,
+    spend: c?.spend,
+    messages: c?.messages,
+    ctr: c?.ctr,
+    cpc: c?.cpc,
+    costPerMessage: c?.cost_per_message ?? c?.costPerMessage,
+  }));
+}
 
 function renderCampaignsTable(campaigns) {
   const tbody = getEl("campaignsTableBody");
