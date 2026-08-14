@@ -1,70 +1,63 @@
 {
-  "executive_summary": "Ang overall performance noong nakaraang buwan ay medyo unstable dahil sa irregular na pag-boost at pag-pause ng campaigns. Nakakuha tayo ng 34 messages mula sa 2,742 PHP na spend. Ang average CTR ay nasa 3% range na okay naman, pero kailangan nating maging consistent sa daily active spend para hindi mawala ang momentum ng algorithm.",
+  "executive_summary": "Ang performance nitong July-August period ay nagpapakita ng mataas na cost per message. Bagama't nakakakuha tayo ng traction sa engagement (Reels), kailangan nating i-convert ang mga ito sa mas murang lead acquisition. Total spend for the active campaign is PHP 224.7, with a high CTR of 3.4%.",
   "metrics": {
-    "spend": 2742.04,
-    "impressions": 7541,
-    "clicks": 292,
-    "messages": 34,
-    "ctr": 3.01,
-    "cpc": 9.39,
-    "cpm": 363.62
+    "spend": 3286.74,
+    "impressions": 8845,
+    "clicks": 336,
+    "messages": 35,
+    "ctr": 3.2,
+    "cpc": 9.78,
+    "cpm": 371.4
   },
   "best_campaigns": [
-    "📁 2026 | Leads | Multi Models | JULY"
+    "📁 2026 | Engagement | Reels Storytelling | AUGUST Campaign"
   ],
   "worst_campaigns": [
-    "📁 2026 | Sales | Multi Models | July"
+    "📁 2026 | Leads | Multi Models | JULY"
   ],
   "winning_ads": [
     "01 - Storytelling Reel | Low DP Promos | Aug2026"
   ],
   "creative_insights": [
-    "Ang video creatives ay mas mataas ang engagement kumpara sa image, lalo na yung may element ng 'Storytelling' o totoong customer turnover/release.",
-    "Ang messaging na nagha-highlight ng 'Low Downpayment' at 'Free 2 Months' ang pinaka-effective na hook sa mga Pinoy car buyers."
+    "Ang mga short-form video content/reels ay nagbibigay ng mas mataas na engagement kumpara sa static images.",
+    "Ang 'Low DP' at 'Monthly Payment' hooks ang pinaka-effective na message sa mga Pinoy car buyers."
   ],
   "historical_insights": [
-    "Mas maganda ang performance ng campaigns noong 2023 at Q1 2026 dahil sa mas stable na delivery. Ang random na pag-pause ng ads ay nagdudulot ng 'learning phase' reset na nagpapamahal sa cost per message.",
-    "Bumaba ang conversion rate nitong July kumpara sa mga naunang months dahil sa inconsistency sa daily reach."
+    "Bumaba ang conversion efficiency kumpara noong Q1/Q2 2026. Ang cost per message ay tumataas, kaya kailangan ng mas frequent na refresh ng creatives.",
+    "Ang dating 'Leads' objective campaign ay mas mahal ang cost per message kaysa sa kasalukuyang engagement-focused setup."
   ],
   "targeting_intelligence": {
     "best_locations": [
-      "Las Piñas",
+      "Las Piñas (Core)",
       "Parañaque",
       "Bacoor",
       "Imus",
-      "Muntinlupa City"
+      "Cavite area"
     ],
     "best_interests": [
       "Mitsubishi Motors",
-      "Car loans / Financing",
-      "Small business owners (para sa L300)",
-      "Ride-hailing drivers / TNVS groups"
+      "Car financing",
+      "Small business (para sa L300)",
+      "Logistics/Cargo services"
     ],
     "market_demand_notes": [
-      "Ang Mirage G4 ay laging top-of-mind para sa mga first-time car buyers.",
-      "Ang L300 ay consistent ang demand para sa cargo/delivery needs, lalo na sa mga business owners sa Cavite-South Manila corridor."
+      "Ang Mirage G4 ay mainam sa mga first-time buyers/grab drivers.",
+      "Ang L300 ay consistent ang demand para sa mga MSME at delivery business sa south."
     ]
   },
   "creative_direction": [
     {
-      "boost_target": "Mitsubishi L300 Business Promo",
+      "boost_target": "L300 & Mirage G4 Leads",
       "format": "video",
-      "headline": "L300: Partner sa Negosyo!",
+      "headline": "Zero DP, Swak sa Budget!",
       "cta": "Send Message",
-      "description": "Affordable na hulugan para sa iyong business. Low DP promo available ngayon!"
-    },
-    {
-      "boost_target": "Mirage G4 Low DP",
-      "format": "video",
-      "headline": "Mirage G4: Drive Home Today",
-      "cta": "Send Message",
-      "description": "Zero down payment options at 2 months free amortization. Mag-inquire na!"
+      "description": "Avail our low monthly payment promo for 2026 models. Limited slots only, message us to get a quote today!"
     }
   ],
   "recommendations": [
-    "Iwasan ang biglaang pag-pause ng ads. Kung mahina ang resulta, i-adjust ang creative, huwag patayin ang buong campaign.",
-    "Maglaan ng fixed daily budget (hal. 500-1,000 PHP) para makakuha ng consistent data.",
-    "Gamitin ang A/B testing sa headline; subukan ang emosyonal na hook (Family/Future) vs practical hook (Savings/Business)."
+    "I-pause ang lahat ng lumang 'Leads' objective campaigns na may mataas na cost per message.",
+    "Mag-allocate ng 70% budget sa Reels storytelling dahil ito ang may pinakamataas na engagement rate.",
+    "I-reactivate ang L300 specific ads gamit ang bagong video format dahil solid ang demand nito sa South."
   ],
   "this_month_boost_plan": {
     "month": "August 2026",
@@ -72,16 +65,16 @@
       {
         "priority": "high",
         "boost_target": "📁 2026 | Engagement | Reels Storytelling | AUGUST Campaign",
-        "action": "I-scale ng 20% ang daily budget",
-        "reason": "Ito ang kasalukuyang active at nakakakuha ng mataas na page engagement (358 engagement sa 794 impressions).",
-        "impact": "Mas malaking reach at mas maraming potential leads sa Messenger."
+        "action": "Increase budget by 50%",
+        "reason": "Ito ang top performer na may 3.4% CTR. Ang focus ay ma-maximize ang reach sa mga potential buyers sa south.",
+        "expected_impact": "Mas marami pang direct message inquiries at bumabang cost-per-result."
       },
       {
         "priority": "medium",
-        "boost_target": "Re-activate '📁 2026 | Leads | Multi Models | JULY'",
-        "action": "I-relaunch na may updated ad copy",
-        "reason": "Ito ang isa sa mga campaigns na may historical success sa pagkuha ng direct messages (cost per message was reasonable).",
-        "impact": "Panibagong stream ng quality leads para sa sales team."
+        "boost_target": "Re-launch L300 specific static ad",
+        "action": "Duplicate and Relaunch",
+        "reason": "Dahil sa business nature ng L300, effective pa rin ang clear images with price/promo details para sa business owners.",
+        "expected_impact": "Direct sales leads para sa L300 units."
       }
     ]
   }
