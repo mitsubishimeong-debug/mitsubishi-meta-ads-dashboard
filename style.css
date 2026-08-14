@@ -565,6 +565,24 @@ body {
 .delta.flat { color: var(--secondary); background: rgba(100,116,139,0.1); }
 .delta:empty { display: none; }
 
+/* v16 ADD (Part 10, Issue 4): Good / Needs Improvement / Bad / No Data
+   indicator on each KPI card. Reuses the same green/amber/red/gray
+   language already defined above for .delta and .status-chip. */
+.kpi-status {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  margin-top: 4px;
+}
+.kpi-status:empty { display: none; }
+.kpi-status--good { color: var(--green); background: var(--green-soft); }
+.kpi-status--warn { color: var(--amber); background: var(--amber-soft); }
+.kpi-status--bad { color: var(--primary); background: var(--primary-soft); }
+.kpi-status--none { color: var(--secondary); background: rgba(100,116,139,0.1); }
+
 .kpi-spark {
   height: 22px;
   margin-top: 4px;
@@ -621,8 +639,15 @@ body {
   width: 0%;
   background: linear-gradient(90deg, var(--accent), #60A5FA);
   border-radius: 7px 0 0 7px;
-  transition: width 1s var(--ease);
+  transition: width 1s var(--ease), background 0.3s var(--ease);
 }
+/* v16 ADD (Part 10, Issue 2): pacing status colors — green/amber/red,
+   applied as a class from renderBudget() alongside the computed width.
+   Falls back to the original blue gradient above when no class is set
+   (budgetPacing missing / no pacing % available). */
+.budget-bar-fill.pacing-good { background: linear-gradient(90deg, var(--green), #34D399); }
+.budget-bar-fill.pacing-warn { background: linear-gradient(90deg, var(--amber), #FBBF24); }
+.budget-bar-fill.pacing-bad { background: linear-gradient(90deg, var(--primary), #F87171); }
 .budget-readout {
   font-family: 'Inter', sans-serif;
   font-weight: 600;
