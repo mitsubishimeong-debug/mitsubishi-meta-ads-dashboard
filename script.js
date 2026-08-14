@@ -519,12 +519,12 @@ function renderDelta(id, value, invert = false) {
   const el = getEl(id);
   if (!el) return;
   if (value === undefined || value === null || isNaN(Number(value))) {
-    // v17 FIX (Part 9D, Issue 2): leave the element empty instead of "—"
-    // so the existing .delta:empty { display:none; } CSS rule hides the
-    // placeholder entirely. renderDelta() itself is unchanged otherwise —
-    // once the backend sends a real *ChangeYesterday value, this branch
-    // is skipped and the ▲/▼ indicator below renders exactly as before.
-    el.textContent = "";
+    // v18 REVERT (Part 9E): restored the "—" placeholder (Part 9D had
+    // changed this to "" to hide the span via .delta:empty). Reversing
+    // that per explicit request — everything else in renderDelta() is
+    // untouched, so once *ChangeYesterday is populated the ▲/▼ branch
+    // below still fires exactly as before.
+    el.textContent = "—";
     el.className = "delta";
     return;
   }
