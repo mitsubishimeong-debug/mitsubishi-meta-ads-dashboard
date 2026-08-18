@@ -1,185 +1,185 @@
 {
-  "generatedAt": "2026-08-14T02:59:16.064Z",
+  "generatedAt": "2026-08-18T05:50:51.013Z",
   "weeklyPerformance": {
     "label": "7 Days",
-    "spend": 325.41,
-    "messages": 1,
-    "impressions": 986,
-    "reach": 863,
-    "clicks": 32,
-    "ctr": 0.91,
+    "spend": 625.57,
+    "messages": 3,
+    "impressions": 2890,
+    "reach": 2400,
+    "clicks": 89,
+    "ctr": 1.88,
     "days": 7,
-    "startDate": "2026-08-01",
-    "endDate": "2026-08-13",
+    "startDate": "2026-08-03",
+    "endDate": "2026-08-16",
     "trends": {
       "spend": [
         0,
         0,
         0,
-        0,
-        0,
         100.71,
-        224.7
+        224.7,
+        149.61,
+        150.55
       ],
       "messages": [
         0,
         0,
         0,
         0,
-        0,
-        0,
-        1
+        1,
+        2,
+        0
       ],
       "impressions": [
         0,
         0,
         0,
-        0,
-        0,
         339,
-        647
+        647,
+        472,
+        1432
       ],
       "reach": [
         0,
         0,
         0,
-        0,
-        0,
         299,
-        564
+        564,
+        408,
+        1129
       ],
       "ctr": [
         0,
         0,
         0,
-        0,
-        0,
         2.95,
-        3.4
+        3.4,
+        4.24,
+        2.58
       ],
       "labels": [
-        "2026-08-01",
-        "2026-08-02",
         "2026-08-03",
         "2026-08-04",
         "2026-08-06",
         "2026-08-12",
-        "2026-08-13"
+        "2026-08-13",
+        "2026-08-14",
+        "2026-08-16"
       ]
     }
   },
   "dashboardRanges": {
     "today": {
       "label": "Today",
-      "spend": 224.7,
-      "messages": 1,
-      "impressions": 647,
-      "reach": 564,
-      "clicks": 22,
-      "ctr": 3.4,
+      "spend": 150.55,
+      "messages": 0,
+      "impressions": 1432,
+      "reach": 1129,
+      "clicks": 37,
+      "ctr": 2.58,
       "days": 1,
-      "startDate": "2026-08-13",
-      "endDate": "2026-08-13",
+      "startDate": "2026-08-16",
+      "endDate": "2026-08-16",
       "trends": {
         "spend": [
-          224.7
+          150.55
         ],
         "messages": [
-          1
+          0
         ],
         "impressions": [
-          647
+          1432
         ],
         "reach": [
-          564
+          1129
         ],
         "ctr": [
-          3.4
+          2.58
         ],
         "labels": [
-          "2026-08-13"
+          "2026-08-16"
         ]
       }
     },
     "7d": {
       "label": "7 Days",
-      "spend": 325.41,
-      "messages": 1,
-      "impressions": 986,
-      "reach": 863,
-      "clicks": 32,
-      "ctr": 0.91,
+      "spend": 625.57,
+      "messages": 3,
+      "impressions": 2890,
+      "reach": 2400,
+      "clicks": 89,
+      "ctr": 1.88,
       "days": 7,
-      "startDate": "2026-08-01",
-      "endDate": "2026-08-13",
+      "startDate": "2026-08-03",
+      "endDate": "2026-08-16",
       "trends": {
         "spend": [
           0,
           0,
           0,
-          0,
-          0,
           100.71,
-          224.7
+          224.7,
+          149.61,
+          150.55
         ],
         "messages": [
           0,
           0,
           0,
           0,
-          0,
-          0,
-          1
+          1,
+          2,
+          0
         ],
         "impressions": [
           0,
           0,
           0,
-          0,
-          0,
           339,
-          647
+          647,
+          472,
+          1432
         ],
         "reach": [
           0,
           0,
           0,
-          0,
-          0,
           299,
-          564
+          564,
+          408,
+          1129
         ],
         "ctr": [
           0,
           0,
           0,
-          0,
-          0,
           2.95,
-          3.4
+          3.4,
+          4.24,
+          2.58
         ],
         "labels": [
-          "2026-08-01",
-          "2026-08-02",
           "2026-08-03",
           "2026-08-04",
           "2026-08-06",
           "2026-08-12",
-          "2026-08-13"
+          "2026-08-13",
+          "2026-08-14",
+          "2026-08-16"
         ]
       }
     },
     "30d": {
       "label": "30 Days",
-      "spend": 3067.45,
-      "messages": 36,
-      "impressions": 8527,
-      "reach": 7306,
-      "clicks": 324,
-      "ctr": 2.12,
-      "days": 23,
+      "spend": 3367.61,
+      "messages": 38,
+      "impressions": 10431,
+      "reach": 8843,
+      "clicks": 381,
+      "ctr": 2.22,
+      "days": 25,
       "startDate": "2026-07-02",
-      "endDate": "2026-08-13",
+      "endDate": "2026-08-16",
       "trends": {
         "spend": [
           227.26,
@@ -204,7 +204,9 @@
           0,
           0,
           100.71,
-          224.7
+          224.7,
+          149.61,
+          150.55
         ],
         "messages": [
           2,
@@ -229,7 +231,9 @@
           0,
           0,
           0,
-          1
+          1,
+          2,
+          0
         ],
         "impressions": [
           646,
@@ -254,7 +258,9 @@
           0,
           0,
           339,
-          647
+          647,
+          472,
+          1432
         ],
         "reach": [
           521,
@@ -279,7 +285,9 @@
           0,
           0,
           299,
-          564
+          564,
+          408,
+          1129
         ],
         "ctr": [
           3.1,
@@ -304,7 +312,9 @@
           0,
           0,
           2.95,
-          3.4
+          3.4,
+          4.24,
+          2.58
         ],
         "labels": [
           "2026-07-02",
@@ -329,7 +339,9 @@
           "2026-08-04",
           "2026-08-06",
           "2026-08-12",
-          "2026-08-13"
+          "2026-08-13",
+          "2026-08-14",
+          "2026-08-16"
         ]
       }
     }
@@ -500,11 +512,11 @@
       "monthKey": "2026-08",
       "totalWeeks": 5,
       "totals": {
-        "reach": 863,
-        "impressions": 986,
-        "messages": 1,
-        "spend": 325.41,
-        "clicks": 32,
+        "reach": 2400,
+        "impressions": 2890,
+        "messages": 3,
+        "spend": 625.57,
+        "clicks": 89,
         "closedSales": 0
       },
       "weeks": [
@@ -525,27 +537,27 @@
           "weekNumber": 2,
           "startDate": "2026-08-08",
           "endDate": "2026-08-14",
-          "reach": 863,
-          "impressions": 986,
-          "messages": 1,
-          "spend": 325.41,
-          "clicks": 32,
-          "ctr": 3.17,
+          "reach": 1271,
+          "impressions": 1458,
+          "messages": 3,
+          "spend": 475.02,
+          "clicks": 52,
+          "ctr": 3.53,
           "closedSales": 0,
-          "days": 2
+          "days": 3
         },
         {
           "weekNumber": 3,
           "startDate": "2026-08-15",
           "endDate": "2026-08-21",
-          "reach": 0,
-          "impressions": 0,
+          "reach": 1129,
+          "impressions": 1432,
           "messages": 0,
-          "spend": 0,
-          "clicks": 0,
-          "ctr": 0,
+          "spend": 150.55,
+          "clicks": 37,
+          "ctr": 2.58,
           "closedSales": 0,
-          "days": 0
+          "days": 1
         },
         {
           "weekNumber": 4,
