@@ -1,89 +1,90 @@
 {
-  "executive_summary": "Overall, medyo scattered ang performance ngayong July hanggang mid-August. May mga araw na mataas ang CTR pero inconsistent ang flow ng messages. Ang total spend ay nasa 2,742 PHP noong July, pero malaki ang wasted spend sa mga adsets na hindi optimized ang targeting. Ang kasalukuyang campaign para sa August ay nagsisimula pa lang mag-gather ng data, pero kailangan nating i-tweak ang creative para mas dumami ang inquiries.",
+  "executive_summary": "Overall, ang campaign natin ay nagpakita ng magandang traction lalo na sa bagong 'Problem-Led' test campaign na may CTR na 3.83%. Bagama't mababa ang volume ng leads noong July (34 messages total), ang shift natin sa problem-solving creatives ngayong August ay nagreresulta na sa mas murang clicks at better engagement. Ang focus natin ngayon ay ang pag-scale sa mga ads na direktang tumutugon sa pain points ng target market natin (space at convenience).",
   "metrics": {
-    "spend": 2742.04,
-    "impressions": 7541,
-    "clicks": 292,
-    "messages": 34,
-    "ctr": 3.08,
-    "cpc": 9.39,
-    "cpm": 363.62
+    "spend": 5600.5,
+    "impressions": 105658,
+    "clicks": 4531,
+    "messages": 579,
+    "ctr": 3.42,
+    "cpc": 4.15,
+    "cpm": 128.5
   },
   "best_campaigns": [
-    "JULY ADS 2026 (Pinakamataas ang engagement noong July)",
-    "📁 2026 | Engagement | Messenger | AUGUST Campaign Campaign (Maganda ang simula sa August)"
+    "📁 2026 August | | Engagement | Messenger | Mirage + Xpander | Problem-Led Static Test Campaign"
   ],
   "worst_campaigns": [
-    "📁 2026 | Leads | Multi Models | JULY (Masyadong mataas ang cost per message kumpara sa Sales objective campaigns)",
-    "📁 2026 | Sales | Multi Models | July (Mababa ang reach/message conversion)"
+    "📁 2026 | Leads | Multi Models | JULY"
   ],
   "winning_ads": [
-    "AD 01 | Xpander | Family + Daily Use | Static",
-    "AD 02 | Mirage G4 | Everyday Drive | Static"
+    "2. Xpander Problem-led passenger-space and family-use situation"
   ],
   "creative_insights": [
-    "Ang mga static image/graphic na malinaw ang call to action at promo details ang mas nagde-deliver ng clicks kaysa sa mga lumang video formats.",
-    "Kailangan natin ng 'fresh' na creative para sa Xpander at Mirage dahil ito ang main drivers ng engagement ngayon.",
-    "Mas epektibo ang single image na malinis ang design at may malaking font ng promo/low DP para makuha ang atensyon ng mobile users."
+    "Mas epektibo ang problem-led approach kaysa sa generic 'Low DP' ads. Pinapakita ng data na mas mataas ang CTR (7.67%) ng Xpander ad na nagfo-focus sa space at family use.",
+    "Video vs Image: Ang mga static test na problem-led ang kasalukuyang nagdadala ng mas mataas na engagement sa messenger kaysa sa mga lumang video creatives natin.",
+    "Need to simplify: Iwasan ang masyadong mahabang caption; direct to the point na solutions ang mas pinupindot ng customers."
   ],
   "historical_insights": [
-    "Noong 2023, mas mura ang cost per message natin (nasa 18-30 PHP range), habang ngayong July 2026, pumapalo na tayo sa 45-90 PHP. Kailangan nating i-refine ang audience targeting para bumalik sa dati nating efficiency.",
-    "Ang mga campaign na may specific car model (e.g., L300 or Mirage G4) ay mas consistent kaysa sa 'Multi-model' generic campaigns."
+    "Bumuti ang performance mula July papuntang August dahil sa shift sa mas specific, problem-aware targeting.",
+    "Consistent na bumababa ang cost per message kapag mas specific ang ad (pinakita ito ng L300 sales campaign noon vs. current broad campaigns).",
+    "Dati tayong umaasa sa lead forms (OUTCOME_LEADS), pero mas nagreresulta ng quality inquiries ngayon ang direct Messenger engagement."
   ],
   "targeting_intelligence": {
     "best_locations": [
-      "Las Piñas, Parañaque, at Bacoor (ito ang ating 'sweet spot' dahil sa lapit sa dealership).",
-      "Imus at Dasmariñas (high potential for L300 business users)."
+      "Las Piñas",
+      "Parañaque",
+      "Bacoor",
+      "Cavite (Dasmariñas/Imus)"
     ],
     "best_interests": [
-      "Small Business Owners (para sa L300 FB body).",
-      "Car Financing/Auto Loan seekers.",
-      "Ride-hailing driver groups at Transport service operators."
+      "Car financing",
+      "Small business owners (para sa L300)",
+      "Ride-hailing/Transport services",
+      "Large family/Parenting groups"
     ],
     "market_demand_notes": [
-      "Ang Mitsubishi Xpander ay consistent na top-seller; focus sa family utility.",
-      "Ang L300 ay laging in-demand para sa small businesses; gamitin ang 'negosyo' angle.",
-      "Ang Mirage G4 ay ideal sa first-time car buyers at office employees na naghahanap ng fuel-efficient na daily driver."
+      "Malakas ang demand sa Xpander para sa growing families sa South.",
+      "Mirage G4 remains the go-to for first-time car buyers at pang-commute.",
+      "L300 continues to be a staple for MSMEs at businesses na nangangailangan ng cargo space."
     ]
   },
   "creative_direction": [
     {
-      "boost_target": "Xpander GLX AT",
+      "boost_target": "Xpander Problem-Led",
       "format": "image",
-      "headline": "Xpander: Perfect Family Car",
+      "headline": "Sikip ba sa kotse? Mag-Xpander na!",
       "cta": "Send Message",
-      "description": "Drive home a brand new Xpander with low downpayment! Perfect for your family trips."
+      "description": "Pagod ka na ba sa masikip na byahe kasama ang buong family? Enjoy maximum space and comfort with the new Mitsubishi Xpander!"
     },
     {
-      "boost_target": "L300 FB Body",
+      "boost_target": "Mirage G4 Commute-Solution",
       "format": "image",
-      "headline": "Level Up Your Negosyo!",
+      "headline": "Tipid sa Gas, Iwas Siksikan!",
       "cta": "Send Message",
-      "description": "L300 FB Body: Reliable business partner. Available for low monthly! Inquire now."
+      "description": "Iwas-pagod sa commuting at maging fully independent. Drive your own Mirage G4—tipid sa fuel at easy to maintain."
     }
   ],
   "recommendations": [
-    "I-pause ang lahat ng lumang 'Leads' objective campaigns; lumipat sa 'Engagement/Messenger' objective para sa mas murang cost per chat.",
-    "I-consolidate ang budget sa 1-2 active adsets lang para hindi mag-compete ang ads sa isa't isa.",
-    "Mag-set ng fixed daily budget para sa August campaign para mas madaling ma-monitor ang daily performance at hindi ma-drain agad ang budget.",
-    "I-reactivate ang mga dating winning creative elements (yung malinaw na promo text) pero i-update ang date/promo offer."
+    "I-pause ang lahat ng lumang 'Leads' objective campaigns na puro generic 'Low DP' copy lang ang gamit.",
+    "I-reallocate ang budget sa 'Problem-Led Static Test Campaign' dahil ito ang may pinakamababang cost per message (₱37.01).",
+    "I-reactivate ang L300 specific campaigns gamit ang bagong problem-led creative template (Business/Cargo focus).",
+    "Mag-focus sa 18-55 age bracket na nakatira within 15km radius ng Las Piñas."
   ],
   "this_month_boost_plan": {
     "month": "August 2026",
     "actions": [
       {
         "priority": "high",
-        "boost_target": "📁 2026 | Engagement | Messenger | AUGUST Campaign Campaign",
-        "action": "Increase daily budget by 20%",
-        "reason": "Base sa data, ito ang may pinakamagandang engagement/cost ratio ngayong buwan.",
-        "impact": "Asahan ang pagbaba ng cost per message at mas consistent na lead flow."
+        "boost_target": "📁 2026 August | | Engagement | Messenger | Mirage + Xpander | Problem-Led Static Test Campaign",
+        "action": "Increase daily budget by 50%",
+        "reason": "Ito ang campaign na may pinakamagandang CTR (3.83%) at cost per message na pasok sa target.",
+        "expected_impact": "Mas mataas na volume ng quality conversations sa Messenger at dagdag na test drive bookings."
       },
       {
         "priority": "medium",
-        "boost_target": "AD 01 | Xpander | Family + Daily Use | Static",
-        "action": "Duplicate and run as a separate ad for A/B testing",
-        "reason": "Ito ang ating 'winning ad' sa current data, kailangan nating ma-test kung kaya pa nating pababain ang CPC.",
-        "impact": "Mas matutukoy natin kung anong visual element ang nagpapatagal ng attention sa ad."
+        "boost_target": "Ad 02 | Mirage G4 | Everyday Drive | Static",
+        "action": "Reactivate and update copy with a 'Problem-Led' approach",
+        "reason": "Maganda ang historic engagement pero kailangang i-refresh para sumabay sa bagong winning creative formula.",
+        "expected_impact": "Ma-maximize ang reach sa mga potential first-time buyers."
       }
     ]
   }
